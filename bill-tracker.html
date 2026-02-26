@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monthly Bill Tracker</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; padding: 20px; }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 { text-align: center; margin-bottom: 20px; color: #00d9ff; }
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .tab { flex: 1; padding: 15px; background: #16213e; border: none; border-radius: 10px; color: #888; font-size: 18px; cursor: pointer; }
+    .tab.active { background: #0f3460; color: #00d9ff; }
+    .tab:hover:not(.active) { background: #1a2a4a; }
+    .view { display: none; }
+    .view.active { display: block; }
+    .month-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #16213e; padding: 15px; border-radius: 10px; }
+    .month-nav button { background: #0f3460; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; }
+    .month-nav button:hover { background: #e94560; }
+    .month-title { font-size: 24px; font-weight: bold; }
+    .add-bill { display: flex; gap: 10px; margin-bottom: 20px; }
+    .add-bill input { flex: 1; padding: 12px; border: none; border-radius: 5px; font-size: 16px; }
+    .add-bill input[type="number"] { max-width: 120px; }
+    .add-bill button { background: #00d9ff; color: #1a1a2e; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; }
+    .add-bill button:hover { background: #00b8d4; }
+    .bills-list { background: #16213e; border-radius: 10px; overflow: hidden; }
+    .bill-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #0f3460; gap: 15px; }
+    .bill-item:last-child { border-bottom: none; }
+    .bill-item.paid { opacity: 0.5; }
+    .bill-item.paid .bill-name { text-decoration: line-through; }
+    .bill-checkbox { width: 24px; height: 24px; cursor: pointer; accent-color: #00d9ff; }
+    .bill-name { flex: 1; font-size: 18px; }
+    .bill-amount { font-size: 18px; color: #00d9ff; font-weight: bold; }
+    .bill-delete { background: #e94560; color: #fff; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
+    .bill-delete:hover { background: #c73e54; }
+    .total { display: flex; justify-content: space-between; padding: 15px; background: #0f3460; font-size: 20px; font-weight: bold; }
+    .total-paid { color: #4caf50; }
+    .total-remaining { color: #e94560; }
+    .empty-state { text-align: center; padding: 40px; color: #888; }
+    .carryover-btn { width: 100%; padding: 12px; background: #e94560; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+    .carryover-btn:hover { background: #c73e54; }
+    .year-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #16213e; padding: 15px; border-radius: 10px; }
+    .year-nav button { background: #0f3460; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; }
+    .year-nav button:hover { background: #e94560; }
+    .year-title { font-size: 24px; font-weight: bold; }
+    .year-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+    .month-tile { background: #16213e; border-radius: 10px; padding: 15px; cursor: pointer; transition: transform 0.2s; }
+    .month-tile:hover { transform: scale(1.02); }
+    .month-tile-name { font-size: 16px; font-weight: bold; margin-bottom: 10px; text-align: center; }
+    .month-tile-stats { display: flex; flex-direction: column; gap: 5px; }
+    .month-tile-row { display: flex; justify-content: space-between; font-size: 14px; }
+    .month-tile-paid { color: #4caf50; }
+    .month-tile-unpaid { color: #e94560; }
+    .month-tile-total { border-top: 1px solid #0f3460; padding-top: 5px; margin-top: 5px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Monthly Bill Tracker</h1>
+    
+    <div class="tabs">
+      <button class="tab active" data-tab="monthly">Monthly</button>
+      <button class="tab" data-tab="yearly">Yearly</button>
+    </div>
+    
+    <div id="monthlyView" class="view active">
+      <div class="month-nav">
+        <button id="prevMonth">← Prev</button>
+        <span class="month-title" id="monthTitle"></span>
+        <button id="nextMonth">Next →</button>
+      </div>
+      
+      <div class="add-bill">
+        <input type="text" id="billName" placeholder="Bill name">
+        <input type="number" id="billAmount" placeholder="Amount" step="0.01">
+        <button id="addBill">Add Bill</button>
+      </div>
+      
+      <div class="bills-list" id="billsList"></div>
+      
+      <button class="carryover-btn" id="carryoverBtn">Carry Over from Previous Month</button>
+      
+      <div class="total">
+        <span>Paid: <span class="total-paid" id="totalPaid">$0</span></span>
+        <span>Remaining: <span class="total-remaining" id="totalRemaining">$0</span></span>
+      </div>
+    </div>
+    
+    <div id="yearlyView" class="view">
+      <div class="year-nav">
+        <button id="prevYear">← Prev</button>
+        <span class="year-title" id="yearTitle"></span>
+        <button id="nextYear">Next →</button>
+      </div>
+      
+      <div class="year-grid" id="yearGrid"></div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'billTrackerData';
+    let currentDate = new Date();
+    let currentYear = new Date().getFullYear();
+    
+    function getStorage() {
+      const data = localStorage.getItem(STORAGE_KEY);
+      return data ? JSON.parse(data) : {};
+    }
+    
+    function saveStorage(data) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+    
+    function getMonthKey(date) {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    }
+    
+    function getMonthName(date) {
+      return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    }
+    
+    function getShortMonthName(month) {
+      return new Date(2000, month, 1).toLocaleDateString('en-US', { month: 'short' });
+    }
+    
+    function getBillsForMonth(monthKey) {
+      const storage = getStorage();
+      return storage[monthKey] || [];
+    }
+    
+    function saveBillsForMonth(monthKey, bills) {
+      const storage = getStorage();
+      storage[monthKey] = bills;
+      saveStorage(storage);
+    }
+    
+    function getPrevMonthKey() {
+      const prev = new Date(currentDate);
+      prev.setMonth(prev.getMonth() - 1);
+      return getMonthKey(prev);
+    }
+    
+    function copyFromPreviousMonth() {
+      const currentKey = getMonthKey(currentDate);
+      const prevKey = getPrevMonthKey();
+      const prevBills = getBillsForMonth(prevKey);
+      const currentBills = getBillsForMonth(currentKey);
+      
+      if (prevBills.length === 0) {
+        alert('No bills from previous month to carry over');
+        return;
+      }
+      
+      const existingNames = new Set(currentBills.map(b => b.name));
+      let added = 0;
+      
+      for (const bill of prevBills) {
+        if (!existingNames.has(bill.name)) {
+          currentBills.push({ name: bill.name, amount: bill.amount, paid: false });
+          added++;
+        }
+      }
+      
+      if (added > 0) {
+        saveBillsForMonth(currentKey, currentBills);
+      }
+      
+      alert(`Carried over ${added} bills from previous month`);
+      render();
+    }
+    
+    function renderMonthly() {
+      const monthKey = getMonthKey(currentDate);
+      document.getElementById('monthTitle').textContent = getMonthName(currentDate);
+      
+      const bills = getBillsForMonth(monthKey);
+      const list = document.getElementById('billsList');
+      
+      if (bills.length === 0) {
+        list.innerHTML = '<div class="empty-state">No bills for this month. Add one above!</div>';
+      } else {
+        list.innerHTML = bills.map((bill, index) => `
+          <div class="bill-item ${bill.paid ? 'paid' : ''}">
+            <input type="checkbox" class="bill-checkbox" ${bill.paid ? 'checked' : ''} data-index="${index}">
+            <span class="bill-name">${bill.name}</span>
+            <span class="bill-amount">$${Number(bill.amount).toFixed(2)}</span>
+            <button class="bill-delete" data-index="${index}">×</button>
+          </div>
+        `).join('');
+      }
+      
+      const total = bills.reduce((sum, b) => sum + Number(b.amount), 0);
+      const paid = bills.filter(b => b.paid).reduce((sum, b) => sum + Number(b.amount), 0);
+      
+      document.getElementById('totalPaid').textContent = `$${paid.toFixed(2)}`;
+      document.getElementById('totalRemaining').textContent = `$${(total - paid).toFixed(2)}`;
+      
+      document.querySelectorAll('.bill-checkbox').forEach(cb => {
+        cb.addEventListener('change', (e) => {
+          const index = parseInt(e.target.dataset.index);
+          bills[index].paid = e.target.checked;
+          saveBillsForMonth(monthKey, bills);
+          render();
+        });
+      });
+      
+      document.querySelectorAll('.bill-delete').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const index = parseInt(e.target.dataset.index);
+          bills.splice(index, 1);
+          saveBillsForMonth(monthKey, bills);
+          render();
+        });
+      });
+    }
+    
+    function renderYearly() {
+      document.getElementById('yearTitle').textContent = currentYear;
+      
+      const months = [];
+      for (let m = 0; m < 12; m++) {
+        const date = new Date(currentYear, m, 1);
+        const key = getMonthKey(date);
+        const bills = getBillsForMonth(key);
+        const total = bills.reduce((sum, b) => sum + Number(b.amount), 0);
+        const paid = bills.filter(b => b.paid).reduce((sum, b) => sum + Number(b.amount), 0);
+        const unpaid = total - paid;
+        
+        months.push({
+          name: getShortMonthName(m),
+          total,
+          paid,
+          unpaid
+        });
+      }
+      
+      document.getElementById('yearGrid').innerHTML = months.map(m => `
+        <div class="month-tile">
+          <div class="month-tile-name">${m.name}</div>
+          <div class="month-tile-stats">
+            <div class="month-tile-row">
+              <span>Paid:</span>
+              <span class="month-tile-paid">$${m.paid.toFixed(2)}</span>
+            </div>
+            <div class="month-tile-row">
+              <span>Unpaid:</span>
+              <span class="month-tile-unpaid">$${m.unpaid.toFixed(2)}</span>
+            </div>
+            <div class="month-tile-row month-tile-total">
+              <span>Total:</span>
+              <span>$${m.total.toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function render() {
+      renderMonthly();
+      renderYearly();
+    }
+    
+    function addBill() {
+      const name = document.getElementById('billName').value.trim();
+      const amount = parseFloat(document.getElementById('billAmount').value);
+      
+      if (!name || isNaN(amount) || amount <= 0) {
+        alert('Please enter a valid name and amount');
+        return;
+      }
+      
+      const monthKey = getMonthKey(currentDate);
+      const bills = getBillsForMonth(monthKey);
+      bills.push({ name, amount, paid: false });
+      saveBillsForMonth(monthKey, bills);
+      
+      document.getElementById('billName').value = '';
+      document.getElementById('billAmount').value = '';
+      render();
+    }
+    
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab + 'View').classList.add('active');
+      });
+    });
+    
+    document.getElementById('addBill').addEventListener('click', addBill);
+    
+    document.getElementById('billName').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') addBill();
+    });
+    document.getElementById('billAmount').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') addBill();
+    });
+    
+    document.getElementById('prevMonth').addEventListener('click', () => {
+      currentDate.setMonth(currentDate.getMonth() - 1);
+      render();
+    });
+    
+    document.getElementById('nextMonth').addEventListener('click', () => {
+      currentDate.setMonth(currentDate.getMonth() + 1);
+      render();
+    });
+    
+    document.getElementById('prevYear').addEventListener('click', () => {
+      currentYear--;
+      render();
+    });
+    
+    document.getElementById('nextYear').addEventListener('click', () => {
+      currentYear++;
+      render();
+    });
+    
+    document.addEventListener('keydown', (e) => {
+      const monthlyView = document.getElementById('monthlyView').classList.contains('active');
+      const inInput = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA';
+      
+      if (monthlyView && !inInput) {
+        if (e.key === 'ArrowLeft') {
+          currentDate.setMonth(currentDate.getMonth() - 1);
+          render();
+        } else if (e.key === 'ArrowRight') {
+          currentDate.setMonth(currentDate.getMonth() + 1);
+          render();
+        } else if (e.shiftKey && e.key === ' ') {
+          e.preventDefault();
+          const monthKey = getMonthKey(currentDate);
+          const bills = getBillsForMonth(monthKey);
+          if (bills.length === 0) {
+            alert('No bills to mark as paid');
+            return;
+          }
+          if (confirm('Mark all bills as paid for this month?')) {
+            bills.forEach(b => b.paid = true);
+            saveBillsForMonth(monthKey, bills);
+            render();
+          }
+        } else if (e.key === ' ') {
+          e.preventDefault();
+          copyFromPreviousMonth();
+        }
+      }
+    });
+    
+    document.getElementById('carryoverBtn').addEventListener('click', copyFromPreviousMonth);
+    
+    render();
+  </script>
+</body>
+</html>

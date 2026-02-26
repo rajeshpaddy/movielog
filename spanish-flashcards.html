@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spanish Flash Cards</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; padding: 20px; }
+    .container { max-width: 600px; margin: 0 auto; }
+    h1 { text-align: center; margin-bottom: 20px; color: #00d9ff; }
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .tab { flex: 1; padding: 15px; background: #16213e; border: none; border-radius: 10px; color: #888; font-size: 18px; cursor: pointer; }
+    .tab.active { background: #0f3460; color: #00d9ff; }
+    .view { display: none; }
+    .view.active { display: block; }
+    .card { background: #16213e; border-radius: 10px; padding: 20px; margin-bottom: 20px; text-align: center; }
+    .card-title { font-size: 20px; font-weight: bold; margin-bottom: 15px; color: #00d9ff; }
+    .option-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; }
+    .option-card { background: #0f3460; border-radius: 10px; padding: 20px; cursor: pointer; transition: transform 0.2s, border 0.2s; border: 3px solid transparent; text-align: center; }
+    .option-card:hover { transform: scale(1.02); }
+    .option-card.selected { border-color: #00d9ff; }
+    .option-name { font-size: 20px; font-weight: bold; }
+    .option-desc { font-size: 14px; color: #aaa; margin-top: 5px; }
+    .complexity-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+    .btn { padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; font-weight: bold; width: 100%; }
+    .btn-primary { background: #00d9ff; color: #1a1a2e; }
+    .btn-primary:hover { background: #00b8d4; }
+    .btn-success { background: #4caf50; color: #fff; }
+    .btn-danger { background: #e94560; color: #fff; }
+    .btn-row { display: flex; gap: 10px; margin-top: 20px; }
+    .flash-card { background: #0f3460; border-radius: 15px; padding: 40px 20px; min-height: 200px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; }
+    .flash-text { font-size: 32px; font-weight: bold; margin-bottom: 10px; }
+    .flash-hint { font-size: 16px; color: #aaa; margin-top: 20px; }
+    .flash-translation { font-size: 24px; color: #00d9ff; margin-top: 20px; display: none; }
+    .flash-card.revealed .flash-translation { display: block; }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+    .stat-card { background: #0f3460; border-radius: 10px; padding: 20px; text-align: center; }
+    .stat-value { font-size: 32px; font-weight: bold; }
+    .stat-label { font-size: 14px; color: #aaa; margin-top: 5px; }
+    .stat-correct { color: #4caf50; }
+    .stat-wrong { color: #e94560; }
+    .period-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .period-nav button { background: #0f3460; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; }
+    .period-title { font-size: 24px; font-weight: bold; }
+    .report-list { background: #16213e; border-radius: 10px; overflow: hidden; }
+    .report-item { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid #0f3460; }
+    .report-item:last-child { border-bottom: none; }
+    .report-date { font-weight: bold; }
+    .report-stats { display: flex; gap: 15px; }
+    .report-correct { color: #4caf50; }
+    .report-wrong { color: #e94560; }
+    .empty-state { text-align: center; padding: 40px; color: #888; }
+    .progress-text { text-align: center; margin-bottom: 15px; color: #aaa; }
+    .complete-card { background: #0f3460; border-radius: 10px; padding: 40px; text-align: center; }
+    .complete-title { font-size: 24px; font-weight: bold; color: #4caf50; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🇪🇸 Spanish Flash Cards</h1>
+    
+    <div class="tabs">
+      <button class="tab active" data-tab="practice">Practice</button>
+      <button class="tab" data-tab="report">Report</button>
+    </div>
+    
+    <div id="practiceView" class="view active">
+      <div id="setupCard" class="card">
+        <div class="card-title">Select Mode</div>
+        <div class="option-cards">
+          <div class="option-card" id="selectWord" onclick="selectMode('word')">
+            <div class="option-name">Words</div>
+            <div class="option-desc">Single vocabulary</div>
+          </div>
+          <div class="option-card" id="selectSentence" onclick="selectMode('sentence')">
+            <div class="option-name">Sentences</div>
+            <div class="option-desc">Full phrases</div>
+          </div>
+        </div>
+        
+        <div class="card-title">Select Complexity</div>
+        <div class="complexity-cards">
+          <div class="option-card" id="selectBeginner" onclick="selectComplexity('beginner')">
+            <div class="option-name">Beginner</div>
+          </div>
+          <div class="option-card" id="selectIntermediate" onclick="selectComplexity('intermediate')">
+            <div class="option-name">Intermediate</div>
+          </div>
+          <div class="option-card" id="selectAdvanced" onclick="selectComplexity('advanced')">
+            <div class="option-name">Advanced</div>
+          </div>
+        </div>
+        
+        <button class="btn btn-primary" onclick="startPractice()">Start Practice</button>
+      </div>
+      
+      <div id="flashCard" class="card" style="display: none;">
+        <div class="progress-text" id="progressText">Card 1 of 10</div>
+        <div class="flash-card" onclick="revealCard()">
+          <div class="flash-text" id="flashText"></div>
+          <div class="flash-hint">Click to reveal</div>
+          <div class="flash-translation" id="flashTranslation"></div>
+        </div>
+        <div class="btn-row" id="answerButtons" style="display: none;">
+          <button class="btn btn-danger" onclick="markWrong()">✗ Wrong</button>
+          <button class="btn btn-success" onclick="markCorrect()">✓ Correct</button>
+        </div>
+      </div>
+      
+      <div id="completeCard" class="complete-card" style="display: none;">
+        <div class="complete-title">Session Complete!</div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value stat-correct" id="sessionCorrect">0</div>
+            <div class="stat-label">Correct</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value stat-wrong" id="sessionWrong">0</div>
+            <div class="stat-label">Wrong</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="sessionAccuracy">0%</div>
+            <div class="stat-label">Accuracy</div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="doneSession()">Done</button>
+      </div>
+    </div>
+    
+    <div id="reportView" class="view">
+      <div class="card">
+        <div class="tabs" style="margin-bottom: 0;">
+          <button class="tab active" data-period="daily" onclick="setPeriod('daily')">Daily</button>
+          <button class="tab" data-period="monthly" onclick="setPeriod('monthly')">Monthly</button>
+          <button class="tab" data-period="yearly" onclick="setPeriod('yearly')">Yearly</button>
+        </div>
+      </div>
+      
+      <div class="period-nav">
+        <button onclick="prevPeriod()">← Prev</button>
+        <span class="period-title" id="periodTitle"></span>
+        <button onclick="nextPeriod()">Next →</button>
+      </div>
+      
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="totalCards">0</div>
+          <div class="stat-label">Total Cards</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value stat-correct" id="totalCorrect">0</div>
+          <div class="stat-label">Correct</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value stat-wrong" id="totalWrong">0</div>
+          <div class="stat-label">Wrong</div>
+        </div>
+      </div>
+      
+      <div class="report-list" id="reportList"></div>
+    </div>
+  </div>
+
+  <script>
+    const FLASHCARDS = {
+      word: {
+        beginner: [
+          { es: 'Hola', en: 'Hello' },
+          { es: 'Adiós', en: 'Goodbye' },
+          { es: 'Gracias', en: 'Thank you' },
+          { es: 'Por favor', en: 'Please' },
+          { es: 'Sí', en: 'Yes' },
+          { es: 'No', en: 'No' },
+          { es: 'Agua', en: 'Water' },
+          { es: 'Comida', en: 'Food' },
+          { es: 'Casa', en: 'House' },
+          { es: 'Amigo', en: 'Friend' }
+        ],
+        intermediate: [
+          { es: 'Buenos días', en: 'Good morning' },
+          { es: 'Buenas noches', en: 'Good night' },
+          { es: 'Lo siento', en: 'Sorry' },
+          { es: 'De nada', en: "You're welcome" },
+          { es: 'Perdón', en: 'Excuse me' },
+          { es: 'Encantado', en: 'Nice to meet you' },
+          { es: '¿Cómo estás?', en: 'How are you?' },
+          { es: 'Muy bien', en: 'Very well' },
+          { es: 'El baño', en: 'The bathroom' },
+          { es: 'La cuenta', en: 'The bill' }
+        ],
+        advanced: [
+          { es: '¿Dónde está el aeropuerto?', en: 'Where is the airport?' },
+          { es: 'Necesito ayuda', en: 'I need help' },
+          { es: 'No entiendo', en: "I don't understand" },
+          { es: '¿Cuánto cuesta?', en: 'How much does it cost?' },
+          { es: 'Me gustaría', en: 'I would like' },
+          { es: '¿Puede ayudarme?', en: 'Can you help me?' },
+          { es: 'Es necesario', en: 'It is necessary' },
+          { es: 'Tengo hambre', en: 'I am hungry' },
+          { es: 'Tengo sed', en: 'I am thirsty' },
+          { es: '¿A qué hora?', en: 'At what time?' }
+        ]
+      },
+      sentence: {
+        beginner: [
+          { es: 'Me llamo...', en: 'My name is...' },
+          { es: 'Tengo... años', en: 'I am... years old' },
+          { es: 'Soy de...', en: 'I am from...' },
+          { es: 'Vivo en...', en: 'I live in...' },
+          { es: 'Tengo un perro', en: 'I have a dog' },
+          { es: 'Me gusta el café', en: 'I like coffee' },
+          { es: 'No me gusta', en: "I don't like it" },
+          { es: 'Tengo hambre', en: 'I am hungry' },
+          { es: 'Quiero agua', en: 'I want water' },
+          { es: '¿Dónde está?', en: 'Where is it?' }
+        ],
+        intermediate: [
+          { es: '¿Qué tiempo hace?', en: 'What is the weather?' },
+          { es: 'Hace sol', en: 'It is sunny' },
+          { es: 'Hace frío', en: 'It is cold' },
+          { es: 'No tengo dinero', en: "I don't have money" },
+          { es: '¿Cuánto tiempo?', en: 'How long?' },
+          { es: 'No puedo', en: "I can't" },
+          { es: '¿Por qué?', en: 'Why?' },
+          { es: 'No sé', en: "I don't know" },
+          { es: '¿Puedes ayudarme?', en: 'Can you help me?' },
+          { es: 'Me encanta', en: 'I love it' }
+        ],
+        advanced: [
+          { es: 'Si tuviera dinero, viajaría', en: 'If I had money, I would travel' },
+          { es: 'Cuando termine el trabajo, descansaré', en: 'When I finish work, I will rest' },
+          { es: 'No creo que sea posible', en: "I don't think it's possible" },
+          { es: 'Es importante que aprendas', en: 'It is important that you learn' },
+          { es: 'Aunque haga frío, saldré', en: 'Even though it is cold, I will go out' },
+          { es: 'Antes de ir, llama', en: 'Before going, call' },
+          { es: 'Nunca he estado allí', en: 'I have never been there' },
+          { es: 'Ya casi termino', en: 'I am almost done' },
+          { es: 'Deberías haberlo hecho', en: 'You should have done it' },
+          { es: 'No importa lo que digas', en: 'No matter what you say' }
+        ]
+      }
+    };
+
+    const STORAGE_KEY = 'spanishFlashcards';
+    let currentMode = null;
+    let currentComplexity = null;
+    let currentCards = [];
+    let currentIndex = 0;
+    let sessionResults = [];
+    let currentPeriod = 'daily';
+    let currentDate = new Date();
+
+    function getStorage() {
+      const data = localStorage.getItem(STORAGE_KEY);
+      return data ? JSON.parse(data) : {};
+    }
+
+    function saveStorage(data) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function getDayKey(date) {
+      return date.toISOString().split('T')[0];
+    }
+
+    function selectMode(mode) {
+      currentMode = mode;
+      document.getElementById('selectWord').classList.remove('selected');
+      document.getElementById('selectSentence').classList.remove('selected');
+      document.getElementById('select' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('selected');
+    }
+
+    function selectComplexity(complexity) {
+      currentComplexity = complexity;
+      document.getElementById('selectBeginner').classList.remove('selected');
+      document.getElementById('selectIntermediate').classList.remove('selected');
+      document.getElementById('selectAdvanced').classList.remove('selected');
+      document.getElementById('select' + complexity.charAt(0).toUpperCase() + complexity.slice(1)).classList.add('selected');
+    }
+
+    function saveResult(correct) {
+      const dayKey = getDayKey(new Date());
+      const storage = getStorage();
+      
+      if (!storage[dayKey]) {
+        storage[dayKey] = { correct: 0, wrong: 0 };
+      }
+      
+      if (correct) {
+        storage[dayKey].correct++;
+      } else {
+        storage[dayKey].wrong++;
+      }
+      
+      saveStorage(storage);
+    }
+
+    function shuffle(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function startPractice() {
+      console.log('Starting practice, mode:', currentMode, 'complexity:', currentComplexity);
+      
+      if (!currentMode) {
+        alert('Please select a mode (Words or Sentences)');
+        return;
+      }
+      if (!currentComplexity) {
+        alert('Please select a complexity level');
+        return;
+      }
+      
+      currentCards = shuffle(FLASHCARDS[currentMode][currentComplexity]).slice(0, 10);
+      currentIndex = 0;
+      sessionResults = [];
+      
+      document.getElementById('setupCard').style.display = 'none';
+      document.getElementById('flashCard').style.display = 'block';
+      document.getElementById('completeCard').style.display = 'none';
+      
+      showCard();
+    }
+
+    function showCard() {
+      if (currentIndex >= currentCards.length) {
+        showComplete();
+        return;
+      }
+      
+      const card = currentCards[currentIndex];
+      document.getElementById('flashText').textContent = card.es;
+      document.getElementById('flashTranslation').textContent = card.en;
+      document.querySelector('.flash-card').classList.remove('revealed');
+      document.getElementById('answerButtons').style.display = 'none';
+      document.getElementById('progressText').textContent = 'Card ' + (currentIndex + 1) + ' of ' + currentCards.length;
+    }
+
+    function revealCard() {
+      document.querySelector('.flash-card').classList.add('revealed');
+      document.getElementById('answerButtons').style.display = 'flex';
+    }
+
+    function markCorrect() {
+      sessionResults.push(true);
+      saveResult(true);
+      currentIndex++;
+      showCard();
+    }
+
+    function markWrong() {
+      sessionResults.push(false);
+      saveResult(false);
+      currentIndex++;
+      showCard();
+    }
+
+    function showComplete() {
+      document.getElementById('flashCard').style.display = 'none';
+      document.getElementById('completeCard').style.display = 'block';
+      
+      const correct = sessionResults.filter(r => r).length;
+      const wrong = sessionResults.filter(r => !r).length;
+      const accuracy = sessionResults.length > 0 ? Math.round((correct / sessionResults.length) * 100) : 0;
+      
+      document.getElementById('sessionCorrect').textContent = correct;
+      document.getElementById('sessionWrong').textContent = wrong;
+      document.getElementById('sessionAccuracy').textContent = accuracy + '%';
+    }
+
+    function doneSession() {
+      document.getElementById('setupCard').style.display = 'block';
+      document.getElementById('flashCard').style.display = 'none';
+      document.getElementById('completeCard').style.display = 'none';
+      currentMode = null;
+      currentComplexity = null;
+      document.getElementById('selectWord').classList.remove('selected');
+      document.getElementById('selectSentence').classList.remove('selected');
+      document.getElementById('selectBeginner').classList.remove('selected');
+      document.getElementById('selectIntermediate').classList.remove('selected');
+      document.getElementById('selectAdvanced').classList.remove('selected');
+    }
+
+    function setPeriod(period) {
+      currentPeriod = period;
+      document.querySelectorAll('#reportView .tab').forEach(t => t.classList.remove('active'));
+      document.querySelector('[data-period="' + period + '"]').classList.add('active');
+      currentDate = new Date();
+      renderReport();
+    }
+
+    function prevPeriod() {
+      if (currentPeriod === 'daily') {
+        currentDate.setDate(currentDate.getDate() - 7);
+      } else if (currentPeriod === 'monthly') {
+        currentDate.setFullYear(currentDate.getFullYear() - 1);
+      } else {
+        currentDate.setFullYear(currentDate.getFullYear() - 3);
+      }
+      renderReport();
+    }
+
+    function nextPeriod() {
+      if (currentPeriod === 'daily') {
+        currentDate.setDate(currentDate.getDate() + 7);
+      } else if (currentPeriod === 'monthly') {
+        currentDate.setFullYear(currentDate.getFullYear() + 1);
+      } else {
+        currentDate.setFullYear(currentDate.getFullYear() + 3);
+      }
+      renderReport();
+    }
+
+    function getReportData() {
+      const storage = getStorage();
+      const data = [];
+      
+      if (currentPeriod === 'daily') {
+        const startDate = new Date(currentDate);
+        startDate.setDate(startDate.getDate() - 6);
+        
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(startDate);
+          d.setDate(d.getDate() + i);
+          const key = getDayKey(d);
+          const dayData = storage[key] || { correct: 0, wrong: 0 };
+          data.push({
+            label: d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+            correct: dayData.correct,
+            wrong: dayData.wrong
+          });
+        }
+      } else if (currentPeriod === 'monthly') {
+        const year = currentDate.getFullYear();
+        
+        for (let m = 0; m < 12; m++) {
+          const monthKey = year + '-' + String(m + 1).padStart(2, '0');
+          let correct = 0, wrong = 0;
+          
+          Object.keys(storage).forEach(function(key) {
+            if (key.startsWith(monthKey)) {
+              correct += storage[key].correct;
+              wrong += storage[key].wrong;
+            }
+          });
+          
+          data.push({
+            label: new Date(year, m, 1).toLocaleDateString('en-US', { month: 'short' }),
+            correct: correct,
+            wrong: wrong
+          });
+        }
+      } else {
+        const startYear = currentDate.getFullYear() - 2;
+        
+        for (let y = 0; y < 3; y++) {
+          const year = startYear + y;
+          let correct = 0, wrong = 0;
+          
+          Object.keys(storage).forEach(function(key) {
+            if (key.startsWith(String(year))) {
+              correct += storage[key].correct;
+              wrong += storage[key].wrong;
+            }
+          });
+          
+          data.push({
+            label: String(year),
+            correct: correct,
+            wrong: wrong
+          });
+        }
+      }
+      
+      return data;
+    }
+
+    function renderReport() {
+      const data = getReportData();
+      
+      let totalCorrect = 0, totalWrong = 0;
+      data.forEach(function(d) {
+        totalCorrect += d.correct;
+        totalWrong += d.wrong;
+      });
+      
+      document.getElementById('totalCards').textContent = totalCorrect + totalWrong;
+      document.getElementById('totalCorrect').textContent = totalCorrect;
+      document.getElementById('totalWrong').textContent = totalWrong;
+      
+      if (currentPeriod === 'daily') {
+        const startDate = new Date(currentDate);
+        startDate.setDate(startDate.getDate() - 6);
+        document.getElementById('periodTitle').textContent = 
+          startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' - ' + 
+          currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      } else if (currentPeriod === 'monthly') {
+        document.getElementById('periodTitle').textContent = currentDate.getFullYear();
+      } else {
+        document.getElementById('periodTitle').textContent = 'Last 3 Years';
+      }
+      
+      if (data.every(function(d) { return d.correct === 0 && d.wrong === 0; })) {
+        document.getElementById('reportList').innerHTML = '<div class="empty-state">No activity recorded yet</div>';
+      } else {
+        document.getElementById('reportList').innerHTML = data.map(function(d) {
+          return '<div class="report-item"><span class="report-date">' + d.label + '</span><div class="report-stats"><span class="report-correct">✓ ' + d.correct + '</span><span class="report-wrong">✗ ' + d.wrong + '</span></div></div>';
+        }).join('');
+      }
+    }
+
+    // Tab switching
+    document.querySelectorAll('.tab[data-tab]').forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.tab[data-tab]').forEach(function(t) { t.classList.remove('active'); });
+        document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab + 'View').classList.add('active');
+        if (tab.dataset.tab === 'report') renderReport();
+      });
+    });
+  </script>
+</body>
+</html>

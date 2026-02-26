@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ski Tracker</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; padding: 20px; }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 { text-align: center; margin-bottom: 20px; color: #00d9ff; }
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .tab { flex: 1; padding: 15px; background: #16213e; border: none; border-radius: 10px; color: #888; font-size: 18px; cursor: pointer; }
+    .tab.active { background: #0f3460; color: #00d9ff; }
+    .view { display: none; }
+    .view.active { display: block; }
+    .card { background: #16213e; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+    .card-title { font-size: 20px; font-weight: bold; margin-bottom: 15px; color: #00d9ff; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-size: 14px; color: #aaa; }
+    .form-group input { width: 100%; padding: 12px; border: none; border-radius: 5px; font-size: 16px; background: #0f3460; color: #fff; }
+    .form-row { display: flex; gap: 15px; }
+    .form-row .form-group { flex: 1; }
+    .btn { padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; }
+    .btn-primary { background: #00d9ff; color: #1a1a2e; }
+    .btn-primary:hover { background: #00b8d4; }
+    .btn-secondary { background: #e94560; color: #fff; }
+    .btn-secondary:hover { background: #c73e54; }
+    .btn-row { display: flex; gap: 10px; margin-top: 20px; }
+    .level-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+    .level-card { background: #0f3460; border-radius: 10px; padding: 15px; cursor: pointer; transition: transform 0.2s, border 0.2s; border: 3px solid transparent; }
+    .level-card:hover { transform: scale(1.02); }
+    .level-card.selected { border-color: #00d9ff; }
+    .level-name { font-size: 24px; font-weight: bold; text-align: center; padding: 20px; }
+    .level-green .level-name { color: #4caf50; }
+    .level-blue .level-name { color: #2196f3; }
+    .level-black .level-name { color: #333; background: #888; -webkit-background-clip: text; }
+    .level-stats { text-align: center; font-size: 14px; color: #aaa; }
+    .log-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #0f3460; }
+    .log-item:last-child { border-bottom: none; }
+    .log-info { flex: 1; }
+    .log-level { font-weight: bold; }
+    .log-green { color: #4caf50; }
+    .log-blue { color: #2196f3; }
+    .log-black { color: #888; }
+    .log-details { font-size: 14px; color: #aaa; margin-top: 5px; }
+    .log-delete { background: #e94560; color: #fff; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
+    .day-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .day-nav button { background: #0f3460; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; }
+    .day-nav button:hover { background: #e94560; }
+    .day-title { font-size: 24px; font-weight: bold; }
+    .weather-card { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; }
+    .weather-item { background: #0f3460; border-radius: 10px; padding: 15px; text-align: center; }
+    .weather-label { font-size: 14px; color: #aaa; }
+    .weather-value { font-size: 24px; font-weight: bold; color: #00d9ff; }
+    .summary-card { background: #0f3460; border-radius: 10px; padding: 20px; margin-bottom: 15px; }
+    .summary-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
+    .summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #16213e; }
+    .summary-row:last-child { border-bottom: none; }
+    .empty-state { text-align: center; padding: 40px; color: #888; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⛷️ Ski Tracker</h1>
+    
+    <div class="tabs">
+      <button class="tab active" data-tab="log">Log Run</button>
+      <button class="tab" data-tab="report">Daily Report</button>
+    </div>
+    
+    <div id="logView" class="view active">
+      <div class="card">
+        <div class="card-title">Weather Conditions</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Temperature (°F)</label>
+            <input type="number" id="temperature" placeholder="32">
+          </div>
+          <div class="form-group">
+            <label>Snow Level (inches)</label>
+            <input type="number" id="snowLevel" placeholder="12">
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-title">Select Level</div>
+        <div class="level-cards">
+          <div class="level-card level-green" data-level="green">
+            <div class="level-name">Green</div>
+            <div class="level-stats" id="greenStats">0 runs</div>
+          </div>
+          <div class="level-card level-blue" data-level="blue">
+            <div class="level-name">Blue</div>
+            <div class="level-stats" id="blueStats">0 runs</div>
+          </div>
+          <div class="level-card level-black" data-level="black">
+            <div class="level-name">Black</div>
+            <div class="level-stats" id="blackStats">0 runs</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card" id="runForm" style="display: none;">
+        <div class="card-title" id="selectedLevelTitle">Run Details</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Number of Runs</label>
+            <input type="number" id="numRuns" value="1" min="1">
+          </div>
+          <div class="form-group">
+            <label>Average Speed (mph)</label>
+            <input type="number" id="speed" placeholder="25">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Time on Slope (minutes)</label>
+            <input type="number" id="slopeTime" placeholder="10">
+          </div>
+          <div class="form-group">
+            <label>Lift Time (minutes)</label>
+            <input type="number" id="liftTime" placeholder="15">
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="saveRun">Save Run</button>
+          <button class="btn btn-secondary" id="cancelRun">Cancel</button>
+        </div>
+      </div>
+    </div>
+    
+    <div id="reportView" class="view">
+      <div class="day-nav">
+        <button id="prevDay">← Prev</button>
+        <span class="day-title" id="dayTitle"></span>
+        <button id="nextDay">Next →</button>
+      </div>
+      
+      <div class="weather-card" id="weatherSummary"></div>
+      
+      <div id="reportContent"></div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'skiTrackerData';
+    let currentDate = new Date();
+    let selectedLevel = null;
+    
+    function getStorage() {
+      const data = localStorage.getItem(STORAGE_KEY);
+      return data ? JSON.parse(data) : {};
+    }
+    
+    function saveStorage(data) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+    
+    function getDayKey(date) {
+      return date.toISOString().split('T')[0];
+    }
+    
+    function getDayName(date) {
+      return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    }
+    
+    function getDayData(dayKey) {
+      const storage = getStorage();
+      return storage[dayKey] || { weather: {}, runs: [] };
+    }
+    
+    function saveDayData(dayKey, data) {
+      const storage = getStorage();
+      storage[dayKey] = data;
+      saveStorage(storage);
+    }
+    
+    function updateLevelStats() {
+      const dayKey = getDayKey(currentDate);
+      const dayData = getDayData(dayKey);
+      
+      ['green', 'blue', 'black'].forEach(level => {
+        const count = dayData.runs.filter(r => r.level === level).length;
+        document.getElementById(level + 'Stats').textContent = count + ' run' + (count !== 1 ? 's' : '');
+      });
+    }
+    
+    function render() {
+      updateLevelStats();
+      renderReport();
+    }
+    
+    function renderReport() {
+      const dayKey = getDayKey(currentDate);
+      document.getElementById('dayTitle').textContent = getDayName(currentDate);
+      
+      const dayData = getDayData(dayKey);
+      
+      const temp = dayData.weather?.temperature ?? '-';
+      const snow = dayData.weather?.snowLevel ?? '-';
+      
+      document.getElementById('weatherSummary').innerHTML = `
+        <div class="weather-item">
+          <div class="weather-label">Temperature</div>
+          <div class="weather-value">${temp}°F</div>
+        </div>
+        <div class="weather-item">
+          <div class="weather-label">Snow Level</div>
+          <div class="weather-value">${snow}"</div>
+        </div>
+      `;
+      
+      if (dayData.runs.length === 0) {
+        document.getElementById('reportContent').innerHTML = '<div class="empty-state">No runs recorded for this day</div>';
+        return;
+      }
+      
+      const byLevel = { green: [], blue: [], black: [] };
+      dayData.runs.forEach(r => byLevel[r.level].push(r));
+      
+      let html = '';
+      
+      ['green', 'blue', 'black'].forEach(level => {
+        const runs = byLevel[level];
+        if (runs.length === 0) return;
+        
+        const totalRuns = runs.reduce((sum, r) => sum + r.numRuns, 0);
+        const avgSpeed = runs.reduce((sum, r) => sum + (r.speed || 0), 0) / runs.length;
+        const totalSlopeTime = runs.reduce((sum, r) => sum + ((r.slopeTime || 0) * r.numRuns), 0);
+        const totalLiftTime = runs.reduce((sum, r) => sum + ((r.liftTime || 0) * r.numRuns), 0);
+        
+        html += `
+          <div class="summary-card">
+            <div class="summary-title" style="color: ${level === 'green' ? '#4caf50' : level === 'blue' ? '#2196f3' : '#888'}">
+              ${level.charAt(0).toUpperCase() + level.slice(1)} Runs
+            </div>
+            <div class="summary-row">
+              <span>Total Runs</span>
+              <span>${totalRuns}</span>
+            </div>
+            <div class="summary-row">
+              <span>Avg Speed</span>
+              <span>${avgSpeed.toFixed(1)} mph</span>
+            </div>
+            <div class="summary-row">
+              <span>Total Slope Time</span>
+              <span>${totalSlopeTime} min</span>
+            </div>
+            <div class="summary-row">
+              <span>Total Lift Time</span>
+              <span>${totalLiftTime} min</span>
+            </div>
+            <div class="summary-row">
+              <span>Total Time on Mountain</span>
+              <span>${totalSlopeTime + totalLiftTime} min</span>
+            </div>
+          </div>
+        `;
+      });
+      
+      const grandTotalRuns = dayData.runs.reduce((sum, r) => sum + r.numRuns, 0);
+      const grandTotalTime = dayData.runs.reduce((sum, r) => sum + ((r.slopeTime || 0) + (r.liftTime || 0)) * r.numRuns, 0);
+      
+      html = `
+        <div class="summary-card">
+          <div class="summary-title">Day Summary</div>
+          <div class="summary-row">
+            <span>Total Runs</span>
+            <span>${grandTotalRuns}</span>
+          </div>
+          <div class="summary-row">
+            <span>Total Time</span>
+            <span>${grandTotalTime} min (${(grandTotalTime/60).toFixed(1)} hrs)</span>
+          </div>
+        </div>
+      ` + html;
+      
+      document.getElementById('reportContent').innerHTML = html;
+    }
+    
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab + 'View').classList.add('active');
+        if (tab.dataset.tab === 'report') renderReport();
+      });
+    });
+    
+    document.querySelectorAll('.level-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.level-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        selectedLevel = card.dataset.level;
+        document.getElementById('selectedLevelTitle').textContent = selectedLevel.charAt(0).toUpperCase() + selectedLevel.slice(1) + ' Run Details';
+        document.getElementById('runForm').style.display = 'block';
+      });
+    });
+    
+    document.getElementById('cancelRun').addEventListener('click', () => {
+      document.querySelectorAll('.level-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById('runForm').style.display = 'none';
+      selectedLevel = null;
+    });
+    
+    document.getElementById('saveRun').addEventListener('click', () => {
+      if (!selectedLevel) {
+        alert('Please select a level');
+        return;
+      }
+      
+      const dayKey = getDayKey(currentDate);
+      const dayData = getDayData(dayKey);
+      
+      dayData.weather = {
+        temperature: document.getElementById('temperature').value,
+        snowLevel: document.getElementById('snowLevel').value
+      };
+      
+      const run = {
+        level: selectedLevel,
+        numRuns: parseInt(document.getElementById('numRuns').value) || 1,
+        speed: parseFloat(document.getElementById('speed').value) || 0,
+        slopeTime: parseFloat(document.getElementById('slopeTime').value) || 0,
+        liftTime: parseFloat(document.getElementById('liftTime').value) || 0,
+        timestamp: Date.now()
+      };
+      
+      dayData.runs.push(run);
+      saveDayData(dayKey, dayData);
+      
+      document.getElementById('numRuns').value = 1;
+      document.getElementById('speed').value = '';
+      document.getElementById('slopeTime').value = '';
+      document.getElementById('liftTime').value = '';
+      
+      document.querySelectorAll('.level-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById('runForm').style.display = 'none';
+      selectedLevel = null;
+      
+      render();
+    });
+    
+    document.getElementById('prevDay').addEventListener('click', () => {
+      currentDate.setDate(currentDate.getDate() - 1);
+      render();
+    });
+    
+    document.getElementById('nextDay').addEventListener('click', () => {
+      currentDate.setDate(currentDate.getDate() + 1);
+      render();
+    });
+    
+    render();
+  </script>
+</body>
+</html>

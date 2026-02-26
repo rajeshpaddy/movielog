@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>App Catalog</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; padding: 20px; }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 { text-align: center; margin-bottom: 10px; color: #00d9ff; }
+    .subtitle { text-align: center; color: #888; margin-bottom: 30px; }
+    .app-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+    .app-card { background: #16213e; border-radius: 15px; padding: 25px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; text-align: center; }
+    .app-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0, 217, 255, 0.2); }
+    .app-icon { font-size: 48px; margin-bottom: 15px; }
+    .app-name { font-size: 20px; font-weight: bold; margin-bottom: 8px; color: #fff; }
+    .app-desc { font-size: 14px; color: #aaa; line-height: 1.4; }
+    .app-date { font-size: 12px; color: #666; margin-top: 15px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📱 App Catalog</h1>
+    <p class="subtitle">Your personal app collection</p>
+    
+    <div class="app-grid" id="appGrid"></div>
+  </div>
+
+  <script>
+    const apps = [
+      {
+        name: 'Movie Log',
+        icon: '🎬',
+        desc: 'Track movies you have watched, rate them, and keep a personal watchlist',
+        file: 'https://bit.ly/movie-log',
+        date: '2025-02-25'
+      },
+      {
+        name: 'Bill Tracker',
+        icon: '📋',
+        desc: 'Track monthly bills with carryover, yearly overview, and keyboard shortcuts',
+        file: '/home/paddy/bill-tracker.html',
+        date: '2025-02-24'
+      },
+      {
+        name: 'Ski Tracker',
+        icon: '⛷️',
+        desc: 'Log ski runs by level, track speed, slope time, lift time, weather & snow conditions',
+        file: '/home/paddy/ski-tracker.html',
+        date: '2025-02-24'
+      },
+      {
+        name: 'Spanish Flash Cards',
+        icon: '🇪🇸',
+        desc: 'Learn Spanish with flash cards. Words or sentences, beginner to advanced levels',
+        file: '/home/paddy/spanish-flashcards.html',
+        date: '2025-02-24'
+      }
+    ];
+
+    const grid = document.getElementById('appGrid');
+    
+    apps.forEach(app => {
+      const card = document.createElement('div');
+      card.className = 'app-card';
+      card.innerHTML = `
+        <div class="app-icon">${app.icon}</div>
+        <div class="app-name">${app.name}</div>
+        <div class="app-desc">${app.desc}</div>
+        <div class="app-date">${app.date}</div>
+      `;
+      card.addEventListener('click', () => {
+        if (app.file.startsWith('http')) {
+          window.open(app.file, '_blank');
+        } else {
+          window.location.href = app.file;
+        }
+      });
+      grid.appendChild(card);
+    });
+  </script>
+</body>
+</html>
