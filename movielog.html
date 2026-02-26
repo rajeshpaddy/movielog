@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieLog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0a0a0f;
+            --surface: #151520;
+            --surface-light: #1e1e2e;
+            --primary: #fbbf24;
+            --primary-dim: #b45309;
+            --text: #f5f5f5;
+            --text-dim: #9ca3af;
+            --border: #2d2d3a;
+            --accent: #6366f1;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 240px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .nav-btn {
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: none;
+            background: transparent;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 14px;
+            font-family: inherit;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+        }
+
+        .nav-btn:hover {
+            background: var(--surface-light);
+            color: var(--text);
+        }
+
+        .nav-btn.active {
+            background: rgba(251, 191, 36, 0.15);
+            color: var(--primary);
+        }
+
+        .nav-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .main {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 28px;
+            margin-bottom: 24px;
+        }
+
+        .add-movie-form {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 15px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 15px;
+            font-family: inherit;
+        }
+
+        .search-btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: none;
+            background: var(--primary);
+            color: #000;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .search-btn:hover {
+            background: #fcd34d;
+            transform: translateY(-1px);
+        }
+
+        .search-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .movie-details {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 16px;
+            border: 1px solid var(--border);
+            display: none;
+        }
+
+        .movie-details.visible {
+            display: block;
+        }
+
+        .movie-details-grid {
+            display: flex;
+            gap: 20px;
+        }
+
+        .movie-poster {
+            width: 120px;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .movie-info {
+            flex: 1;
+        }
+
+        .movie-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .movie-meta {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 12px;
+        }
+
+        .movie-plot {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-dim);
+        }
+
+        .rating-select {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .rating-star {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text-dim);
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .rating-star:hover, .rating-star.selected {
+            background: var(--primary);
+            color: #000;
+            border-color: var(--primary);
+        }
+
+        .save-btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 10px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: all 0.2s;
+        }
+
+        .cancel-btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-dim);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 16px;
+            margin-left: 12px;
+            transition: all 0.2s;
+        }
+
+        .cancel-btn:hover {
+            background: var(--surface-light);
+            color: var(--text);
+        }
+
+        .button-group {
+            display: flex;
+        }
+
+        .save-btn:hover {
+            background: #818cf8;
+        }
+
+        .search-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .search-result {
+            background: var(--bg);
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid var(--border);
+        }
+
+        .search-result:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .search-result img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .search-result-info {
+            padding: 10px;
+        }
+
+        .search-result-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .search-result-year {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .movies-list {
+            margin-top: 20px;
+        }
+
+        .movie-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+            display: flex;
+            gap: 16px;
+            transition: all 0.2s;
+        }
+
+        .movie-card:hover {
+            border-color: var(--primary);
+        }
+
+        .movie-card-thumb {
+            width: 80px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .movie-card-info {
+            flex: 1;
+        }
+
+        .movie-card-title {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .movie-card-meta {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+
+        .movie-card-rating {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .star {
+            color: var(--primary);
+        }
+
+        .movie-card-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-dim);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .icon-btn:hover {
+            background: var(--surface-light);
+            color: var(--text);
+        }
+
+        .icon-btn.danger:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .icon-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .month-tile {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .month-tile:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .month-name {
+            font-family: 'Outfit', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .month-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .month-count {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .month-count-label {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .month-avg {
+            text-align: right;
+        }
+
+        .month-avg-rating {
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            justify-content: flex-end;
+        }
+
+        .month-avg-label {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 100;
+            overflow-y: auto;
+            padding: 40px;
+        }
+
+        .modal.visible {
+            display: flex;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 900px;
+            padding: 32px;
+            border: 1px solid var(--border);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-dim);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: var(--surface-light);
+            color: var(--text);
+        }
+
+        .modal-movies {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .modal-movie-card {
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            gap: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .modal-movie-thumb {
+            width: 100px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .modal-movie-info {
+            flex: 1;
+        }
+
+        .modal-movie-title {
+            font-weight: 700;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .modal-movie-meta {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 12px;
+        }
+
+        .modal-movie-plot {
+            font-size: 14px;
+            color: var(--text-dim);
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .modal-links {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-link {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            font-size: 13px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .modal-link:hover {
+            background: var(--surface-light);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .modal-rating {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-dim);
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .app {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                flex-direction: row;
+                align-items: center;
+                padding: 12px 16px;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                overflow-x: auto;
+            }
+
+            .logo {
+                font-size: 18px;
+                margin-bottom: 0;
+                margin-right: 20px;
+                white-space: nowrap;
+            }
+
+            .nav-btn {
+                padding: 8px 12px;
+                font-size: 13px;
+                white-space: nowrap;
+                margin-bottom: 0;
+            }
+
+            .nav-btn svg {
+                width: 16px;
+                height: 16px;
+            }
+
+            .main {
+                padding: 16px;
+            }
+
+            h1 {
+                font-size: 22px;
+                margin-bottom: 16px;
+            }
+
+            .add-movie-form {
+                padding: 16px;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .form-group {
+                flex: none;
+            }
+
+            .search-btn {
+                width: 100%;
+            }
+
+            .movie-details-grid {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .movie-poster {
+                width: 140px;
+                height: 210px;
+            }
+
+            .rating-select {
+                justify-content: center;
+            }
+
+            .movie-card {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .movie-card-thumb {
+                width: 100px;
+                height: 150px;
+            }
+
+            .movie-card-actions {
+                flex-direction: row;
+                justify-content: center;
+            }
+
+            .report-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .month-tile {
+                padding: 20px;
+            }
+
+            .month-count {
+                font-size: 28px;
+            }
+
+            .month-avg-rating {
+                font-size: 16px;
+            }
+
+            .modal {
+                padding: 16px;
+            }
+
+            .modal-content {
+                padding: 20px;
+            }
+
+            .modal-movie-card {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .modal-movie-thumb {
+                width: 120px;
+                height: 180px;
+            }
+
+            .modal-links {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .search-results {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .search-result img {
+                height: 150px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo svg {
+                width: 22px;
+                height: 22px;
+            }
+
+            .logo {
+                font-size: 16px;
+            }
+
+            .sidebar {
+                padding: 10px 12px;
+            }
+
+            .search-results {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+
+            .search-result img {
+                height: 120px;
+            }
+
+            .search-result-title {
+                font-size: 12px;
+            }
+
+            .rating-star {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="logo">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/>
+                </svg>
+                MovieLog
+            </div>
+
+            <button class="nav-btn active" data-tab="log">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                Log Movies
+            </button>
+
+            <button class="nav-btn" data-tab="reports">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+                Reports
+            </button>
+        </aside>
+
+        <main class="main">
+            <div class="tab-content active" id="logTab">
+                <h1>Log a Movie</h1>
+
+                <div class="add-movie-form">
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 2;">
+                            <label>Movie Name</label>
+                            <input type="text" id="movieName" placeholder="Search for a movie..." list="movieSuggestions">
+                            <datalist id="movieSuggestions"></datalist>
+                        </div>
+                        <div class="form-group">
+                            <label>Date Watched</label>
+                            <input type="date" id="watchDate">
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: flex-end;">
+                            <button class="search-btn" id="searchBtn">Search</button>
+                            <button class="search-btn" id="manualBtn" style="background: var(--surface-light); margin-left: 8px;">Manual</button>
+                        </div>
+                    </div>
+
+                    <div class="movie-details" id="movieDetails">
+                        <div class="movie-details-grid">
+                            <img class="movie-poster" id="moviePoster" src="" alt="Poster">
+                            <div class="movie-info">
+                                <div class="movie-title" id="movieTitle"></div>
+                                <div class="movie-meta" id="movieMeta"></div>
+                                <div class="movie-plot" id="moviePlot"></div>
+                                <div class="rating-select" id="ratingSelect"></div>
+                            </div>
+                        </div>
+                                                <div class="button-group">
+                            <button class="save-btn" id="saveBtn">Save to Library</button>
+                            <button class="cancel-btn" id="cancelBtn">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 style="font-size: 18px; color: var(--text-dim); margin-bottom: 16px;">Watched Movies</h2>
+                <div class="movies-list" id="moviesList"></div>
+            </div>
+
+            <div class="tab-content" id="reportsTab">
+                <h1>Monthly Reports</h1>
+                <div class="report-grid" id="reportGrid"></div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal" id="monthModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle"></div>
+                <button class="modal-close" id="modalClose">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-movies" id="modalMovies"></div>
+        </div>
+    </div>
+
+    <script>
+        let movies = JSON.parse(localStorage.getItem('movielog_movies') || '[]');
+        let selectedRating = 0;
+        let selectedMovie = null;
+        let autocompleteTimeout = null;
+
+        const movieNameInput = document.getElementById('movieName');
+        const watchDateInput = document.getElementById('watchDate');
+        const searchBtn = document.getElementById('searchBtn');
+        const movieDetails = document.getElementById('movieDetails');
+        const moviePoster = document.getElementById('moviePoster');
+        const movieTitle = document.getElementById('movieTitle');
+        const movieMeta = document.getElementById('movieMeta');
+        const moviePlot = document.getElementById('moviePlot');
+        const moviesList = document.getElementById('moviesList');
+        const reportGrid = document.getElementById('reportGrid');
+        const monthModal = document.getElementById('monthModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMovies = document.getElementById('modalMovies');
+        const modalClose = document.getElementById('modalClose');
+
+        watchDateInput.valueAsDate = new Date();
+
+        function saveMovies() {
+            localStorage.setItem('movielog_movies', JSON.stringify(movies));
+        }
+
+        async function fetchAutocompleteSuggestions(query) {
+            if (!query || query.length < 2) return;
+            
+            try {
+                const res = await fetch(`https://imdb.iamidiotareyoutoo.com/search?q=${encodeURIComponent(query)}`);
+                const data = await res.json();
+                
+                if (data.ok && data.description && data.description.length > 0) {
+                    const dataList = document.getElementById('movieSuggestions');
+                    const savedTitles = [...new Set(movies.map(m => m.title))].sort();
+                    const apiTitles = data.description.slice(0, 6).map(m => m['#TITLE']);
+                    
+                    const allTitles = [...new Set([...savedTitles, ...apiTitles])];
+                    dataList.innerHTML = allTitles.map(title => `<option value="${title}">`).join('');
+                }
+            } catch (err) {
+                console.error('Autocomplete error:', err);
+            }
+        }
+
+        function handleAutocompleteInput(e) {
+            clearTimeout(autocompleteTimeout);
+            autocompleteTimeout = setTimeout(() => {
+                fetchAutocompleteSuggestions(e.target.value.trim());
+            }, 300);
+        }
+
+        function renderRatingSelect() {
+            const ratingEl = document.getElementById('ratingSelect');
+            if (!ratingEl) return;
+            ratingEl.innerHTML = '';
+            for (let i = 1; i <= 10; i++) {
+                const star = document.createElement('button');
+                star.className = 'rating-star' + (i <= selectedRating ? ' selected' : '');
+                star.textContent = i;
+                star.addEventListener('click', () => {
+                    selectedRating = i;
+                    renderRatingSelect();
+                });
+                ratingEl.appendChild(star);
+            }
+        }
+
+        async function searchMovie() {
+            const query = movieNameInput.value.trim();
+            if (!query) return;
+
+            searchBtn.disabled = true;
+            searchBtn.innerHTML = '<div class="spinner"></div> Searching...';
+
+            try {
+                const res = await fetch(`https://imdb.iamidiotareyoutoo.com/search?q=${encodeURIComponent(query)}`);
+                const data = await res.json();
+                
+                if (data.ok && data.description && data.description.length > 0) {
+                    showMovieResults(data.description.slice(0, 8));
+                } else {
+                    showManualEntry(query);
+                }
+            } catch (err) {
+                console.error(err);
+                showManualEntry(query);
+            }
+
+            searchBtn.disabled = false;
+            searchBtn.textContent = 'Search';
+        }
+
+        function showMovieResults(results) {
+            const resultsHtml = results.map((m, i) => `
+                <div class="search-result" onclick="selectSearchResult(${i})" data-index="${i}">
+                    <img src="${m['#IMG_POSTER'] || ''}" alt="${m['#TITLE']}">
+                    <div class="search-result-info">
+                        <div class="search-result-title">${m['#TITLE']}</div>
+                        <div class="search-result-year">${m['#YEAR']}</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            movieDetails.innerHTML = `
+                <button class="cancel-btn" style="margin-bottom:12px;width:auto;padding:8px 16px;" onclick="clearEntry()">✕ Clear</button>
+                <div class="search-results">${resultsHtml}</div>
+            `;
+            movieDetails.classList.add('visible');
+            
+            window._searchResults = results;
+        }
+
+        function selectSearchResult(index) {
+            const movie = window._searchResults[index];
+            showMovieDetails({
+                imdbId: movie['#IMDB_ID'],
+                title: movie['#TITLE'],
+                year: movie['#YEAR'],
+                poster: movie['#IMG_POSTER']
+            });
+        }
+
+        function showManualEntry(query) {
+            const title = query;
+            selectedMovie = {
+                imdbId: '',
+                title: title,
+                year: new Date().getFullYear(),
+                poster: ''
+            };
+
+            movieDetails.innerHTML = `
+                <div class="movie-details-grid">
+                    <img class="movie-poster" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='180' viewBox='0 0 120 180'><rect fill='%232d2d3a' width='120' height='180'/><text fill='%23666' x='60' y='90' text-anchor='middle' font-size='12'>No Poster</text></svg>" alt="Poster">
+                    <div class="movie-info">
+                        <input type="text" id="manualTitle" value="${title}" style="background:transparent;border:1px solid var(--border);padding:8px;border-radius:6px;color:var(--text);width:100%;font-size:18px;font-weight:700;margin-bottom:8px;">
+                        <input type="text" id="manualYear" placeholder="Year" value="${new Date().getFullYear()}" style="background:transparent;border:1px solid var(--border);padding:8px;border-radius:6px;color:var(--text);width:100px;font-size:14px;margin-bottom:12px;">
+                        <div class="movie-plot">Enter movie details manually</div>
+                        <div class="rating-select" id="ratingSelect"></div>
+                    </div>
+                </div>
+                                        <div class="button-group">
+                            <button class="save-btn" id="saveBtn">Save to Library</button>
+                            <button class="cancel-btn" id="cancelBtn">Cancel</button>
+                        </div>
+            `;
+            
+            movieDetails.classList.add('visible');
+            selectedRating = 0;
+            renderRatingSelect();
+            
+            document.getElementById('saveBtn').addEventListener('click', saveMovie);
+            document.getElementById('cancelBtn').addEventListener('click', clearEntry);
+        }
+
+        function showMovieDetails(movie) {
+            selectedMovie = {
+                imdbId: movie.imdbId,
+                title: movie.title,
+                year: movie.year,
+                poster: movie.poster
+            };
+
+            movieDetails.innerHTML = `
+                <div class="movie-details-grid">
+                    <img class="movie-poster" src="${selectedMovie.poster || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="180" viewBox="0 0 120 180"><rect fill="%232d2d3a" width="120" height="180"/><text fill="%23666" x="60" y="90" text-anchor="middle" font-size="12">No Poster</text></svg>'}" alt="Poster">
+                    <div class="movie-info">
+                        <div class="movie-title">${selectedMovie.title}</div>
+                        <div class="movie-meta">${selectedMovie.year || 'N/A'}</div>
+                        <div class="movie-plot">Add your rating and save to library.</div>
+                        <div class="rating-select" id="ratingSelect"></div>
+                    </div>
+                </div>
+                                        <div class="button-group">
+                            <button class="save-btn" id="saveBtn">Save to Library</button>
+                            <button class="cancel-btn" id="cancelBtn">Cancel</button>
+                        </div>
+            `;
+
+            movieDetails.classList.add('visible');
+            selectedRating = 0;
+            renderRatingSelect();
+            
+            document.getElementById('saveBtn').addEventListener('click', saveMovie);
+            document.getElementById('cancelBtn').addEventListener('click', clearEntry);
+        }
+
+        function saveMovie() {
+            if (!selectedMovie) return;
+
+            let title = selectedMovie.title;
+            let year = selectedMovie.year;
+
+            const manualTitle = document.getElementById('manualTitle');
+            const manualYear = document.getElementById('manualYear');
+            if (manualTitle) title = manualTitle.value;
+            if (manualYear && manualYear.value) year = manualYear.value;
+
+            const movie = {
+                id: Date.now(),
+                imdbId: selectedMovie.imdbId,
+                title: title,
+                year: year,
+                poster: selectedMovie.poster,
+                dateWatched: watchDateInput.value,
+                rating: selectedRating
+            };
+
+            movies.push(movie);
+            saveMovies();
+            
+            movieDetails.classList.remove('visible');
+            movieNameInput.value = '';
+            selectedMovie = null;
+            selectedRating = 0;
+            
+            renderMoviesList();
+        }
+
+        function clearEntry() {
+            movieDetails.classList.remove('visible');
+            movieDetails.innerHTML = '';
+            movieNameInput.value = '';
+            selectedMovie = null;
+            selectedRating = 0;
+        }
+
+        function deleteMovie(id) {
+            if (confirm('Delete this movie from your log?')) {
+                movies = movies.filter(m => m.id !== id);
+                saveMovies();
+        renderMoviesList();
+        updateAutocomplete();
+                renderReports();
+            }
+        }
+
+        function renderMoviesList() {
+            const sorted = [...movies].sort((a, b) => new Date(b.dateWatched) - new Date(a.dateWatched));
+            
+            if (sorted.length === 0) {
+                moviesList.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1-1.99.1 0.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/>
+                        </svg>
+                        <p>No movies logged yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            moviesList.innerHTML = sorted.map(m => `
+                <div class="movie-card">
+                    <img class="movie-card-thumb" src="${m.poster || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%22120%22><rect fill=%22%232d2d3a%22 width=%2280%22 height=%22120%22/><text fill=%22%23666%22 x=%2240%22 y=%2260%22 text-anchor=%22middle%22 font-size=%2210%22>No Poster</text></svg>'}" alt="${m.title}">
+                    <div class="movie-card-info">
+                        <div class="movie-card-title">${m.title}</div>
+                        <div class="movie-card-meta">${m.year || 'N/A'} • ${new Date(m.dateWatched).toLocaleDateString()}</div>
+                        <div class="movie-card-rating">
+                            ${'<span class="star">★</span>'.repeat(m.rating || 0)}<span style="color: var(--text-dim)">${m.rating || 0}/10</span>
+                        </div>
+                    </div>
+                    <div class="movie-card-actions">
+                        <button class="icon-btn danger" onclick="deleteMovie(${m.id})" title="Delete">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            updateAutocomplete();
+        }
+
+        function updateAutocomplete() {
+            const dataList = document.getElementById('movieSuggestions');
+            const uniqueTitles = [...new Set(movies.map(m => m.title))].sort();
+            const existingValues = new Set(Array.from(dataList.options).map(o => o.value));
+            
+            uniqueTitles.forEach(title => {
+                if (!existingValues.has(title)) {
+                    const option = document.createElement('option');
+                    option.value = title;
+                    dataList.appendChild(option);
+                }
+            });
+        }
+
+        function renderReports() {
+            const months = {};
+            
+            movies.forEach(m => {
+                const date = new Date(m.dateWatched);
+                const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                const label = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                
+                if (!months[key]) {
+                    months[key] = { label, movies: [], totalRating: 0 };
+                }
+                months[key].movies.push(m);
+                months[key].totalRating += m.rating || 0;
+            });
+
+            const sortedKeys = Object.keys(months).sort((a, b) => b.localeCompare(a));
+
+            if (sortedKeys.length === 0) {
+                reportGrid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <p>No data to show</p>
+                    </div>
+                `;
+                return;
+            }
+
+            reportGrid.innerHTML = sortedKeys.map(key => {
+                const m = months[key];
+                const count = m.movies.length;
+                const avg = count > 0 ? (m.totalRating / count).toFixed(1) : 0;
+                return `
+                    <div class="month-tile" onclick="showMonthModal('${key}')">
+                        <div class="month-name">${m.label}</div>
+                        <div class="month-stats">
+                            <div>
+                                <div class="month-count">${count}</div>
+                                <div class="month-count-label">movies</div>
+                            </div>
+                            <div class="month-avg">
+                                <div class="month-avg-rating"><span class="star">★</span> ${avg}</div>
+                                <div class="month-avg-label">avg rating</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showMonthModal(key) {
+            const monthMovies = movies.filter(m => {
+                const date = new Date(m.dateWatched);
+                return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}` === key;
+            }).sort((a, b) => new Date(b.dateWatched) - new Date(a.dateWatched));
+
+            const date = new Date(key + '-01');
+            modalTitle.textContent = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+            modalMovies.innerHTML = monthMovies.map(m => {
+                const imdbUrl = `https://www.imdb.com/title/${m.imdbId}/`;
+                const wikiSearch = `https://en.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(m.title)}`;
+                return `
+                    <div class="modal-movie-card">
+                        <img class="modal-movie-thumb" src="${m.poster || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22150%22><rect fill=%22%232d2d3a%22 width=%22100%22 height=%22150%22/><text fill=%22%23666%22 x=%2250%22 y=%2275%22 text-anchor=%22middle%22 font-size=%2210%22>No Poster</text></svg>'}" alt="${m.title}">
+                        <div class="modal-movie-info">
+                            <div class="modal-movie-title">${m.title}</div>
+                            <div class="modal-movie-meta">${m.year || 'N/A'} • Watched: ${new Date(m.dateWatched).toLocaleDateString()}</div>
+                            <div class="modal-movie-plot">${m.rating ? `Your rating: ${m.rating}/10` : 'No rating'}</div>
+                            <div class="modal-links">
+                                <a class="modal-link" href="${imdbUrl}" target="_blank">IMDB</a>
+                                <a class="modal-link" href="${wikiSearch}" target="_blank">Wikipedia</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            monthModal.classList.add('visible');
+        }
+
+        searchBtn.addEventListener('click', searchMovie);
+        
+        document.getElementById('manualBtn').addEventListener('click', () => {
+            showManualEntry(movieNameInput.value.trim() || 'New Movie');
+        });
+
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab + 'Tab').classList.add('active');
+                
+                if (btn.dataset.tab === 'reports') {
+                    renderReports();
+                }
+            });
+        });
+
+        modalClose.addEventListener('click', () => monthModal.classList.remove('visible'));
+        monthModal.addEventListener('click', (e) => {
+            if (e.target === monthModal) monthModal.classList.remove('visible');
+        });
+
+        movieNameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchMovie();
+        });
+
+        movieNameInput.addEventListener('input', handleAutocompleteInput);
+
+        renderMoviesList();
+    </script>
+</body>
+</html>
