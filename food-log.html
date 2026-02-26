@@ -42,6 +42,7 @@
 
     .detected-foods { margin-top: 8px; font-size: 12px; color: #888; }
     .detected-foods span { background: #0f3460; padding: 2px 6px; border-radius: 4px; margin-right: 4px; }
+    .detected-foods .modifier { background: #1a4a2e; color: #00ff88; }
     .save-indicator { position: fixed; bottom: 20px; right: 20px; background: #00ff88; color: #000; padding: 8px 16px; border-radius: 8px; font-size: 14px; opacity: 0; transition: opacity 0.3s; }
     .save-indicator.show { opacity: 1; }
   </style>
@@ -119,6 +120,42 @@
       'dhal': 230, 'sambar': 120, 'rasam': 80, 'pickle': 20, 'chutney': 30
     };
 
+    const modifierPatterns = [
+      { pattern: 'no sugar', reduction: 50, label: 'no sugar' },
+      { pattern: 'less sugar', reduction: 25, label: 'less sugar' },
+      { pattern: 'no butter', reduction: 100, label: 'no butter' },
+      { pattern: 'light butter', reduction: 50, label: 'light butter' },
+      { pattern: 'no oil', reduction: 120, label: 'no oil' },
+      { pattern: 'less oil', reduction: 60, label: 'less oil' },
+      { pattern: 'no cheese', reduction: 100, label: 'no cheese' },
+      { pattern: 'no cream', reduction: 80, label: 'no cream' },
+      { pattern: 'no mayo', reduction: 90, label: 'no mayo' },
+      { pattern: 'light mayo', reduction: 45, label: 'light mayo' },
+      { pattern: 'no dressing', reduction: 120, label: 'no dressing' },
+      { pattern: 'no nuts', reduction: 80, label: 'no nuts' },
+      { pattern: 'no chocolate', reduction: 150, label: 'no chocolate' },
+      { pattern: 'without sugar', reduction: 50, label: 'no sugar' },
+      { pattern: 'without butter', reduction: 100, label: 'no butter' },
+      { pattern: 'without cheese', reduction: 100, label: 'no cheese' },
+      { pattern: 'without cream', reduction: 80, label: 'no cream' },
+      { pattern: 'grilled', reduction: 100, label: 'grilled' },
+      { pattern: 'baked', reduction: 80, label: 'baked' },
+      { pattern: 'steamed', reduction: 40, label: 'steamed' },
+      { pattern: 'boiled', reduction: 30, label: 'boiled' },
+      { pattern: 'diet soda', reduction: 140, label: 'diet' },
+      { pattern: 'low fat', reduction: 50, label: 'low fat' },
+      { pattern: 'skim', reduction: 60, label: 'skim' },
+      { pattern: 'sugar free', reduction: 50, label: 'sugar free' },
+      { pattern: 'no pickle', reduction: 20, label: 'no pickle' },
+      { pattern: 'no chutney', reduction: 30, label: 'no chutney' },
+      { pattern: 'no papad', reduction: 30, label: 'no papad' },
+      { pattern: 'without onion', reduction: 40, label: 'no onion' },
+      { pattern: 'without garlic', reduction: 10, label: 'no garlic' },
+      { pattern: 'no rice', reduction: 206, label: 'no rice' },
+      { pattern: 'no roti', reduction: 120, label: 'no roti' },
+      { pattern: 'no bread', reduction: 79, label: 'no bread' }
+    ];
+
     const exerciseDatabase = {
       'running': 10, 'jogging': 8, 'walk': 4, 'walking': 4, 'slow walk': 3,
       'cycling': 8, 'bike': 8, 'biking': 8, 'spin': 10,
@@ -156,7 +193,7 @@
         row.className = 'food-row';
         row.innerHTML = `
           <span class="food-label">${period}</span>
-          <textarea id="food${index}" placeholder="Enter food items (e.g., 2 eggs, 1 bread, 1 cup rice)..."></textarea>
+          <textarea id="food${index}" placeholder="Enter food items (e.g., 2 eggs, no sugar, light butter)..."></textarea>
           <div class="detected-foods" id="detected${index}"></div>
         `;
         grid.appendChild(row);
@@ -184,7 +221,15 @@
       const words = lower.split(/\s+/);
       let total = 0;
       let detected = [];
+      let modifiers = [];
       let quantity = 1;
+
+      for (const mod of modifierPatterns) {
+        if (lower.includes(mod.pattern)) {
+          total -= mod.reduction;
+          modifiers.push(`-${mod.reduction} (${mod.label})`);
+        }
+      }
 
       for (let i = 0; i < words.length; i++) {
         const word = words[i];
@@ -218,21 +263,24 @@
         }
       }
 
-      return { total, detected };
+      return { total, detected, modifiers };
     }
 
     function calculateFoodCalories(index) {
       const text = document.getElementById(`food${index}`).value;
-      const { total, detected } = parseFood(text);
+      const { total, detected, modifiers } = parseFood(text);
       
       document.getElementById(`cal${index}`).textContent = total;
 
       const detectedDiv = document.getElementById(`detected${index}`);
+      let html = '';
       if (detected.length > 0) {
-        detectedDiv.innerHTML = 'Detected: ' + detected.map(d => `<span>${d}</span>`).join('');
-      } else {
-        detectedDiv.innerHTML = '';
+        html += detected.map(d => `<span>${d}</span>`).join('');
       }
+      if (modifiers.length > 0) {
+        html += modifiers.map(m => `<span class="modifier">${m}</span>`).join('');
+      }
+      detectedDiv.innerHTML = html;
 
       updateTotals();
       saveData();
