@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Designer App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .input-section {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .calorie-input {
+            margin-bottom: 20px;
+        }
+
+        .calorie-input label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .calorie-input input {
+            width: 100%;
+            max-width: 200px;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .calorie-input input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .ingredient-input {
+            position: relative;
+        }
+
+        .ingredient-input label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .ingredient-input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        .ingredient-input input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .ingredient-input input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .ingredient-input button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .ingredient-input button:hover {
+            background: #5568d3;
+        }
+
+        .suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 80px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+        }
+
+        .suggestions.active {
+            display: block;
+        }
+
+        .suggestion-item {
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .suggestion-item:hover {
+            background: #f5f5f5;
+        }
+
+        .ingredients-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .ingredient-tag {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .ingredient-tag button {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        .ingredient-tag button:hover {
+            color: #e53e3e;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.active {
+            display: block;
+        }
+
+        .calorie-summary {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .calorie-summary h3 {
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        .calorie-bars {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .calorie-bar {
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+        }
+
+        .calorie-bar-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .calorie-bar-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .calorie-bar.breakfast .calorie-bar-value { color: #f6ad55; }
+        .calorie-bar.lunch .calorie-bar-value { color: #68d391; }
+        .calorie-bar.dinner .calorie-bar-value { color: #fc8181; }
+
+        .meals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+        }
+
+        .meal-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .meal-header {
+            padding: 16px 20px;
+            color: white;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .meal-header.breakfast { background: #f6ad55; }
+        .meal-header.lunch { background: #68d391; }
+        .meal-header.dinner { background: #fc8181; }
+
+        .meal-calories {
+            padding: 12px 20px;
+            background: #f9f9f9;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .meal-content {
+            padding: 20px;
+        }
+
+        .recipe-item {
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .recipe-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .recipe-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .recipe-ingredients {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .ingredient-match {
+            display: inline-block;
+            background: #c6f6d5;
+            color: #22543d;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-right: 4px;
+            margin-bottom: 4px;
+        }
+
+        .ingredient-missing {
+            display: inline-block;
+            background: #fed7d7;
+            color: #742a2a;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-right: 4px;
+            margin-bottom: 4px;
+        }
+
+        .recipe-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .recipe-btn:hover {
+            background: #5568d3;
+        }
+
+        .no-recipes {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            position: sticky;
+            top: 0;
+            background: white;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #333;
+        }
+
+        .modal-close {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .recipe-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .recipe-section {
+            margin-bottom: 20px;
+        }
+
+        .recipe-section h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .recipe-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .recipe-section li {
+            padding: 6px 0;
+            border-bottom: 1px solid #f0f0f0;
+            color: #555;
+        }
+
+        .recipe-section li:last-child {
+            border-bottom: none;
+        }
+
+        .instructions {
+            white-space: pre-line;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .meals-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .ingredient-input-wrapper {
+                flex-direction: column;
+            }
+
+            .suggestions {
+                right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Food Designer App</h1>
+            <p>Enter your daily calorie needs and ingredients to get personalized meal suggestions</p>
+        </div>
+
+        <div class="input-section">
+            <div class="calorie-input">
+                <label for="calories">Daily Calorie Goal</label>
+                <input type="number" id="calories" placeholder="e.g., 2000" min="500" max="5000">
+            </div>
+
+            <div class="ingredient-input">
+                <label>Your Ingredients</label>
+                <div class="ingredient-input-wrapper">
+                    <input type="text" id="ingredientInput" placeholder="Type an ingredient...">
+                    <button id="addIngredient">Add</button>
+                </div>
+                <div class="suggestions" id="suggestions"></div>
+            </div>
+
+            <div class="ingredients-list" id="ingredientsList"></div>
+
+            <button class="generate-btn" id="generateBtn">Generate Meal Plan</button>
+        </div>
+
+        <div class="results" id="results">
+            <div class="calorie-summary">
+                <h3>Daily Calorie Breakdown</h3>
+                <div class="calorie-bars">
+                    <div class="calorie-bar breakfast">
+                        <div class="calorie-bar-label">Breakfast</div>
+                        <div class="calorie-bar-value" id="breakfastCalories">0</div>
+                    </div>
+                    <div class="calorie-bar lunch">
+                        <div class="calorie-bar-label">Lunch</div>
+                        <div class="calorie-bar-value" id="lunchCalories">0</div>
+                    </div>
+                    <div class="calorie-bar dinner">
+                        <div class="calorie-bar-label">Dinner</div>
+                        <div class="calorie-bar-value" id="dinnerCalories">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="meals-grid">
+                <div class="meal-card">
+                    <div class="meal-header breakfast">Breakfast</div>
+                    <div class="meal-calories" id="breakfastCal">0 calories</div>
+                    <div class="meal-content" id="breakfastRecipes"></div>
+                </div>
+
+                <div class="meal-card">
+                    <div class="meal-header lunch">Lunch</div>
+                    <div class="meal-calories" id="lunchCal">0 calories</div>
+                    <div class="meal-content" id="lunchRecipes"></div>
+                </div>
+
+                <div class="meal-card">
+                    <div class="meal-header dinner">Dinner</div>
+                    <div class="meal-calories" id="dinnerCal">0 calories</div>
+                    <div class="meal-content" id="dinnerRecipes"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="recipeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Recipe</h2>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading recipe...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const commonIngredients = [
+            'chicken', 'beef', 'pork', 'fish', 'salmon', 'shrimp', 'tuna', 'egg',
+            'rice', 'pasta', 'bread', 'noodles', 'potato', 'tomato', 'onion',
+            'garlic', 'carrot', 'broccoli', 'spinach', 'lettuce', 'cucumber',
+            'pepper', 'mushroom', 'zucchini', 'corn', 'peas', 'beans', 'lentils',
+            'cheese', 'milk', 'butter', 'cream', 'yogurt', 'cream cheese',
+            'chicken breast', 'ground beef', 'bacon', 'ham', 'sausage',
+            'apple', 'banana', 'orange', 'lemon', 'lime', 'avocado',
+            'olive oil', 'vegetable oil', 'soy sauce', 'vinegar', 'honey',
+            'salt', 'pepper', 'basil', 'oregano', 'thyme', 'rosemary', 'cumin',
+            'paprika', 'cinnamon', 'vanilla', 'flour', 'sugar', 'baking powder',
+            'oats', 'cereal', 'pancake', 'maple syrup', 'jam', 'peanut butter',
+            'tofu', 'tempeh', 'quinoa', 'couscous', 'tortilla', 'wrap'
+        ];
+
+        let userIngredients = [];
+        let allRecipes = {};
+
+        const ingredientInput = document.getElementById('ingredientInput');
+        const suggestionsEl = document.getElementById('suggestions');
+        const ingredientsList = document.getElementById('ingredientsList');
+        const generateBtn = document.getElementById('generateBtn');
+        const resultsEl = document.getElementById('results');
+        const modal = document.getElementById('recipeModal');
+        const modalBody = document.getElementById('modalBody');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalClose = document.getElementById('modalClose');
+
+        ingredientInput.addEventListener('input', (e) => {
+            const value = e.target.value.toLowerCase().trim();
+            if (value.length < 2) {
+                suggestionsEl.classList.remove('active');
+                return;
+            }
+
+            const matches = commonIngredients.filter(ing => 
+                ing.includes(value) && !userIngredients.includes(ing)
+            ).slice(0, 8);
+
+            if (matches.length > 0) {
+                suggestionsEl.innerHTML = matches.map(ing => 
+                    `<div class="suggestion-item" data-ingredient="${ing}">${ing}</div>`
+                ).join('');
+                suggestionsEl.classList.add('active');
+            } else {
+                suggestionsEl.classList.remove('active');
+            }
+        });
+
+        suggestionsEl.addEventListener('click', (e) => {
+            if (e.target.classList.contains('suggestion-item')) {
+                const ingredient = e.target.dataset.ingredient;
+                addIngredient(ingredient);
+            }
+        });
+
+        document.getElementById('addIngredient').addEventListener('click', () => {
+            const value = ingredientInput.value.toLowerCase().trim();
+            if (value && !userIngredients.includes(value)) {
+                addIngredient(value);
+            }
+        });
+
+        ingredientInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const value = ingredientInput.value.toLowerCase().trim();
+                if (value && !userIngredients.includes(value)) {
+                    addIngredient(value);
+                }
+            }
+        });
+
+        function addIngredient(ingredient) {
+            userIngredients.push(ingredient);
+            ingredientInput.value = '';
+            suggestionsEl.classList.remove('active');
+            renderIngredients();
+            saveIngredients();
+        }
+
+        function removeIngredient(ingredient) {
+            userIngredients = userIngredients.filter(i => i !== ingredient);
+            renderIngredients();
+            saveIngredients();
+        }
+
+        function renderIngredients() {
+            ingredientsList.innerHTML = userIngredients.map(ing => `
+                <div class="ingredient-tag">
+                    <span>${ing}</span>
+                    <button onclick="removeIngredient('${ing}')">&times;</button>
+                </div>
+            `).join('');
+        }
+
+        function saveIngredients() {
+            const calories = document.getElementById('calories').value;
+            localStorage.setItem('foodDesignerCalories', calories);
+            localStorage.setItem('foodDesignerIngredients', JSON.stringify(userIngredients));
+        }
+
+        function loadIngredients() {
+            const calories = localStorage.getItem('foodDesignerCalories');
+            const ingredients = localStorage.getItem('foodDesignerIngredients');
+            
+            if (calories) {
+                document.getElementById('calories').value = calories;
+            }
+            if (ingredients) {
+                userIngredients = JSON.parse(ingredients);
+                renderIngredients();
+            }
+        }
+
+        generateBtn.addEventListener('click', generateMealPlan);
+
+        async function generateMealPlan() {
+            const calories = parseInt(document.getElementById('calories').value);
+            
+            if (!calories || calories < 500) {
+                alert('Please enter a valid calorie goal (at least 500)');
+                return;
+            }
+
+            if (userIngredients.length === 0) {
+                alert('Please add at least one ingredient');
+                return;
+            }
+
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Searching for recipes...';
+            resultsEl.classList.add('active');
+
+            const breakfastCal = Math.round(calories * 0.25);
+            const lunchCal = Math.round(calories * 0.35);
+            const dinnerCal = Math.round(calories * 0.40);
+
+            document.getElementById('breakfastCalories').textContent = breakfastCal;
+            document.getElementById('lunchCalories').textContent = lunchCal;
+            document.getElementById('dinnerCalories').textContent = dinnerCal;
+            document.getElementById('breakfastCal').textContent = `${breakfastCal} calories`;
+            document.getElementById('lunchCal').textContent = `${lunchCal} calories`;
+            document.getElementById('dinnerCal').textContent = `${dinnerCal} calories`;
+
+            document.getElementById('breakfastRecipes').innerHTML = '<div class="loading"><div class="spinner"></div><p>Finding recipes...</p></div>';
+            document.getElementById('lunchRecipes').innerHTML = '<div class="loading"><div class="spinner"></div><p>Finding recipes...</p></div>';
+            document.getElementById('dinnerRecipes').innerHTML = '<div class="loading"><div class="spinner"></div><p>Finding recipes...</p></div>';
+
+            try {
+                const [breakfastRecipes, lunchRecipes, dinnerRecipes] = await Promise.all([
+                    findRecipes(userIngredients, 'breakfast'),
+                    findRecipes(userIngredients, 'lunch'),
+                    findRecipes(userIngredients, 'dinner')
+                ]);
+
+                renderMealRecipes('breakfastRecipes', breakfastRecipes, breakfastCal);
+                renderMealRecipes('lunchRecipes', lunchRecipes, lunchCal);
+                renderMealRecipes('dinnerRecipes', dinnerRecipes, dinnerCal);
+
+            } catch (error) {
+                console.error('Error generating meal plan:', error);
+                document.getElementById('breakfastRecipes').innerHTML = '<div class="no-recipes">Error finding recipes. Please try again.</div>';
+                document.getElementById('lunchRecipes').innerHTML = '<div class="no-recipes">Error finding recipes. Please try again.</div>';
+                document.getElementById('dinnerRecipes').innerHTML = '<div class="no-recipes">Error finding recipes. Please try again.</div>';
+            }
+
+            generateBtn.disabled = false;
+            generateBtn.textContent = 'Generate Meal Plan';
+        }
+
+        async function findRecipes(ingredients, mealType) {
+            const ingredient = ingredients[Math.floor(Math.random() * ingredients.length)];
+            
+            let category = 'Seafood';
+            if (mealType === 'breakfast') {
+                category = ['Breakfast', 'Starter'][Math.floor(Math.random() * 2)];
+            } else if (mealType === 'lunch') {
+                category = ['Beef', 'Chicken', 'Vegetarian', 'Seafood'][Math.floor(Math.random() * 4)];
+            } else {
+                category = ['Beef', 'Chicken', 'Lamb', 'Pork', 'Seafood'][Math.floor(Math.random() * 5)];
+            }
+
+            try {
+                const response = await fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?c=${category}`);
+                const data = await response.json();
+
+                if (!data.meals) return [];
+
+                const shuffled = data.meals.sort(() => Math.random() - 0.5);
+                const selected = shuffled.slice(0, 5);
+
+                const recipesWithDetails = await Promise.all(
+                    selected.map(async meal => {
+                        const detailResponse = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${meal.idMeal}`);
+                        const detailData = await detailResponse.json();
+                        return detailData.meals ? detailData.meals[0] : null;
+                    })
+                );
+
+                return recipesWithDetails
+                    .filter(r => r !== null)
+                    .map(recipe => {
+                        const recipeIngredients = [];
+                        for (let i = 1; i <= 20; i++) {
+                            const ingredient = recipe[`strIngredient${i}`];
+                            const measure = recipe[`strMeasure${i}`];
+                            if (ingredient && ingredient.trim()) {
+                                recipeIngredients.push({
+                                    name: ingredient.toLowerCase().trim(),
+                                    measure: measure ? measure.trim() : ''
+                                });
+                            }
+                        }
+
+                        const matchedIngredients = recipeIngredients.filter(ri => 
+                            ingredients.some(ui => ri.name.includes(ui) || ui.includes(ri.name))
+                        );
+
+                        const missingIngredients = recipeIngredients.filter(ri => 
+                            !ingredients.some(ui => ri.name.includes(ui) || ui.includes(ri.name))
+                        );
+
+                        return {
+                            id: recipe.idMeal,
+                            name: recipe.strMeal,
+                            image: recipe.strMealThumb,
+                            ingredients: recipeIngredients,
+                            matched: matchedIngredients,
+                            missing: missingIngredients,
+                            instructions: recipe.strInstructions,
+                            youtube: recipe.strYoutube,
+                            source: recipe.strSource
+                        };
+                    })
+                    .filter(r => r.matched.length > 0)
+                    .sort((a, b) => b.matched.length - a.matched.length)
+                    .slice(0, 3);
+            } catch (error) {
+                console.error('Error fetching recipes:', error);
+                return [];
+            }
+        }
+
+        function renderMealRecipes(elementId, recipes, targetCalories) {
+            const container = document.getElementById(elementId);
+            
+            if (recipes.length === 0) {
+                container.innerHTML = '<div class="no-recipes">No matching recipes found. Try adding more ingredients!</div>';
+                return;
+            }
+
+            container.innerHTML = recipes.map((recipe, index) => {
+                const estimatedCalories = estimateCalories(recipe, targetCalories);
+                
+                return `
+                    <div class="recipe-item">
+                        <div class="recipe-name">${recipe.name}</div>
+                        <div class="recipe-ingredients">
+                            <strong>You have:</strong><br>
+                            ${recipe.matched.map(m => `<span class="ingredient-match">${m.name}</span>`).join('')}
+                            ${recipe.missing.length > 0 ? `<br><strong>Missing:</strong><br>${recipe.missing.slice(0, 5).map(m => `<span class="ingredient-missing">${m.name}</span>`).join('')}${recipe.missing.length > 5 ? '...' : ''}` : ''}
+                        </div>
+                        <div style="margin-bottom: 10px; color: #667eea; font-weight: 600;">Est. ${estimatedCalories} cal</div>
+                        <button class="recipe-btn" onclick="showRecipe(${recipe.id})">View Recipe</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function estimateCalories(recipe, targetCalories) {
+            const baseCalories = 300 + Math.floor(Math.random() * 200);
+            return Math.min(Math.round(baseCalories + (targetCalories - 400) * 0.3), targetCalories);
+        }
+
+        async function showRecipe(id) {
+            modal.classList.add('active');
+            modalBody.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading recipe...</p></div>';
+            modalTitle.textContent = 'Loading...';
+
+            try {
+                const response = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${id}`);
+                const data = await response.json();
+                
+                if (!data.meals || !data.meals[0]) {
+                    modalBody.innerHTML = '<p>Recipe not found.</p>';
+                    return;
+                }
+
+                const recipe = data.meals[0];
+                modalTitle.textContent = recipe.strMeal;
+
+                const ingredients = [];
+                for (let i = 1; i <= 20; i++) {
+                    const ingredient = recipe[`strIngredient${i}`];
+                    const measure = recipe[`strMeasure${i}`];
+                    if (ingredient && ingredient.trim()) {
+                        ingredients.push(`${measure ? measure.trim() + ' ' : ''}${ingredient.trim()}`);
+                    }
+                }
+
+                modalBody.innerHTML = `
+                    ${recipe.strMealThumb ? `<img src="${recipe.strMealThumb}" alt="${recipe.strMeal}" class="recipe-image">` : ''}
+                    <div class="recipe-section">
+                        <h3>Category</h3>
+                        <p>${recipe.strCategory}${recipe.strArea ? ` - ${recipe.strArea}` : ''}</p>
+                    </div>
+                    <div class="recipe-section">
+                        <h3>Ingredients</h3>
+                        <ul>
+                            ${ingredients.map(ing => `<li>${ing}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="recipe-section">
+                        <h3>Instructions</h3>
+                        <p class="instructions">${recipe.strInstructions}</p>
+                    </div>
+                    ${recipe.strYoutube ? `<a href="${recipe.strYoutube}" target="_blank" class="recipe-btn" style="display: inline-block; text-decoration: none; margin-right: 10px;">Watch Video</a>` : ''}
+                    ${recipe.strSource ? `<a href="${recipe.strSource}" target="_blank" class="recipe-btn" style="display: inline-block; text-decoration: none;">Original Source</a>` : ''}
+                `;
+
+            } catch (error) {
+                modalBody.innerHTML = '<p>Error loading recipe. Please try again.</p>';
+            }
+        }
+
+        modalClose.addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                modal.classList.remove('active');
+            }
+        });
+
+        loadIngredients();
+    </script>
+</body>
+</html>
