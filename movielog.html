@@ -849,6 +849,26 @@
                 </svg>
                 Reports
             </button>
+
+            <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border);">
+                <button class="nav-btn" id="exportBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Export
+                </button>
+                <button class="nav-btn" id="importBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    Import
+                </button>
+                <input type="file" id="importFile" accept=".json" style="display: none;">
+            </div>
         </aside>
 
         <main class="main">
@@ -1318,6 +1338,67 @@
         movieNameInput.addEventListener('input', handleAutocompleteInput);
 
         renderMoviesList();
+
+        document.getElementById('exportBtn').addEventListener('click', () => {
+            const data = JSON.stringify(movies, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `movielog-export-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        document.getElementById('importBtn').addEventListener('click', () => {
+            document.getElementById('importFile').click();
+        });
+
+        document.getElementById('importFile').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const importedMovies = JSON.parse(event.target.result);
+                    if (!Array.isArray(importedMovies)) {
+                        alert('Invalid file format');
+                        return;
+                    }
+
+                    const existingKeys = new Set(movies.map(m => `${m.title}|||${m.dateWatched}`));
+                    let addedCount = 0;
+
+                    importedMovies.forEach(m => {
+                        const key = `${m.title}|||${m.dateWatched}`;
+                        if (!existingKeys.has(key)) {
+                            movies.push({
+                                id: Date.now() + Math.random(),
+                                imdbId: m.imdbId || '',
+                                title: m.title,
+                                year: m.year,
+                                poster: m.poster,
+                                dateWatched: m.dateWatched,
+                                rating: m.rating || 0
+                            });
+                            existingKeys.add(key);
+                            addedCount++;
+                        }
+                    });
+
+                    saveMovies();
+                    renderMoviesList();
+                    renderReports();
+                    alert(`Imported ${addedCount} new movie(s). ${importedMovies.length - addedCount} duplicate(s) were skipped.`);
+                } catch (err) {
+                    alert('Error parsing JSON file');
+                    console.error(err);
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        });
     </script>
 </body>
 </html>
