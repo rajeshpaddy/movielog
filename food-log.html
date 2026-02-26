@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Food Log</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    h1 { text-align: center; margin-bottom: 20px; color: #00d9ff; }
+    
+    .header { background: #16213e; border-radius: 15px; padding: 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; }
+    .header-group { display: flex; align-items: center; gap: 10px; }
+    .header label { font-weight: bold; color: #00d9ff; }
+    .header input[type="date"] { background: #0f3460; border: 1px solid #00d9ff; color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 16px; }
+    .stat { background: #0f3460; padding: 10px 20px; border-radius: 8px; text-align: center; }
+    .stat-label { font-size: 12px; color: #888; }
+    .stat-value { font-size: 24px; font-weight: bold; color: #fff; }
+    .stat-value.net { color: #00ff88; }
+    .stat-value.negative { color: #ff6b6b; }
+
+    .food-grid { display: grid; grid-template-columns: 1fr 150px; gap: 15px; margin-bottom: 20px; }
+    .food-row { background: #16213e; border-radius: 12px; padding: 15px; }
+    .food-row textarea { width: 100%; height: 80px; background: #0f3460; border: 1px solid #333; color: #fff; padding: 10px; border-radius: 8px; resize: none; font-size: 14px; font-family: inherit; }
+    .food-row textarea:focus { outline: none; border-color: #00d9ff; }
+    .food-row textarea::placeholder { color: #666; }
+    .food-label { font-weight: bold; color: #00d9ff; margin-bottom: 8px; display: block; }
+    .calorie-display { background: #0f3460; border-radius: 8px; padding: 10px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+    .calorie-label { font-size: 12px; color: #888; }
+    .calorie-value { font-size: 28px; font-weight: bold; color: #fff; }
+    
+    .exercise-section { background: #16213e; border-radius: 15px; padding: 20px; }
+    .exercise-section h2 { color: #ff6b9d; margin-bottom: 15px; font-size: 18px; }
+    .exercise-input { display: flex; gap: 15px; align-items: stretch; }
+    .exercise-input textarea { flex: 1; height: 60px; background: #0f3460; border: 1px solid #333; color: #fff; padding: 10px; border-radius: 8px; resize: none; font-size: 14px; font-family: inherit; }
+    .exercise-input textarea:focus { outline: none; border-color: #ff6b9d; }
+    .exercise-input textarea::placeholder { color: #666; }
+    .exercise-calories { background: #0f3460; border-radius: 8px; padding: 10px 20px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+    .exercise-calories .burned { font-size: 12px; color: #ff6b9d; }
+    .exercise-calories .value { font-size: 24px; font-weight: bold; color: #ff6b9d; }
+
+    .detected-foods { margin-top: 8px; font-size: 12px; color: #888; }
+    .detected-foods span { background: #0f3460; padding: 2px 6px; border-radius: 4px; margin-right: 4px; }
+    .save-indicator { position: fixed; bottom: 20px; right: 20px; background: #00ff88; color: #000; padding: 8px 16px; border-radius: 8px; font-size: 14px; opacity: 0; transition: opacity 0.3s; }
+    .save-indicator.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Food Log</h1>
+    
+    <div class="header">
+      <div class="header-group">
+        <label>Date:</label>
+        <input type="date" id="datePicker">
+      </div>
+      <div class="stat">
+        <div class="stat-label">Total Calories</div>
+        <div class="stat-value" id="totalCalories">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Net Calories</div>
+        <div class="stat-value net" id="netCalories">0</div>
+      </div>
+    </div>
+
+    <div class="food-grid" id="foodGrid"></div>
+
+    <div class="exercise-section">
+      <h2>Exercise</h2>
+      <div class="exercise-input">
+        <textarea id="exerciseInput" placeholder="Enter your exercise activities (e.g., 30 min running, 1 hour cycling, 45 min swimming)..."></textarea>
+        <div class="exercise-calories">
+          <div class="burned">Burned</div>
+          <div class="value" id="exerciseCalories">0</div>
+        </div>
+      </div>
+      <div class="detected-foods" id="detectedExercises"></div>
+    </div>
+  </div>
+
+  <div class="save-indicator" id="saveIndicator">Saved</div>
+
+  <script>
+    const foodDatabase = {
+      'egg': 78, 'eggs': 156, 'two eggs': 156, 'three eggs': 234, 'four eggs': 312,
+      'bread': 79, 'toast': 79, 'slice of bread': 79, 'two slices': 158, 'three slices': 237,
+      'rice': 206, 'cup of rice': 206, 'one cup rice': 206, 'bowl of rice': 300, 'half cup rice': 103,
+      'chicken': 165, 'chicken breast': 165, 'chicken leg': 130, 'chicken wing': 100, 'grilled chicken': 165, 'fried chicken': 260,
+      'beef': 250, 'steak': 271, 'ground beef': 250, 'beef steak': 271, 'mutton': 294, 'lamb': 250,
+      'fish': 136, 'salmon': 208, 'tuna': 132, 'shrimp': 99, 'prawn': 99, 'cod': 105, 'fish fry': 200,
+      'pasta': 220, 'spaghetti': 220, 'noodles': 190, 'macaroni': 220, 'pasta sauce': 120,
+      'pizza': 285, 'slice of pizza': 285, 'one slice pizza': 285, 'two slices pizza': 570,
+      'burger': 295, 'hamburger': 295, 'cheeseburger': 313, 'veg burger': 250,
+      'sandwich': 250, 'grilled cheese': 290, 'club sandwich': 350,
+      'salad': 150, 'green salad': 80, 'caesar salad': 190, 'veg salad': 100, 'fruit salad': 120,
+      'apple': 95, 'banana': 105, 'orange': 62, 'mango': 99, 'grapes': 62, 'strawberry': 4, 'watermelon': 46, 'pineapple': 82, 'papaya': 55,
+      'milk': 103, 'glass of milk': 103, 'cup of milk': 103, 'boiled egg': 78, 'omelette': 154, 'scrambled eggs': 147,
+      'dal': 230, 'lentils': 230, 'dal tadka': 250, 'moong dal': 105, 'rajma': 225, 'chole': 250,
+      'roti': 120, 'chapati': 120, 'two rotis': 240, 'three rotis': 360, 'paratha': 260, 'naan': 260,
+      'paneer': 265, 'paneer curry': 320, 'paneer bhurji': 240, 'cottage cheese': 265,
+      'vegetables': 80, 'mixed veg': 100, 'bhindi': 150, 'aloo': 150, 'gobhi': 150, 'mushroom': 15, 'spinach': 23,
+      'soup': 80, 'chicken soup': 120, 'veg soup': 60, 'tomato soup': 75,
+      'curry': 250, 'biryani': 320, 'pulav': 280, 'fried rice': 300, 'lemon rice': 250, 'jeera rice': 240,
+      'dosa': 150, 'idli': 144, 'two idlis': 288, 'three idlis': 432, 'uttapam': 200, 'vada': 150, 'samosa': 260,
+      'puran poli': 280, 'modak': 100, 'laddu': 80, 'barfi': 120, 'halwa': 180, 'gulab jamun': 180, 'rasgulla': 120,
+      'ice cream': 137, 'scoop ice cream': 137, 'chocolate': 230, 'candy': 40, 'cookie': 50, 'biscuit': 50,
+      'chips': 152, 'fries': 312, 'french fries': 312, 'popcorn': 31, 'nuts': 185, 'almonds': 164, 'cashew': 157, 'peanuts': 161,
+      'coffee': 5, 'cup of coffee': 5, 'tea': 45, 'cup of tea': 45, 'black coffee': 2, 'black tea': 2,
+      'juice': 110, 'orange juice': 112, 'apple juice': 114, 'mango juice': 120, 'cold drink': 140, 'soda': 140,
+      'water': 0, 'glass of water': 0,
+      'oats': 150, 'cereal': 150, 'cornflakes': 110, 'granola': 120, 'muesli': 140,
+      'yogurt': 100, 'curd': 100, 'raita': 60, 'buttermilk': 40, 'lassi': 130,
+      'butter': 102, 'cheese': 113, 'cheddar': 113, 'mozzarella': 85, 'cream': 200,
+      'idli sambar': 250, 'dosa sambar': 280, 'bhelpuri': 150, 'pani puri': 120, 'chaat': 200, 'pakora': 180,
+      'upma': 200, 'poha': 200, 'parantha': 260, 'aloo paratha': 300, 'gobi paratha': 280,
+      'khichdi': 200, 'pongal': 280, 'poori': 230, 'two pooris': 460, 'bhature': 300, 'chole bhature': 450,
+      'dhal': 230, 'sambar': 120, 'rasam': 80, 'pickle': 20, 'chutney': 30
+    };
+
+    const exerciseDatabase = {
+      'running': 10, 'jogging': 8, 'walk': 4, 'walking': 4, 'slow walk': 3,
+      'cycling': 8, 'bike': 8, 'biking': 8, 'spin': 10,
+      'swimming': 10, 'lap swimming': 12, 'water polo': 8,
+      'gym': 6, 'weightlifting': 5, 'lifting': 5, 'workout': 7, 'exercise': 5,
+      'yoga': 3, 'pilates': 4, 'stretching': 2, 'meditation': 1,
+      'dance': 7, 'dancing': 7, 'zumba': 8, 'salsa': 6,
+      'football': 8, 'soccer': 8, 'basketball': 7, 'tennis': 7,
+      'cricket': 5, 'badminton': 5, 'volleyball': 4, 'baseball': 5,
+      'hiking': 6, 'trekking': 7, 'climbing': 8, 'rock climbing': 10,
+      'boxing': 10, 'kickboxing': 10, 'martial arts': 8, 'karate': 7,
+      'aerobics': 7, 'cardio': 8, 'hiit': 12, 'crossfit': 11,
+      'skipping': 10, 'jump rope': 10, 'rope': 10,
+      'sit up': 8, 'situp': 8, 'crunch': 6, 'plank': 4,
+      'squats': 5, 'lunges': 6, 'burpees': 10, 'mountain climbers': 11,
+      'rowing': 8, 'elliptical': 7, 'treadmill': 8,
+      'tennis': 7, 'squash': 9, 'table tennis': 5, 'ping pong': 5
+    };
+
+    const periods = ['Morning', 'Afternoon', 'Evening'];
+    const today = new Date().toISOString().split('T')[0];
+    let saveTimeout;
+    let currentDate = today;
+
+    function init() {
+      document.getElementById('datePicker').value = today;
+      document.getElementById('datePicker').addEventListener('change', (e) => {
+        currentDate = e.target.value;
+        loadData();
+      });
+
+      const grid = document.getElementById('foodGrid');
+      periods.forEach((period, index) => {
+        const row = document.createElement('div');
+        row.className = 'food-row';
+        row.innerHTML = `
+          <span class="food-label">${period}</span>
+          <textarea id="food${index}" placeholder="Enter food items (e.g., 2 eggs, 1 bread, 1 cup rice)..."></textarea>
+          <div class="detected-foods" id="detected${index}"></div>
+        `;
+        grid.appendChild(row);
+        
+        const calDisplay = document.createElement('div');
+        calDisplay.className = 'calorie-display';
+        calDisplay.innerHTML = `
+          <div class="calorie-label">Calories</div>
+          <div class="calorie-value" id="cal${index}">0</div>
+        `;
+        grid.appendChild(calDisplay);
+        
+        document.getElementById(`food${index}`).addEventListener('blur', (e) => {
+          calculateFoodCalories(index);
+        });
+      });
+
+      document.getElementById('exerciseInput').addEventListener('blur', calculateExerciseCalories);
+      
+      loadData();
+    }
+
+    function parseFood(text) {
+      const lower = text.toLowerCase();
+      const words = lower.split(/\s+/);
+      let total = 0;
+      let detected = [];
+      let quantity = 1;
+
+      for (let i = 0; i < words.length; i++) {
+        const word = words[i];
+        
+        if (word === 'one' || word === 'a' || word === 'an') {
+          quantity = 1;
+        } else if (word === 'two' || word === '2') {
+          quantity = 2;
+        } else if (word === 'three' || word === '3') {
+          quantity = 3;
+        } else if (word === 'four' || word === '4') {
+          quantity = 4;
+        } else if (word === 'five' || word === '5') {
+          quantity = 5;
+        } else if (word === 'half') {
+          quantity = 0.5;
+        } else if (word === 'quarter') {
+          quantity = 0.25;
+        } else if (!isNaN(word) && word !== '') {
+          quantity = parseFloat(word);
+        }
+
+        for (const [food, cal] of Object.entries(foodDatabase)) {
+          if (lower.includes(food)) {
+            const calPerUnit = cal;
+            total += calPerUnit * quantity;
+            detected.push(`${quantity} ${food}`);
+            quantity = 1;
+            break;
+          }
+        }
+      }
+
+      return { total, detected };
+    }
+
+    function calculateFoodCalories(index) {
+      const text = document.getElementById(`food${index}`).value;
+      const { total, detected } = parseFood(text);
+      
+      document.getElementById(`cal${index}`).textContent = total;
+
+      const detectedDiv = document.getElementById(`detected${index}`);
+      if (detected.length > 0) {
+        detectedDiv.innerHTML = 'Detected: ' + detected.map(d => `<span>${d}</span>`).join('');
+      } else {
+        detectedDiv.innerHTML = '';
+      }
+
+      updateTotals();
+      saveData();
+    }
+
+    function parseExercise(text) {
+      const lower = text.toLowerCase();
+      let total = 0;
+      let detected = [];
+      const words = lower.split(/\s+/);
+      let duration = 30;
+
+      for (let i = 0; i < words.length; i++) {
+        const word = words[i];
+        
+        if (!isNaN(word) && word !== '') {
+          duration = parseFloat(word);
+        } else if (word === 'one') {
+          duration = 1;
+        } else if (word === 'half') {
+          duration = 0.5;
+        } else if (word === 'hour' || word === 'hours' || word === 'hr') {
+          if (i > 0 && !isNaN(words[i-1])) {
+            duration = parseFloat(words[i-1]);
+          } else {
+            duration = 60;
+          }
+          duration = duration > 10 ? duration : duration * 60;
+        } else if (word === 'minute' || word === 'min' || word === 'minutes') {
+          if (i > 0 && !isNaN(words[i-1])) {
+            duration = parseFloat(words[i-1]);
+          }
+        }
+
+        for (const [exercise, calPerMin] of Object.entries(exerciseDatabase)) {
+          if (lower.includes(exercise)) {
+            const estimatedDuration = duration > 100 ? duration / 60 : duration;
+            const burned = Math.round(estimatedDuration * calPerMin);
+            total += burned;
+            detected.push(`${estimatedDuration.toFixed(1)} min ${exercise}`);
+            break;
+          }
+        }
+      }
+
+      return { total, detected };
+    }
+
+    function calculateExerciseCalories() {
+      const text = document.getElementById('exerciseInput').value;
+      const { total, detected } = parseExercise(text);
+      
+      document.getElementById('exerciseCalories').textContent = total;
+      
+      const detectedDiv = document.getElementById('detectedExercises');
+      if (detected.length > 0) {
+        detectedDiv.innerHTML = 'Detected: ' + detected.map(d => `<span>${d}</span>`).join('');
+      } else {
+        detectedDiv.innerHTML = '';
+      }
+
+      updateTotals();
+      saveData();
+    }
+
+    function updateTotals() {
+      let foodTotal = 0;
+      for (let i = 0; i < 3; i++) {
+        foodTotal += parseInt(document.getElementById(`cal${i}`).textContent) || 0;
+      }
+      
+      const exerciseTotal = parseInt(document.getElementById('exerciseCalories').textContent) || 0;
+      const net = foodTotal - exerciseTotal;
+
+      document.getElementById('totalCalories').textContent = foodTotal;
+      
+      const netEl = document.getElementById('netCalories');
+      netEl.textContent = net;
+      netEl.className = 'stat-value net' + (net < 0 ? ' negative' : '');
+    }
+
+    function saveData() {
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        const data = {
+          morning: document.getElementById('food0').value,
+          afternoon: document.getElementById('food1').value,
+          evening: document.getElementById('food2').value,
+          exercise: document.getElementById('exerciseInput').value
+        };
+        
+        const allData = JSON.parse(localStorage.getItem('foodLogData') || '{}');
+        allData[currentDate] = data;
+        localStorage.setItem('foodLogData', JSON.stringify(allData));
+        
+        const indicator = document.getElementById('saveIndicator');
+        indicator.classList.add('show');
+        setTimeout(() => indicator.classList.remove('show'), 1500);
+      }, 500);
+    }
+
+    function loadData() {
+      const allData = JSON.parse(localStorage.getItem('foodLogData') || '{}');
+      const data = allData[currentDate] || { morning: '', afternoon: '', evening: '', exercise: '' };
+      
+      document.getElementById('food0').value = data.morning;
+      document.getElementById('food1').value = data.afternoon;
+      document.getElementById('food2').value = data.evening;
+      document.getElementById('exerciseInput').value = data.exercise;
+      
+      calculateFoodCalories(0);
+      calculateFoodCalories(1);
+      calculateFoodCalories(2);
+      calculateExerciseCalories();
+    }
+
+    init();
+  </script>
+</body>
+</html>
