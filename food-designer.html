@@ -585,7 +585,11 @@
             'salt', 'pepper', 'basil', 'oregano', 'thyme', 'rosemary', 'cumin',
             'paprika', 'cinnamon', 'vanilla', 'flour', 'sugar', 'baking powder',
             'oats', 'cereal', 'pancake', 'maple syrup', 'jam', 'peanut butter',
-            'tofu', 'tempeh', 'quinoa', 'couscous', 'tortilla', 'wrap'
+            'tofu', 'tempeh', 'quinoa', 'couscous', 'tortilla', 'wrap',
+            'ginger', 'turmeric', 'garam masala', 'curry', 'biryani', 'naan',
+            'paneer', 'chickpeas', 'masala', 'sambar', 'dal', 'roti',
+            'ghee', 'cardamom', 'cloves', 'coriander', 'mint', 'curry leaves',
+            'mustard seeds', 'asafoetida', 'tamarind', 'coconut milk'
         ];
 
         let userIngredients = [];
@@ -748,21 +752,31 @@
             
             let category = 'Seafood';
             if (mealType === 'breakfast') {
-                category = ['Breakfast', 'Starter'][Math.floor(Math.random() * 2)];
+                category = ['Breakfast', 'Starter', 'Vegetarian'][Math.floor(Math.random() * 3)];
             } else if (mealType === 'lunch') {
-                category = ['Beef', 'Chicken', 'Vegetarian', 'Seafood'][Math.floor(Math.random() * 4)];
+                category = ['Beef', 'Chicken', 'Vegetarian', 'Seafood', 'Lamb'][Math.floor(Math.random() * 5)];
             } else {
-                category = ['Beef', 'Chicken', 'Lamb', 'Pork', 'Seafood'][Math.floor(Math.random() * 5)];
+                category = ['Beef', 'Chicken', 'Lamb', 'Pork', 'Seafood', 'Vegetarian'][Math.floor(Math.random() * 6)];
             }
 
             try {
-                const response = await fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?c=${category}`);
-                const data = await response.json();
+                const [categoryResponse, areaResponse] = await Promise.all([
+                    fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?c=${category}`),
+                    fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?a=Indian`)
+                ]);
 
-                if (!data.meals) return [];
+                const categoryData = await categoryResponse.json();
+                const areaData = await areaResponse.json();
 
-                const shuffled = data.meals.sort(() => Math.random() - 0.5);
-                const selected = shuffled.slice(0, 5);
+                const allMeals = [
+                    ...(categoryData.meals || []),
+                    ...(areaData.meals || [])
+                ];
+
+                if (allMeals.length === 0) return [];
+
+                const shuffled = allMeals.sort(() => Math.random() - 0.5);
+                const selected = shuffled.slice(0, 8);
 
                 const recipesWithDetails = await Promise.all(
                     selected.map(async meal => {
