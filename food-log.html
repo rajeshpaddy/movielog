@@ -433,6 +433,7 @@
     };
 
     const quantityPatterns = [
+      { regex: /^(\d+\.?\d*)\s+/gi, factor: 1, basePiece: 1 },
       { regex: /(\d+\.?\d*)\s*(ml|milliliter|milliliters)/gi, factor: 1, baseMl: 100 },
       { regex: /(\d+\.?\d*)\s*(l|liter|liters)/gi, factor: 1000, baseMl: 1000 },
       { regex: /(\d+\.?\d*)\s*(g|gram|grams)/gi, factor: 1, baseGram: 100 },
@@ -596,7 +597,8 @@
         const match = text.match(pattern.regex);
         if (match) {
           const num = parseFloat(match[1]);
-          return { quantity: num, unit: match[2].toLowerCase(), matched: true };
+          const unit = match[2] ? match[2].toLowerCase() : 'piece';
+          return { quantity: num, unit: unit, matched: true };
         }
       }
       return { quantity: 1, unit: 'default', matched: false };
