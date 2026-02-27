@@ -289,7 +289,7 @@
       
       const container = document.getElementById('videoContainer');
       if (ghazal.url) {
-        container.innerHTML = `<iframe src="${ghazal.url}?autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+        container.innerHTML = `<iframe id="ytPlayer" src="${ghazal.url}?autoplay=1&enablejsapi=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>`;
         videoDuration = 240; // Assume ~4 min per ghazal if YouTube
       } else {
         container.innerHTML = `
@@ -401,6 +401,7 @@
       
       if (url) {
         url = url.replace('watch?v=', 'embed/');
+        url = url.replace('youtu.be/', 'embed/');
         if (!url.includes('embed')) {
           url = 'https://www.youtube.com/embed/' + url;
         }
