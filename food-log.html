@@ -526,6 +526,26 @@
     let currentDate = today;
     let apiFetchQueue = [];
     let isProcessingQueue = false;
+    let foodDebounceTimers = [];
+    let exerciseDebounceTimer = null;
+
+    function debounceCalculate(index) {
+      if (foodDebounceTimers[index]) {
+        clearTimeout(foodDebounceTimers[index]);
+      }
+      foodDebounceTimers[index] = setTimeout(() => {
+        calculateFoodCalories(index);
+      }, 500);
+    }
+
+    function debounceExercise() {
+      if (exerciseDebounceTimer) {
+        clearTimeout(exerciseDebounceTimer);
+      }
+      exerciseDebounceTimer = setTimeout(() => {
+        calculateExerciseCalories();
+      }, 500);
+    }
 
     function init() {
       document.getElementById('datePicker').value = today;
@@ -553,12 +573,14 @@
         `;
         grid.appendChild(calDisplay);
         
-        document.getElementById(`food${index}`).addEventListener('blur', (e) => {
-          calculateFoodCalories(index);
+        document.getElementById(`food${index}`).addEventListener('input', (e) => {
+          debounceCalculate(index);
         });
       });
 
-      document.getElementById('exerciseInput').addEventListener('blur', calculateExerciseCalories);
+      document.getElementById('exerciseInput').addEventListener('input', () => {
+        debounceExercise();
+      });
       
       loadData();
     }
