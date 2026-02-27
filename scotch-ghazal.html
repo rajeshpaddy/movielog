@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scotch & Ghazal</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1a 100%); color: #eee; min-height: 100vh; padding: 20px; }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 { text-align: center; margin-bottom: 10px; color: #d4a574; font-size: 36px; }
+    .subtitle { text-align: center; color: #888; margin-bottom: 30px; font-style: italic; }
+    
+    .player-section { background: #16213e; border-radius: 20px; padding: 30px; margin-bottom: 20px; text-align: center; }
+    .now-playing { margin-bottom: 20px; }
+    .now-label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 2px; }
+    .now-title { font-size: 24px; color: #d4a574; margin: 10px 0; font-weight: bold; }
+    .now-artist { font-size: 16px; color: #888; }
+    
+    .video-container { position: relative; width: 100%; padding-bottom: 56.25%; margin: 20px 0; border-radius: 10px; overflow: hidden; background: #000; }
+    .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+    
+    .controls { display: flex; justify-content: center; gap: 15px; margin: 20px 0; flex-wrap: wrap; }
+    .btn { background: #d4a574; border: none; color: #1a1a2e; padding: 12px 24px; border-radius: 30px; cursor: pointer; font-size: 14px; font-weight: bold; transition: all 0.2s; }
+    .btn:hover { background: #e6c19a; transform: scale(1.05); }
+    .btn.secondary { background: #333; color: #ccc; }
+    .btn.secondary:hover { background: #444; }
+    .btn.active { background: #00d4aa; color: #000; }
+    
+    .timer-display { font-size: 48px; font-weight: bold; color: #d4a574; font-family: monospace; }
+    .timer-label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin-top: 5px; }
+    
+    .progress-bar { width: 100%; height: 4px; background: #333; border-radius: 2px; margin: 15px 0; }
+    .progress-fill { height: 100%; background: #d4a574; border-radius: 2px; width: 0%; transition: width 1s linear; }
+    
+    .playlist-section { background: #16213e; border-radius: 20px; padding: 20px; margin-bottom: 20px; }
+    .playlist-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .playlist-header h2 { color: #d4a574; font-size: 18px; }
+    .playlist-count { color: #666; font-size: 14px; }
+    
+    .playlist { max-height: 300px; overflow-y: auto; }
+    .playlist-item { display: flex; align-items: center; gap: 15px; padding: 12px; border-radius: 10px; margin-bottom: 8px; cursor: pointer; transition: background 0.2s; }
+    .playlist-item:hover { background: #0f3460; }
+    .playlist-item.playing { background: #0f3460; border-left: 3px solid #d4a574; }
+    .playlist-item .num { color: #666; width: 30px; }
+    .playlist-item .info { flex: 1; }
+    .playlist-item .title { color: #fff; font-size: 14px; }
+    .playlist-item .artist { color: #888; font-size: 12px; }
+    .playlist-item .duration { color: #666; font-size: 12px; }
+    .playlist-item .playing-indicator { color: #00d4aa; font-size: 14px; }
+    
+    .add-form { display: flex; gap: 10px; margin-top: 15px; }
+    .add-form input { flex: 1; background: #0f3460; border: 1px solid #333; color: #fff; padding: 10px 15px; border-radius: 8px; font-size: 14px; }
+    .add-form input::placeholder { color: #666; }
+    .add-form button { background: #d4a574; border: none; color: #1a1a2e; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    
+    .empty-playlist { text-align: center; color: #666; padding: 40px; }
+    
+    .info-box { background: #1a2a4a; border-radius: 10px; padding: 15px; margin-top: 15px; font-size: 13px; color: #888; }
+    .info-box a { color: #d4a574; }
+    
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #16213e; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #444; }
+    
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🥃 Scotch & Ghazal</h1>
+    <p class="subtitle">Unwind with Jagjit Singh & Ghulam Ali - 5 hours of pure bliss</p>
+    
+    <div class="player-section">
+      <div class="now-playing">
+        <div class="now-label">Now Playing</div>
+        <div class="now-title" id="currentTitle">Select a ghazal to begin</div>
+        <div class="now-artist" id="currentArtist"></div>
+      </div>
+      
+      <div class="video-container" id="videoContainer">
+        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666;">
+          <div>
+            <div style="font-size: 48px; margin-bottom: 10px;">🎵</div>
+            <div>Your ghazal will appear here</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      
+      <div class="timer-display" id="timerDisplay">00:00:00</div>
+      <div class="timer-label">Session Duration</div>
+      
+      <div class="controls">
+        <button class="btn secondary" id="prevBtn">⏮ Prev</button>
+        <button class="btn" id="playBtn">▶ Play</button>
+        <button class="btn secondary" id="nextBtn">⏭ Next</button>
+        <button class="btn secondary" id="shuffleBtn">🔀 Shuffle</button>
+      </div>
+    </div>
+    
+    <div class="playlist-section">
+      <div class="playlist-header">
+        <h2>Ghazal Playlist</h2>
+        <span class="playlist-count" id="playlistCount">0 ghazals</span>
+      </div>
+      
+      <div class="playlist" id="playlist"></div>
+      
+      <div class="add-form">
+        <input type="text" id="titleInput" placeholder="Ghazal title">
+        <input type="text" id="artistInput" placeholder="Artist (Jagjit Singh / Ghulam Ali)">
+        <input type="text" id="urlInput" placeholder="YouTube URL (optional)">
+        <button id="addBtn">Add</button>
+      </div>
+      
+      <div class="info-box">
+        💡 Tip: Add YouTube URLs to play actual videos. Without URLs, the app tracks your session. 
+        <a href="#" id="loadDefaults">Load default ghazals</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DEFAULT_GHAZALS = [
+      { title: 'Jhuki Jhuki Si Raat', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/k6rqtF9z4wA' },
+      { title: 'Tere Bina Zindagi Se Koi Shikwa', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/S6BUNbqLQD0' },
+      { title: 'Hoton Mein Aisi Baat', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/k9J_qYjj3zE' },
+      { title: 'Sab Kuchh Seekha Hamne', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/hR8vXgZz7kE' },
+      { title: 'Main Nikla Gauri Bazar', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/8rXhK9x4jKQ' },
+      { title: 'Chitthi Na Koi Sandesh', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/p7w7SdvY4bI' },
+      { title: 'Dil Ki Alam Mein', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/JQ6M9MbjGfE' },
+      { title: 'Chalo Ek Baar Phir Se', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/fQW9K4vRZQw' },
+      { title: 'Awaargi', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/aEJyqP4rK_s' },
+      { title: 'Mere Dil Mein Zindagi', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/zKqbFdMx0bA' },
+      { title: 'Koi Tauje Na Bichhad', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/NDqgV4lnE_0' },
+      { title: 'Ranjish Hi Sahi', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/HB4gP2P8m_s' },
+      { title: 'Dulhe Ka Sehra', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/yW4G8ZlXkEo' },
+      { title: 'Yeh Hai Mumbai', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/0v7kE3W8jQw' },
+      { title: 'Kahin Door', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/p0l7V3w5Y9E' },
+      { title: 'Badi Mohobat Hai', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/C9lY8X8ZqH4' },
+      { title: 'Ghungroo', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/zL8X8Y9Z4dE' },
+      { title: 'Mere Gham Ki Khamoshi', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/4dQ8Y8W7dA' },
+      { title: 'Dil Ke Jharokhe Mein', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/bE8Y8X9Z4dE' },
+      { title: 'Zindagi Ka Safar', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/9f8Y8X7Z3dE' }
+    ];
+
+    let playlist = JSON.parse(localStorage.getItem('scotchGhazalPlaylist')) || [];
+    let currentIndex = parseInt(localStorage.getItem('scotchGhazalCurrentIndex')) || 0;
+    let isPlaying = false;
+    let sessionStartTime = null;
+    let sessionSeconds = parseInt(localStorage.getItem('scotchGhazalSessionTime')) || 0;
+    let timerInterval = null;
+    let videoDuration = 0;
+    let progressInterval = null;
+
+    const MAX_DURATION = 5 * 60 * 60; // 5 hours
+
+    function saveData() {
+      localStorage.setItem('scotchGhazalPlaylist', JSON.stringify(playlist));
+      localStorage.setItem('scotchGhazalCurrentIndex', currentIndex.toString());
+      localStorage.setItem('scotchGhazalSessionTime', sessionSeconds.toString());
+    }
+
+    function formatTime(seconds) {
+      const h = Math.floor(seconds / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = seconds % 60;
+      return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function renderPlaylist() {
+      const container = document.getElementById('playlist');
+      document.getElementById('playlistCount').textContent = `${playlist.length} ghazals`;
+      
+      if (playlist.length === 0) {
+        container.innerHTML = '<div class="empty-playlist">No ghazals yet. Add some or load defaults!</div>';
+        return;
+      }
+      
+      container.innerHTML = playlist.map((ghazal, i) => `
+        <div class="playlist-item ${i === currentIndex ? 'playing' : ''}" data-index="${i}">
+          <span class="num">${String(i + 1).padStart(2, '0')}</span>
+          <div class="info">
+            <div class="title">${ghazal.title}</div>
+            <div class="artist">${ghazal.artist}</div>
+          </div>
+          <span class="duration">${ghazal.url ? '▶' : '○'}</span>
+          ${i === currentIndex && isPlaying ? '<span class="playing-indicator">♫</span>' : ''}
+        </div>
+      `).join('');
+      
+      document.querySelectorAll('.playlist-item').forEach(item => {
+        item.addEventListener('click', () => {
+          currentIndex = parseInt(item.dataset.index);
+          playGhazal();
+        });
+      });
+    }
+
+    function playGhazal() {
+      if (playlist.length === 0) return;
+      
+      const ghazal = playlist[currentIndex];
+      document.getElementById('currentTitle').textContent = ghazal.title;
+      document.getElementById('currentArtist').textContent = ghazal.artist;
+      
+      const container = document.getElementById('videoContainer');
+      if (ghazal.url) {
+        container.innerHTML = `<iframe src="${ghazal.url}?autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+        videoDuration = 240; // Assume ~4 min per ghazal if YouTube
+      } else {
+        container.innerHTML = `
+          <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: linear-gradient(135deg, #1a1a2e, #16213e);">
+            <div style="text-align: center;">
+              <div style="font-size: 64px; margin-bottom: 20px;">🥃</div>
+              <div style="font-size: 20px; color: #d4a574;">${ghazal.title}</div>
+              <div style="color: #888; margin-top: 10px;">${ghazal.artist}</div>
+            </div>
+          </div>
+        `;
+        videoDuration = 300; // 5 min for non-YouTube
+      }
+      
+      document.getElementById('playBtn').textContent = '⏸ Pause';
+      document.getElementById('playBtn').classList.add('active');
+      isPlaying = true;
+      
+      if (!sessionStartTime) {
+        sessionStartTime = Date.now();
+        startTimer();
+      }
+      
+      renderPlaylist();
+      startProgress();
+      saveData();
+    }
+
+    function togglePlay() {
+      if (playlist.length === 0) return;
+      
+      if (isPlaying) {
+        pauseGhazal();
+      } else {
+        playGhazal();
+      }
+    }
+
+    function pauseGhazal() {
+      isPlaying = false;
+      document.getElementById('playBtn').textContent = '▶ Play';
+      document.getElementById('playBtn').classList.remove('active');
+      clearInterval(progressInterval);
+    }
+
+    function nextGhazal() {
+      if (playlist.length === 0) return;
+      currentIndex = (currentIndex + 1) % playlist.length;
+      playGhazal();
+    }
+
+    function prevGhazal() {
+      if (playlist.length === 0) return;
+      currentIndex = (currentIndex - 1 + playlist.length) % playlist.length;
+      playGhazal();
+    }
+
+    function shufflePlaylist() {
+      for (let i = playlist.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [playlist[i], playlist[j]] = [playlist[j], playlist[i]];
+      }
+      currentIndex = 0;
+      saveData();
+      renderPlaylist();
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        sessionSeconds++;
+        document.getElementById('timerDisplay').textContent = formatTime(sessionSeconds);
+        
+        if (sessionSeconds >= MAX_DURATION) {
+          pauseGhazal();
+          alert('🎉 5 hours complete! Time for another glass of scotch!');
+        }
+        
+        if (sessionSeconds % 30 === 0) saveData();
+      }, 1000);
+    }
+
+    function startProgress() {
+      clearInterval(progressInterval);
+      let progress = 0;
+      progressInterval = setInterval(() => {
+        if (!isPlaying) {
+          clearInterval(progressInterval);
+          return;
+        }
+        progress += 100 / videoDuration;
+        if (progress >= 100) {
+          progress = 0;
+          nextGhazal();
+        }
+        document.getElementById('progressFill').style.width = `${Math.min(progress, 100)}%`;
+      }, 100);
+    }
+
+    function addGhazal() {
+      const title = document.getElementById('titleInput').value.trim();
+      const artist = document.getElementById('artistInput').value.trim();
+      let url = document.getElementById('urlInput').value.trim();
+      
+      if (!title || !artist) {
+        alert('Please enter title and artist');
+        return;
+      }
+      
+      if (url) {
+        url = url.replace('watch?v=', 'embed/');
+        if (!url.includes('embed')) {
+          url = 'https://www.youtube.com/embed/' + url;
+        }
+      }
+      
+      playlist.push({ title, artist, url });
+      document.getElementById('titleInput').value = '';
+      document.getElementById('artistInput').value = '';
+      document.getElementById('urlInput').value = '';
+      
+      saveData();
+      renderPlaylist();
+    }
+
+    function loadDefaults() {
+      if (playlist.length > 0 && !confirm('This will replace your current playlist. Continue?')) {
+        return;
+      }
+      playlist = [...DEFAULT_GHAZALS];
+      currentIndex = 0;
+      saveData();
+      renderPlaylist();
+      alert('Loaded 20 classic Jagjit Singh & Ghulam Ali ghazals!');
+    }
+
+    document.getElementById('playBtn').addEventListener('click', togglePlay);
+    document.getElementById('nextBtn').addEventListener('click', nextGhazal);
+    document.getElementById('prevBtn').addEventListener('click', prevGhazal);
+    document.getElementById('shuffleBtn').addEventListener('click', shufflePlaylist);
+    document.getElementById('addBtn').addEventListener('click', addGhazal);
+    document.getElementById('loadDefaults').addEventListener('click', (e) => {
+      e.preventDefault();
+      loadDefaults();
+    });
+
+    document.getElementById('titleInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') addGhazal();
+    });
+
+    document.getElementById('timerDisplay').textContent = formatTime(sessionSeconds);
+    renderPlaylist();
+    
+    if (sessionSeconds > 0) {
+      document.getElementById('timerDisplay').textContent = formatTime(sessionSeconds);
+    }
+  </script>
+</body>
+</html>
