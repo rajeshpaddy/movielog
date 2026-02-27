@@ -125,15 +125,11 @@
   </div>
 
     <script>
-    localStorage.removeItem('scotchGhazalPlaylist');
-    localStorage.removeItem('scotchGhazalCurrentIndex');
-    localStorage.removeItem('scotchGhazalSessionTime');
-
-    let playlist = [];
+    let playlist = JSON.parse(localStorage.getItem('scotchGhazalPlaylist')) || [];
     let currentIndex = 0;
     let isPlaying = false;
     let sessionStartTime = null;
-    let sessionSeconds = 0;
+    let sessionSeconds = parseInt(localStorage.getItem('scotchGhazalSessionTime')) || 0;
     let timerInterval = null;
     let videoDuration = 0;
     let progressInterval = null;
