@@ -576,10 +576,16 @@
         document.getElementById(`food${index}`).addEventListener('input', (e) => {
           debounceCalculate(index);
         });
+        document.getElementById(`food${index}`).addEventListener('blur', (e) => {
+          calculateFoodCalories(index);
+        });
       });
 
       document.getElementById('exerciseInput').addEventListener('input', () => {
         debounceExercise();
+      });
+      document.getElementById('exerciseInput').addEventListener('blur', () => {
+        calculateExerciseCalories();
       });
       
       loadData();
