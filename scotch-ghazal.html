@@ -37,6 +37,8 @@
     .playlist-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
     .playlist-header h2 { color: #d4a574; font-size: 18px; }
     .playlist-count { color: #666; font-size: 14px; }
+    .clear-btn { background: #d44; border: none; color: #fff; padding: 5px 12px; border-radius: 5px; cursor: pointer; font-size: 12px; }
+    .clear-btn:hover { background: #f55; }
     
     .playlist { max-height: 300px; overflow-y: auto; }
     .playlist-item { display: flex; align-items: center; gap: 15px; padding: 12px; border-radius: 10px; margin-bottom: 8px; cursor: pointer; transition: background 0.2s; }
@@ -106,7 +108,10 @@
     <div class="playlist-section">
       <div class="playlist-header">
         <h2>Ghazal Playlist</h2>
-        <span class="playlist-count" id="playlistCount">0 ghazals</span>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span class="playlist-count" id="playlistCount">0 ghazals</span>
+          <button class="clear-btn" id="clearBtn">Clear All</button>
+        </div>
       </div>
       
       <div class="playlist" id="playlist"></div>
@@ -327,11 +332,35 @@
       renderPlaylist();
     }
 
+    function clearPlaylist() {
+      if (confirm('Clear all ghazals from playlist?')) {
+        playlist = [];
+        currentIndex = 0;
+        sessionSeconds = 0;
+        localStorage.removeItem('scotchGhazalPlaylist');
+        localStorage.removeItem('scotchGhazalCurrentIndex');
+        localStorage.removeItem('scotchGhazalSessionTime');
+        document.getElementById('timerDisplay').textContent = '00:00:00';
+        document.getElementById('currentTitle').textContent = 'Select a ghazal to begin';
+        document.getElementById('currentArtist').textContent = '';
+        document.getElementById('videoContainer').innerHTML = `
+          <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666;">
+            <div>
+              <div style="font-size: 48px; margin-bottom: 10px;">🎵</div>
+              <div>Your ghazal will appear here</div>
+            </div>
+          </div>
+        `;
+        renderPlaylist();
+      }
+    }
+
     document.getElementById('playBtn').addEventListener('click', togglePlay);
     document.getElementById('nextBtn').addEventListener('click', nextGhazal);
     document.getElementById('prevBtn').addEventListener('click', prevGhazal);
     document.getElementById('shuffleBtn').addEventListener('click', shufflePlaylist);
     document.getElementById('addBtn').addEventListener('click', addGhazal);
+    document.getElementById('clearBtn').addEventListener('click', clearPlaylist);
 
     document.getElementById('titleInput').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') addGhazal();
