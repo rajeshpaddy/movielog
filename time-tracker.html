@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Time Utilization Tracker</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    h1 { text-align: center; margin-bottom: 20px; color: #00d9ff; }
+    
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .tab { background: #16213e; border: none; color: #888; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
+    .tab:hover { background: #0f3460; color: #fff; }
+    .tab.active { background: #00d9ff; color: #000; font-weight: bold; }
+    
+    .header { background: #16213e; border-radius: 15px; padding: 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; }
+    .header-group { display: flex; align-items: center; gap: 10px; }
+    .header label { font-weight: bold; color: #00d9ff; }
+    .header input[type="date"] { background: #0f3460; border: 1px solid #00d9ff; color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 16px; }
+    .nav-btn { background: #0f3460; border: 1px solid #00d9ff; color: #00d9ff; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+    .nav-btn:hover { background: #00d9ff; color: #000; }
+    .stat { background: #0f3460; padding: 10px 20px; border-radius: 8px; text-align: center; }
+    .stat-label { font-size: 12px; color: #888; }
+    .stat-value { font-size: 24px; font-weight: bold; color: #fff; }
+    
+    .entry-form { background: #16213e; border-radius: 15px; padding: 20px; margin-bottom: 20px; }
+    .entry-form h2 { color: #00d9ff; margin-bottom: 15px; font-size: 18px; }
+    .form-row { display: flex; gap: 15px; flex-wrap: wrap; align-items: stretch; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group label { font-size: 12px; color: #888; }
+    .form-group select, .form-group input { background: #0f3460; border: 1px solid #333; color: #fff; padding: 10px 12px; border-radius: 8px; font-size: 14px; }
+    .form-group select:focus, .form-group input:focus { outline: none; border-color: #00d9ff; }
+    .form-group select { min-width: 150px; }
+    .form-group input[type="datetime-local"] { min-width: 200px; }
+    .form-group input[type="number"] { width: 100px; }
+    .btn-add { background: #00d9ff; border: none; color: #000; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; align-self: flex-end; }
+    .btn-add:hover { background: #00ff88; }
+    
+    .entries-section { background: #16213e; border-radius: 15px; padding: 20px; margin-bottom: 20px; }
+    .entries-section h2 { color: #00d9ff; margin-bottom: 15px; font-size: 18px; }
+    .entry-list { display: flex; flex-direction: column; gap: 10px; }
+    .entry-item { background: #0f3460; border-radius: 10px; padding: 15px; display: flex; align-items: center; justify-content: space-between; gap: 15px; }
+    .entry-info { display: flex; align-items: center; gap: 15px; flex: 1; }
+    .entry-event { font-weight: bold; color: #fff; min-width: 100px; }
+    .entry-time { color: #888; font-size: 14px; }
+    .entry-duration { background: #1a4a2e; color: #00ff88; padding: 5px 12px; border-radius: 20px; font-size: 14px; font-weight: bold; }
+    .entry-actions { display: flex; gap: 8px; }
+    .btn-edit, .btn-delete { background: transparent; border: 1px solid #666; color: #888; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+    .btn-edit:hover { border-color: #00d9ff; color: #00d9ff; }
+    .btn-delete:hover { border-color: #ff6b6b; color: #ff6b6b; }
+    
+    .empty-state { text-align: center; color: #666; padding: 40px; }
+    
+    .reports-section { background: #16213e; border-radius: 15px; padding: 20px; }
+    .reports-section h2 { color: #00d9ff; margin-bottom: 15px; font-size: 18px; }
+    .report-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
+    .report-item { background: #0f3460; border-radius: 10px; padding: 15px; text-align: center; }
+    .report-event { font-weight: bold; color: #fff; margin-bottom: 8px; font-size: 14px; }
+    .report-time { font-size: 24px; font-weight: bold; color: #00d9ff; }
+    .report-unit { font-size: 12px; color: #888; }
+    .report-total { background: #1a4a2e; border-radius: 10px; padding: 15px; text-align: center; margin-top: 15px; }
+    .report-total .label { font-size: 14px; color: #888; }
+    .report-total .value { font-size: 28px; font-weight: bold; color: #00ff88; }
+    
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 100; }
+    .modal.show { display: flex; }
+    .modal-content { background: #16213e; border-radius: 15px; padding: 25px; max-width: 400px; width: 90%; }
+    .modal-content h3 { color: #00d9ff; margin-bottom: 15px; }
+    .modal-content input { width: 100%; margin-bottom: 15px; }
+    .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; }
+    .modal-buttons button { padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+    .btn-cancel { background: #333; border: none; color: #fff; }
+    .btn-save { background: #00d9ff; border: none; color: #000; font-weight: bold; }
+    
+    .settings-section { background: #16213e; border-radius: 15px; padding: 20px; margin-bottom: 20px; }
+    .settings-section h2 { color: #00d9ff; margin-bottom: 15px; font-size: 18px; }
+    .event-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+    .event-tag { background: #0f3460; color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+    .event-tag button { background: none; border: none; color: #ff6b6b; cursor: pointer; padding: 0; font-size: 16px; line-height: 1; }
+    .add-event-row { display: flex; gap: 10px; }
+    .add-event-row input { flex: 1; background: #0f3460; border: 1px solid #333; color: #fff; padding: 10px 12px; border-radius: 8px; font-size: 14px; }
+    .btn-add-event { background: #00d9ff; border: none; color: #000; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    
+    .save-indicator { position: fixed; bottom: 20px; right: 20px; background: #00ff88; color: #000; padding: 8px 16px; border-radius: 8px; font-size: 14px; opacity: 0; transition: opacity 0.3s; }
+    .save-indicator.show { opacity: 1; }
+    
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Time Utilization Tracker</h1>
+    
+    <div class="tabs">
+      <button class="tab active" data-tab="tracker">Tracker</button>
+      <button class="tab" data-tab="reports">Reports</button>
+      <button class="tab" data-tab="settings">Settings</button>
+    </div>
+    
+    <div id="trackerTab">
+      <div class="header">
+        <div class="header-group">
+          <button class="nav-btn" id="prevDay">← Prev</button>
+          <label>Date:</label>
+          <input type="date" id="datePicker">
+          <button class="nav-btn" id="nextDay">Next →</button>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Total Time</div>
+          <div class="stat-value" id="totalMinutes">0 min</div>
+        </div>
+      </div>
+      
+      <div class="entry-form">
+        <h2>Add Time Entry</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Event</label>
+            <select id="eventSelect"></select>
+          </div>
+          <div class="form-group">
+            <label>Date & Time</label>
+            <input type="datetime-local" id="datetimeInput">
+          </div>
+          <div class="form-group">
+            <label>Minutes</label>
+            <input type="number" id="minutesInput" min="1" value="15" placeholder="Duration">
+          </div>
+          <button class="btn-add" id="addEntry">Add Entry</button>
+        </div>
+      </div>
+      
+      <div class="entries-section">
+        <h2>Today's Entries</h2>
+        <div class="entry-list" id="entryList"></div>
+        <div class="empty-state hidden" id="emptyState">No entries for this day. Add your first entry above!</div>
+      </div>
+    </div>
+    
+    <div id="reportsTab" class="hidden">
+      <div class="header">
+        <div class="header-group">
+          <button class="nav-btn" id="prevPeriod">← Prev</button>
+          <label>Period:</label>
+          <select id="periodSelect">
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+            <option value="year">This Year</option>
+          </select>
+          <button class="nav-btn" id="nextPeriod">Next →</button>
+        </div>
+      </div>
+      
+      <div class="reports-section">
+        <h2 id="reportTitle">This Week</h2>
+        <div class="report-grid" id="reportGrid"></div>
+        <div class="report-total">
+          <div class="label">Total Time</div>
+          <div class="value" id="reportTotal">0 min</div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="settingsTab" class="hidden">
+      <div class="settings-section">
+        <h2>Manage Events</h2>
+        <div class="event-list" id="eventTags"></div>
+        <div class="add-event-row">
+          <input type="text" id="newEventInput" placeholder="Add new event...">
+          <button class="btn-add-event" id="addEventBtn">Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="modal" id="editModal">
+    <div class="modal-content">
+      <h3>Edit Entry</h3>
+      <div class="form-group">
+        <label>Event</label>
+        <select id="editEventSelect"></select>
+      </div>
+      <div class="form-group">
+        <label>Date & Time</label>
+        <input type="datetime-local" id="editDatetimeInput">
+      </div>
+      <div class="form-group">
+        <label>Minutes</label>
+        <input type="number" id="editMinutesInput" min="1">
+      </div>
+      <div class="modal-buttons">
+        <button class="btn-cancel" id="cancelEdit">Cancel</button>
+        <button class="btn-save" id="saveEdit">Save</button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="save-indicator" id="saveIndicator">Saved</div>
+
+  <script>
+    const DEFAULT_EVENTS = ['Wake Up', 'Breakfast', 'Shower', 'Restroom', 'Lunch', 'Dinner', 'Work', 'Exercise', 'Commute', 'Leisure', 'Sleep'];
+    
+    let events = JSON.parse(localStorage.getItem('timeTrackerEvents')) || [...DEFAULT_EVENTS];
+    let entries = JSON.parse(localStorage.getItem('timeTrackerEntries')) || {};
+    let currentDate = new Date().toISOString().split('T')[0];
+    let editingId = null;
+    let reportOffset = 0;
+    
+    function saveData() {
+      localStorage.setItem('timeTrackerEvents', JSON.stringify(events));
+      localStorage.setItem('timeTrackerEntries', JSON.stringify(entries));
+      showSaveIndicator();
+    }
+    
+    function showSaveIndicator() {
+      const indicator = document.getElementById('saveIndicator');
+      indicator.classList.add('show');
+      setTimeout(() => indicator.classList.remove('show'), 1500);
+    }
+    
+    function initDatePicker() {
+      document.getElementById('datePicker').value = currentDate;
+      updateDateTimeInput();
+    }
+    
+    function updateDateTimeInput() {
+      const now = new Date();
+      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+      document.getElementById('datetimeInput').value = now.toISOString().slice(0, 16);
+    }
+    
+    function populateEventSelect(selectId, selectedEvent = null) {
+      const select = document.getElementById(selectId);
+      select.innerHTML = events.map(e => `<option value="${e}" ${e === selectedEvent ? 'selected' : ''}>${e}</option>`).join('');
+    }
+    
+    function renderEventTags() {
+      const container = document.getElementById('eventTags');
+      container.innerHTML = events.map(e => `
+        <span class="event-tag">
+          ${e}
+          <button onclick="deleteEvent('${e}')">×</button>
+        </span>
+      `).join('');
+    }
+    
+    function deleteEvent(event) {
+      if (confirm(`Delete "${event}" from your events list?`)) {
+        events = events.filter(e => e !== event);
+        saveData();
+        populateEventSelect('eventSelect');
+        populateEventSelect('editEventSelect');
+        renderEventTags();
+      }
+    }
+    
+    function addEvent() {
+      const input = document.getElementById('newEventInput');
+      const newEvent = input.value.trim();
+      if (newEvent && !events.includes(newEvent)) {
+        events.push(newEvent);
+        input.value = '';
+        saveData();
+        populateEventSelect('eventSelect');
+        populateEventSelect('editEventSelect');
+        renderEventTags();
+      }
+    }
+    
+    function getEntriesForDate(date) {
+      return entries[date] || [];
+    }
+    
+    function addEntry() {
+      const event = document.getElementById('eventSelect').value;
+      const datetime = document.getElementById('datetimeInput').value;
+      const minutes = parseInt(document.getElementById('minutesInput').value) || 0;
+      
+      if (!datetime || minutes <= 0) {
+        alert('Please fill in all fields');
+        return;
+      }
+      
+      const date = datetime.split('T')[0];
+      const id = Date.now().toString();
+      
+      if (!entries[date]) entries[date] = [];
+      entries[date].push({ id, event, datetime, minutes });
+      entries[date].sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
+      
+      saveData();
+      renderEntries();
+      updateTotal();
+      
+      if (date !== currentDate) {
+        currentDate = date;
+        document.getElementById('datePicker').value = currentDate;
+        renderEntries();
+      }
+    }
+    
+    function renderEntries() {
+      const list = document.getElementById('entryList');
+      const dayEntries = getEntriesForDate(currentDate);
+      
+      if (dayEntries.length === 0) {
+        list.innerHTML = '';
+        document.getElementById('emptyState').classList.remove('hidden');
+        return;
+      }
+      
+      document.getElementById('emptyState').classList.add('hidden');
+      list.innerHTML = dayEntries.map(entry => {
+        const time = new Date(entry.datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return `
+          <div class="entry-item">
+            <div class="entry-info">
+              <span class="entry-event">${entry.event}</span>
+              <span class="entry-time">${time}</span>
+              <span class="entry-duration">${entry.minutes} min</span>
+            </div>
+            <div class="entry-actions">
+              <button class="btn-edit" onclick="editEntry('${entry.id}')">Edit</button>
+              <button class="btn-delete" onclick="deleteEntry('${entry.id}')">Delete</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    function updateTotal() {
+      const dayEntries = getEntriesForDate(currentDate);
+      const total = dayEntries.reduce((sum, e) => sum + e.minutes, 0);
+      document.getElementById('totalMinutes').textContent = `${total} min`;
+    }
+    
+    function deleteEntry(id) {
+      if (confirm('Delete this entry?')) {
+        const dayEntries = entries[currentDate];
+        entries[currentDate] = dayEntries.filter(e => e.id !== id);
+        if (entries[currentDate].length === 0) delete entries[currentDate];
+        saveData();
+        renderEntries();
+        updateTotal();
+      }
+    }
+    
+    function editEntry(id) {
+      const dayEntries = entries[currentDate];
+      const entry = dayEntries.find(e => e.id === id);
+      if (!entry) return;
+      
+      editingId = id;
+      populateEventSelect('editEventSelect', entry.event);
+      document.getElementById('editDatetimeInput').value = entry.datetime;
+      document.getElementById('editMinutesInput').value = entry.minutes;
+      document.getElementById('editModal').classList.add('show');
+    }
+    
+    function saveEdit() {
+      const dayEntries = entries[currentDate];
+      const index = dayEntries.findIndex(e => e.id === editingId);
+      if (index === -1) return;
+      
+      dayEntries[index] = {
+        id: editingId,
+        event: document.getElementById('editEventSelect').value,
+        datetime: document.getElementById('editDatetimeInput').value,
+        minutes: parseInt(document.getElementById('editMinutesInput').value) || 0
+      };
+      
+      dayEntries.sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
+      entries[currentDate] = dayEntries;
+      
+      const oldDate = currentDate;
+      const newDate = dayEntries[index].datetime.split('T')[0];
+      
+      if (newDate !== oldDate) {
+        if (!entries[newDate]) entries[newDate] = [];
+        entries[newDate].push(dayEntries[index]);
+        entries[oldDate] = entries[oldDate].filter(e => e.id !== editingId);
+        if (entries[oldDate].length === 0) delete entries[oldDate];
+        currentDate = newDate;
+        document.getElementById('datePicker').value = currentDate;
+      }
+      
+      saveData();
+      document.getElementById('editModal').classList.remove('show');
+      renderEntries();
+      updateTotal();
+    }
+    
+    function getPeriodDates(period) {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      const day = now.getDate();
+      const dayOfWeek = now.getDay();
+      
+      let startDate, endDate;
+      
+      if (period === 'week') {
+        const start = new Date(now);
+        start.setDate(day - dayOfWeek + (reportOffset * 7));
+        const end = new Date(start);
+        end.setDate(start.getDate() + 6);
+        startDate = start.toISOString().split('T')[0];
+        endDate = end.toISOString().split('T')[0];
+      } else if (period === 'month') {
+        const start = new Date(year, month + reportOffset, 1);
+        const end = new Date(year, month + reportOffset + 1, 0);
+        startDate = start.toISOString().split('T')[0];
+        endDate = end.toISOString().split('T')[0];
+      } else {
+        const start = new Date(year + reportOffset, 0, 1);
+        const end = new Date(year + reportOffset, 11, 31);
+        startDate = start.toISOString().split('T')[0];
+        endDate = end.toISOString().split('T')[0];
+      }
+      
+      return { startDate, endDate };
+    }
+    
+    function renderReport() {
+      const period = document.getElementById('periodSelect').value;
+      const { startDate, endDate = startDate } = getPeriodDates(period);
+      
+      let title = '';
+      if (period === 'week') {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        title = `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`;
+      } else if (period === 'month') {
+        const start = new Date(startDate);
+        title = start.toLocaleDateString([], { month: 'long', year: 'numeric' });
+      } else {
+        title = new Date(startDate).getFullYear().toString();
+      }
+      document.getElementById('reportTitle').textContent = title;
+      
+      const totals = {};
+      Object.keys(entries).forEach(date => {
+        if (date >= startDate && date <= endDate) {
+          entries[date].forEach(entry => {
+            if (!totals[entry.event]) totals[entry.event] = 0;
+            totals[entry.event] += entry.minutes;
+          });
+        }
+      });
+      
+      const grid = document.getElementById('reportGrid');
+      if (Object.keys(totals).length === 0) {
+        grid.innerHTML = '<div class="empty-state">No data for this period</div>';
+        document.getElementById('reportTotal').textContent = '0 min';
+        return;
+      }
+      
+      const sorted = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+      let grandTotal = 0;
+      
+      grid.innerHTML = sorted.map(([event, minutes]) => {
+        grandTotal += minutes;
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        const display = hours > 0 ? `${hours}h ${mins}m` : `${mins} min`;
+        return `
+          <div class="report-item">
+            <div class="report-event">${event}</div>
+            <div class="report-time">${display}</div>
+            <div class="report-unit">${minutes} min total</div>
+          </div>
+        `;
+      }).join('');
+      
+      const totalHours = Math.floor(grandTotal / 60);
+      const totalMins = grandTotal % 60;
+      document.getElementById('reportTotal').textContent = totalHours > 0 ? `${totalHours}h ${totalMins}m` : `${grandTotal} min`;
+    }
+    
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        
+        document.getElementById('trackerTab').classList.add('hidden');
+        document.getElementById('reportsTab').classList.add('hidden');
+        document.getElementById('settingsTab').classList.add('hidden');
+        
+        const tabId = tab.dataset.tab + 'Tab';
+        document.getElementById(tabId).classList.remove('hidden');
+        
+        if (tab.dataset.tab === 'reports') {
+          renderReport();
+        }
+      });
+    });
+    
+    document.getElementById('datePicker').addEventListener('change', (e) => {
+      currentDate = e.target.value;
+      renderEntries();
+      updateTotal();
+    });
+    
+    document.getElementById('prevDay').addEventListener('click', () => {
+      const d = new Date(currentDate);
+      d.setDate(d.getDate() - 1);
+      currentDate = d.toISOString().split('T')[0];
+      document.getElementById('datePicker').value = currentDate;
+      renderEntries();
+      updateTotal();
+    });
+    
+    document.getElementById('nextDay').addEventListener('click', () => {
+      const d = new Date(currentDate);
+      d.setDate(d.getDate() + 1);
+      currentDate = d.toISOString().split('T')[0];
+      document.getElementById('datePicker').value = currentDate;
+      renderEntries();
+      updateTotal();
+    });
+    
+    document.getElementById('addEntry').addEventListener('click', addEntry);
+    
+    document.getElementById('addEventBtn').addEventListener('click', addEvent);
+    document.getElementById('newEventInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') addEvent();
+    });
+    
+    document.getElementById('cancelEdit').addEventListener('click', () => {
+      document.getElementById('editModal').classList.remove('show');
+    });
+    
+    document.getElementById('saveEdit').addEventListener('click', saveEdit);
+    
+    document.getElementById('periodSelect').addEventListener('change', () => {
+      reportOffset = 0;
+      renderReport();
+    });
+    
+    document.getElementById('prevPeriod').addEventListener('click', () => {
+      reportOffset--;
+      renderReport();
+    });
+    
+    document.getElementById('nextPeriod').addEventListener('click', () => {
+      if (reportOffset < 0) {
+        reportOffset++;
+        renderReport();
+      }
+    });
+    
+    populateEventSelect('eventSelect');
+    populateEventSelect('editEventSelect');
+    renderEventTags();
+    initDatePicker();
+    renderEntries();
+    updateTotal();
+  </script>
+</body>
+</html>
