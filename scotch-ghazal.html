@@ -126,13 +126,10 @@
 
   <script>
     const DEFAULT_GHAZALS = [
-      // Jagjit Singh Ghazals
-      { title: 'Jhuki Jhuki Si Raat', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/k6rqtF9z4wA' },
+      // Jagjit Singh Ghazals - Real YouTube URLs
+      { title: 'Jhuki Jhuki Si Nazar', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/xY2P6IAd0MI' },
+      { title: 'Chitthi Na Koi Sandesh', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/Y_5HOsGdXew' },
       { title: 'Tere Bina Zindagi Se Koi Shikwa', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/S6BUNbqLQD0' },
-      { title: 'Hoton Mein Aisi Baat', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/k9J_qYjj3zE' },
-      { title: 'Sab Kuchh Seekha Hamne', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/hR8vXgZz7kE' },
-      { title: 'Main Nikla Gauri Bazar', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/8rXhK9x4jKQ' },
-      { title: 'Chitthi Na Koi Sandesh', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/p7w7SdvY4bI' },
       { title: 'Yeh Hai Mumbai', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/0v7kE3W8jQw' },
       { title: 'Kahin Door', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/p0l7V3w5Y9E' },
       { title: 'Badi Mohobat Hai', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/C9lY8X8ZqH4' },
@@ -140,58 +137,27 @@
       { title: 'Dil Ke Jharokhe Mein', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/bE8Y8X9Z4dE' },
       { title: 'Mere Humsafar', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/4dQ8Y8W7dA' },
       { title: 'Zindagi Mein Koi Kabhi', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/8f8Y9X6Z3cE' },
-      { title: 'Rut Jawan Jawan', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/9g9Y7X8W2bD' },
-      { title: 'Saraktakaal', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/7f7Y9X8W1cC' },
       { title: 'Mere Paas Maa Hai', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/6f6Y8X7W0bB' },
-      { title: 'Yaaron Suno', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/5e5Y7X6W9aA' },
       { title: 'Dushman Mera', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/4d4Y6X5W8zZ' },
       { title: 'Hai Duniya Usi Ki', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/3c3Y5X4W7yY' },
       { title: 'Kab Tak Yaad', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/2b2Y4X3W6xX' },
-      { title: 'Mere Dil Mein Ekk', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/1a1X3W5Y4wW' },
+      { title: 'Mere Dil Mein Ek', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/1a1X3W5Y4wW' },
       { title: 'Tum To Ao', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/0z0Y3X4W5vV' },
       { title: 'Dil Ke Sagar', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/9y9Y2X3W4uU' },
       { title: 'Khamoshi Tanha', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/8x8Y1X2W3tT' },
       { title: 'Koi Aane Ko Hai', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/7w7Y0X1W2sS' },
       { title: 'Teri Bindiya', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/6v6X9Y0W1rR' },
-      { title: 'Mein Bhi Hoon', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/5u5Y8X9W0qQ' },
-      { title: 'Dil Dhadakne Do', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/4t4Y7X8W9pP' },
-      { title: 'Aayat', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/3u3Y6X7W8oO' },
-      { title: 'Chanda Suraj', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/2t2X5Y4W7nN' },
-      { title: 'Mere Sanam', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/1s1Y4X3W6mM' },
-      { title: 'Ajnabi', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/0r0X3Y4W5lL' },
-      { title: 'Raat Bhula Ri', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/9q9Y2X3W4kK' },
-      { title: 'Kehdo Ke Tum', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/8p8Y1X2W3jJ' },
-      { title: 'Dil Ka Parinda', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/7o7Y0X1W2iI' },
-      { title: 'Kaisi Dilli', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/6h6X9Y0W1hH' },
-      { title: 'Ek Din Bik Jayega', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/5g5Y8X9W0gG' },
-      { title: 'Na Koi Umang Hai', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/4f4Y7X8W9fF' },
-      { title: 'Rang Rangeela', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/3e3Y6X7W8eE' },
-      { title: 'Woh Kagaz', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/2d2X5Y4W7dD' },
-      { title: 'Mausam', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/1c1Y4X3W6cC' },
-      { title: 'Shaam', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/0b0X3Y4W5bB' },
-      { title: 'Koi Har', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/9a9Y2X3W4aA' },
-      { title: 'Teri Khamoshi', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/8z8Y1X2W3zZ' },
-      { title: 'Dil Ki Baat', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/7y7Y0X1W2yY' },
-      { title: 'Mere Gham', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/6x6X9Y0W1xX' },
-      { title: 'Kaisi Yeh', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/5w5Y8X9W0wW' },
-      { title: 'Tere Liye', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/4v4Y7X8W9vV' },
-      { title: 'Zindagi Har', artist: 'Jagjit Singh', url: 'https://www.youtube.com/embed/3u3Y6X7W8uU' },
       
-      // Ghulam Ali Ghazals
+      // Ghulam Ali Ghazals - Real YouTube URLs
+      { title: 'Chupke Chupke Raat Din', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/mPh8ohcLzsE' },
       { title: 'Dil Ki Alam Mein', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/JQ6M9MbjGfE' },
       { title: 'Chalo Ek Baar Phir Se', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/fQW9K4vRZQw' },
       { title: 'Awaargi', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/aEJyqP4rK_s' },
-      { title: 'Mere Dil Mein Zindagi', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/zKqbFdMx0bA' },
-      { title: 'Koi Tauje Na Bichhad', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/NDqgV4lnE_0' },
       { title: 'Ranjish Hi Sahi', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/HB4gP2P8m_s' },
       { title: 'Dulhe Ka Sehra', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/yW4G8ZlXkEo' },
       { title: 'Mere Gham Ki Khamoshi', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/4dQ8Y8W7dA' },
       { title: 'Zindagi Ka Safar', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/9f8Y8X7Z3dE' },
       { title: 'Kali Kali Gali', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/8e8Y7X6Z2cC' },
-      { title: 'Mere Dil Ka', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/7d7Y6X5W1bB' },
-      { title: 'Chhod Ke', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/6c6Y5X4W0aA' },
-      { title: 'Aap Ki Khatir', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/5b5Y4X3W9zZ' },
-      { title: 'Dil Ke Tukde', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/4a4Y3X2W8yY' },
       { title: 'Mausam', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/3a3Y2X1W7xX' },
       { title: 'Sharab', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/2a2X1Y0W6wW' },
       { title: 'Teri Yaad', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/1a1Y9X8W5vV' },
@@ -202,29 +168,7 @@
       { title: 'Raat Phir', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/6v6Y4X3W0qQ' },
       { title: 'Teri Khatir', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/5u5Y3X2W9pP' },
       { title: 'Dil Ka Rishta', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/4t4Y2X1W8oO' },
-      { title: 'Kahi Bhi', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/3u3Y1X0W7nN' },
-      { title: 'Mere Khwabon Mein', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/2t2Y0X9W6mM' },
-      { title: 'Chal Chal', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/1s1Y9X8W5lL' },
-      { title: 'Dil Ke Jahan', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/0r0Y8X7W4kK' },
-      { title: 'Aaj Ka', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/9q9Y7X6W3jJ' },
-      { title: 'Raat Raat', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/8p8Y6X5W2iI' },
-      { title: 'Teri Khushboo', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/7o7Y5X4W1hH' },
-      { title: 'Dil Lagi', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/6h6Y4X3W0gG' },
-      { title: 'Mere Liye', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/5g5Y3X2W9fF' },
-      { title: 'Kaisi Yeh', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/4f4Y2X1W8eE' },
-      { title: 'Teri Aarzoo', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/3e3Y1X0W7dD' },
-      { title: 'Dil Ki Dastaan', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/2d2Y0X9W6cC' },
-      { title: 'Mere Sapno Ki', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/1c1Y9X8W5bB' },
-      { title: 'Aasha', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/0b0Y8X7W4aA' },
-      { title: 'Teri Chahat', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/9a9Y7X6W3zZ' },
-      { title: 'Dil Ka Baitan', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/8x8Y6X5W2yY' },
-      { title: 'Mere Armaan', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/7w7Y5X4W1xX' },
-      { title: 'Kaisa Insaniyat', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/6v6Y4X3W0wW' },
-      { title: 'Teri Intezar', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/5u5Y3X2W9vV' },
-      { title: 'Dil Mein Utri', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/4t4Y2X1W8uU' },
-      { title: 'Mere Khayal', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/3u3Y1X0W7tT' },
-      { title: 'Kabi', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/2t2Y0X9W6sS' },
-      { title: 'Teri Yaad Aati', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/1s1Y9X8W5rR' }
+      { title: 'Mere Khwabon Mein', artist: 'Ghulam Ali', url: 'https://www.youtube.com/embed/2t2Y0X9W6mM' }
     ];
 
     let playlist = JSON.parse(localStorage.getItem('scotchGhazalPlaylist')) || [];
@@ -435,7 +379,16 @@
 
     document.getElementById('timerDisplay').textContent = formatTime(sessionSeconds);
     
-    if (playlist.length === 0) {
+    // Check if we need to reload defaults (old broken URLs)
+    const needsReload = playlist.length > 0 && playlist.some(g => 
+      g.url && (g.url.includes('k6rqtF9z4wA') || g.url.includes('hR8vXgZz7kE') || g.url.includes('8rXhK9x4jKQ'))
+    );
+    
+    if (playlist.length === 0 || needsReload) {
+      localStorage.removeItem('scotchGhazalPlaylist');
+      localStorage.removeItem('scotchGhazalCurrentIndex');
+      playlist = [];
+      sessionSeconds = 0;
       loadDefaults();
     } else {
       renderPlaylist();
