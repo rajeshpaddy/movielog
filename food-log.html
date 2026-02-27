@@ -41,10 +41,13 @@
     .exercise-calories .value { font-size: 24px; font-weight: bold; color: #ff6b9d; }
 
     .detected-foods { margin-top: 8px; font-size: 12px; color: #888; }
-    .detected-foods span { background: #0f3460; padding: 2px 6px; border-radius: 4px; margin-right: 4px; }
+    .detected-foods span { background: #; padding: 2px 60f3460px; border-radius: 4px; margin-right: 4px; display: inline-block; margin-bottom: 2px; }
     .detected-foods .modifier { background: #1a4a2e; color: #00ff88; }
+    .detected-foods .api-match { background: #1a3a5e; color: #00d9ff; }
+    .detected-foods .not-found { background: #3a1a1a; color: #ff6b6b; }
     .save-indicator { position: fixed; bottom: 20px; right: 20px; background: #00ff88; color: #000; padding: 8px 16px; border-radius: 8px; font-size: 14px; opacity: 0; transition: opacity 0.3s; }
     .save-indicator.show { opacity: 1; }
+    .loading-api { font-size: 10px; color: #00d9ff; margin-left: 8px; }
   </style>
 </head>
 <body>
@@ -85,39 +88,381 @@
 
   <script>
     const foodDatabase = {
-      'egg': 78, 'eggs': 156, 'two eggs': 156, 'three eggs': 234, 'four eggs': 312,
-      'bread': 79, 'toast': 79, 'slice of bread': 79, 'two slices': 158, 'three slices': 237,
-      'rice': 206, 'cup of rice': 206, 'one cup rice': 206, 'bowl of rice': 300, 'half cup rice': 103,
-      'chicken': 165, 'chicken breast': 165, 'chicken leg': 130, 'chicken wing': 100, 'grilled chicken': 165, 'fried chicken': 260,
-      'beef': 250, 'steak': 271, 'ground beef': 250, 'beef steak': 271, 'mutton': 294, 'lamb': 250,
-      'fish': 136, 'salmon': 208, 'tuna': 132, 'shrimp': 99, 'prawn': 99, 'cod': 105, 'fish fry': 200,
-      'pasta': 220, 'spaghetti': 220, 'noodles': 190, 'macaroni': 220, 'pasta sauce': 120,
-      'pizza': 285, 'slice of pizza': 285, 'one slice pizza': 285, 'two slices pizza': 570,
-      'burger': 295, 'hamburger': 295, 'cheeseburger': 313, 'veg burger': 250,
-      'sandwich': 250, 'grilled cheese': 290, 'club sandwich': 350,
-      'salad': 150, 'green salad': 80, 'caesar salad': 190, 'veg salad': 100, 'fruit salad': 120,
-      'apple': 95, 'banana': 105, 'orange': 62, 'mango': 99, 'grapes': 62, 'strawberry': 4, 'watermelon': 46, 'pineapple': 82, 'papaya': 55,
-      'milk': 103, 'glass of milk': 103, 'cup of milk': 103, 'boiled egg': 78, 'omelette': 154, 'scrambled eggs': 147,
-      'dal': 230, 'lentils': 230, 'dal tadka': 250, 'moong dal': 105, 'rajma': 225, 'chole': 250,
-      'roti': 120, 'chapati': 120, 'two rotis': 240, 'three rotis': 360, 'paratha': 260, 'naan': 260,
-      'paneer': 265, 'paneer curry': 320, 'paneer bhurji': 240, 'cottage cheese': 265,
-      'vegetables': 80, 'mixed veg': 100, 'bhindi': 150, 'aloo': 150, 'gobhi': 150, 'mushroom': 15, 'spinach': 23,
-      'soup': 80, 'chicken soup': 120, 'veg soup': 60, 'tomato soup': 75,
-      'curry': 250, 'biryani': 320, 'pulav': 280, 'fried rice': 300, 'lemon rice': 250, 'jeera rice': 240,
-      'dosa': 150, 'idli': 144, 'two idlis': 288, 'three idlis': 432, 'uttapam': 200, 'vada': 150, 'samosa': 260,
-      'puran poli': 280, 'modak': 100, 'laddu': 80, 'barfi': 120, 'halwa': 180, 'gulab jamun': 180, 'rasgulla': 120,
-      'ice cream': 137, 'scoop ice cream': 137, 'chocolate': 230, 'candy': 40, 'cookie': 50, 'biscuit': 50,
-      'chips': 152, 'fries': 312, 'french fries': 312, 'popcorn': 31, 'nuts': 185, 'almonds': 164, 'cashew': 157, 'peanuts': 161,
-      'coffee': 5, 'cup of coffee': 5, 'tea': 45, 'cup of tea': 45, 'black coffee': 2, 'black tea': 2,
-      'juice': 110, 'orange juice': 112, 'apple juice': 114, 'mango juice': 120, 'cold drink': 140, 'soda': 140,
-      'water': 0, 'glass of water': 0,
-      'oats': 150, 'cereal': 150, 'cornflakes': 110, 'granola': 120, 'muesli': 140,
-      'yogurt': 100, 'curd': 100, 'raita': 60, 'buttermilk': 40, 'lassi': 130,
-      'butter': 102, 'cheese': 113, 'cheddar': 113, 'mozzarella': 85, 'cream': 200,
-      'idli sambar': 250, 'dosa sambar': 280, 'bhelpuri': 150, 'pani puri': 120, 'chaat': 200, 'pakora': 180,
-      'upma': 200, 'poha': 200, 'parantha': 260, 'aloo paratha': 300, 'gobi paratha': 280,
-      'khichdi': 200, 'pongal': 280, 'poori': 230, 'two pooris': 460, 'bhature': 300, 'chole bhature': 450,
-      'dhal': 230, 'sambar': 120, 'rasam': 80, 'pickle': 20, 'chutney': 30
+      'egg': { cal: 78, unit: 'piece', defaultQty: 1 },
+      'eggs': { cal: 78, unit: 'piece', defaultQty: 1 },
+      'two eggs': { cal: 156, unit: 'serving', defaultQty: 2 },
+      'three eggs': { cal: 234, unit: 'serving', defaultQty: 3 },
+      'four eggs': { cal: 312, unit: 'serving', defaultQty: 4 },
+      'boiled egg': { cal: 78, unit: 'piece', defaultQty: 1 },
+      'fried egg': { cal: 90, unit: 'piece', defaultQty: 1 },
+      'omelette': { cal: 154, unit: 'serving', defaultQty: 1 },
+      'scrambled eggs': { cal: 147, unit: 'serving', defaultQty: 1 },
+      
+      'bread': { cal: 79, unit: 'slice', defaultQty: 1 },
+      'toast': { cal: 79, unit: 'slice', defaultQty: 1 },
+      'slice of bread': { cal: 79, unit: 'slice', defaultQty: 1 },
+      'two slices': { cal: 158, unit: 'serving', defaultQty: 2 },
+      'three slices': { cal: 237, unit: 'serving', defaultQty: 3 },
+      'brown bread': { cal: 69, unit: 'slice', defaultQty: 1 },
+      'multigrain bread': { cal: 65, unit: 'slice', defaultQty: 1 },
+      
+      'rice': { cal: 206, unit: 'cup', defaultQty: 1 },
+      'cup of rice': { cal: 206, unit: 'cup', defaultQty: 1 },
+      'bowl of rice': { cal: 300, unit: 'bowl', defaultQty: 1 },
+      'half cup rice': { cal: 103, unit: 'cup', defaultQty: 0.5 },
+      'fried rice': { cal: 300, unit: 'cup', defaultQty: 1 },
+      'biryani': { cal: 320, unit: 'serving', defaultQty: 1 },
+      'pulav': { cal: 280, unit: 'serving', defaultQty: 1 },
+      'lemon rice': { cal: 250, unit: 'serving', defaultQty: 1 },
+      'jeera rice': { cal: 240, unit: 'serving', defaultQty: 1 },
+      'pulao': { cal: 280, unit: 'serving', defaultQty: 1 },
+      
+      'chicken': { cal: 165, unit: 'serving', defaultQty: 1 },
+      'chicken breast': { cal: 165, unit: 'serving', defaultQty: 1 },
+      'chicken leg': { cal: 130, unit: 'piece', defaultQty: 1 },
+      'chicken wing': { cal: 100, unit: 'piece', defaultQty: 1 },
+      'grilled chicken': { cal: 165, unit: 'serving', defaultQty: 1 },
+      'fried chicken': { cal: 260, unit: 'serving', defaultQty: 1 },
+      'chicken curry': { cal: 280, unit: 'serving', defaultQty: 1 },
+      'butter chicken': { cal: 350, unit: 'serving', defaultQty: 1 },
+      'tandoori chicken': { cal: 260, unit: 'serving', defaultQty: 1 },
+      'chicken tikka': { cal: 280, unit: 'serving', defaultQty: 1 },
+      'chicken 65': { cal: 300, unit: 'serving', defaultQty: 1 },
+      
+      'beef': { cal: 250, unit: 'serving', defaultQty: 1 },
+      'steak': { cal: 271, unit: 'serving', defaultQty: 1 },
+      'beef steak': { cal: 271, unit: 'serving', defaultQty: 1 },
+      'ground beef': { cal: 250, unit: 'serving', defaultQty: 1 },
+      'mutton': { cal: 294, unit: 'serving', defaultQty: 1 },
+      'lamb': { cal: 250, unit: 'serving', defaultQty: 1 },
+      'goat curry': { cal: 280, unit: 'serving', defaultQty: 1 },
+      
+      'fish': { cal: 136, unit: 'serving', defaultQty: 1 },
+      'salmon': { cal: 208, unit: 'serving', defaultQty: 1 },
+      'tuna': { cal: 132, unit: 'serving', defaultQty: 1 },
+      'shrimp': { cal: 99, unit: 'serving', defaultQty: 1 },
+      'prawn': { cal: 99, unit: 'serving', defaultQty: 1 },
+      'cod': { cal: 105, unit: 'serving', defaultQty: 1 },
+      'fish fry': { cal: 200, unit: 'serving', defaultQty: 1 },
+      'fish curry': { cal: 180, unit: 'serving', defaultQty: 1 },
+      'prawn curry': { cal: 220, unit: 'serving', defaultQty: 1 },
+      
+      'pasta': { cal: 220, unit: 'cup', defaultQty: 1 },
+      'spaghetti': { cal: 220, unit: 'cup', defaultQty: 1 },
+      'noodles': { cal: 190, unit: 'cup', defaultQty: 1 },
+      'macaroni': { cal: 220, unit: 'cup', defaultQty: 1 },
+      'pasta sauce': { cal: 120, unit: 'serving', defaultQty: 1 },
+      'mac and cheese': { cal: 350, unit: 'serving', defaultQty: 1 },
+      'lasagna': { cal: 320, unit: 'serving', defaultQty: 1 },
+      
+      'pizza': { cal: 285, unit: 'slice', defaultQty: 1 },
+      'slice of pizza': { cal: 285, unit: 'slice', defaultQty: 1 },
+      'one slice pizza': { cal: 285, unit: 'slice', defaultQty: 1 },
+      'two slices pizza': { cal: 570, unit: 'serving', defaultQty: 2 },
+      'small pizza': { cal: 600, unit: 'piece', defaultQty: 1 },
+      'medium pizza': { cal: 800, unit: 'piece', defaultQty: 1 },
+      'large pizza': { cal: 1000, unit: 'piece', defaultQty: 1 },
+      'pizza slice': { cal: 285, unit: 'slice', defaultQty: 1 },
+      
+      'burger': { cal: 295, unit: 'piece', defaultQty: 1 },
+      'hamburger': { cal: 295, unit: 'piece', defaultQty: 1 },
+      'cheeseburger': { cal: 313, unit: 'piece', defaultQty: 1 },
+      'veg burger': { cal: 250, unit: 'piece', defaultQty: 1 },
+      'chicken burger': { cal: 320, unit: 'piece', defaultQty: 1 },
+      
+      'sandwich': { cal: 250, unit: 'piece', defaultQty: 1 },
+      'grilled cheese': { cal: 290, unit: 'piece', defaultQty: 1 },
+      'club sandwich': { cal: 350, unit: 'piece', defaultQty: 1 },
+      'peanut butter sandwich': { cal: 320, unit: 'piece', defaultQty: 1 },
+      'jam sandwich': { cal: 280, unit: 'piece', defaultQty: 1 },
+      
+      'salad': { cal: 150, unit: 'serving', defaultQty: 1 },
+      'green salad': { cal: 80, unit: 'serving', defaultQty: 1 },
+      'caesar salad': { cal: 190, unit: 'serving', defaultQty: 1 },
+      'veg salad': { cal: 100, unit: 'serving', defaultQty: 1 },
+      'fruit salad': { cal: 120, unit: 'serving', defaultQty: 1 },
+      'chicken salad': { cal: 220, unit: 'serving', defaultQty: 1 },
+      
+      'apple': { cal: 95, unit: 'piece', defaultQty: 1 },
+      'banana': { cal: 105, unit: 'piece', defaultQty: 1 },
+      'orange': { cal: 62, unit: 'piece', defaultQty: 1 },
+      'mango': { cal: 99, unit: 'piece', defaultQty: 1 },
+      'grapes': { cal: 62, unit: 'cup', defaultQty: 1 },
+      'strawberry': { cal: 4, unit: 'piece', defaultQty: 1 },
+      'watermelon': { cal: 46, unit: 'cup', defaultQty: 1 },
+      'pineapple': { cal: 82, unit: 'cup', defaultQty: 1 },
+      'papaya': { cal: 55, unit: 'cup', defaultQty: 1 },
+      'guava': { cal: 37, unit: 'piece', defaultQty: 1 },
+      'pomegranate': { cal: 83, unit: 'serving', defaultQty: 1 },
+      'kiwi': { cal: 42, unit: 'piece', defaultQty: 1 },
+      
+      'milk': { cal: 103, unit: 'cup', defaultQty: 1 },
+      'glass of milk': { cal: 103, unit: 'glass', defaultQty: 1 },
+      'cup of milk': { cal: 103, unit: 'cup', defaultQty: 1 },
+      'almond milk': { cal: 39, unit: 'cup', defaultQty: 1 },
+      'oat milk': { cal: 120, unit: 'cup', defaultQty: 1 },
+      'soy milk': { cal: 80, unit: 'cup', defaultQty: 1 },
+      
+      'dal': { cal: 230, unit: 'serving', defaultQty: 1 },
+      'lentils': { cal: 230, unit: 'serving', defaultQty: 1 },
+      'dal tadka': { cal: 250, unit: 'serving', defaultQty: 1 },
+      'moong dal': { cal: 105, unit: 'serving', defaultQty: 1 },
+      'rajma': { cal: 225, unit: 'serving', defaultQty: 1 },
+      'chole': { cal: 250, unit: 'serving', defaultQty: 1 },
+      'dal makhani': { cal: 280, unit: 'serving', defaultQty: 1 },
+      'toor dal': { cal: 110, unit: 'serving', defaultQty: 1 },
+      
+      'roti': { cal: 120, unit: 'piece', defaultQty: 1 },
+      'chapati': { cal: 120, unit: 'piece', defaultQty: 1 },
+      'two rotis': { cal: 240, unit: 'serving', defaultQty: 2 },
+      'three rotis': { cal: 360, unit: 'serving', defaultQty: 3 },
+      'paratha': { cal: 260, unit: 'piece', defaultQty: 1 },
+      'naan': { cal: 260, unit: 'piece', defaultQty: 1 },
+      'butter naan': { cal: 320, unit: 'piece', defaultQty: 1 },
+      'garlic naan': { cal: 300, unit: 'piece', defaultQty: 1 },
+      'tandoori roti': { cal: 100, unit: 'piece', defaultQty: 1 },
+      
+      'paneer': { cal: 265, unit: 'serving', defaultQty: 1 },
+      'paneer curry': { cal: 320, unit: 'serving', defaultQty: 1 },
+      'paneer bhurji': { cal: 240, unit: 'serving', defaultQty: 1 },
+      'cottage cheese': { cal: 265, unit: 'serving', defaultQty: 1 },
+      'palak paneer': { cal: 290, unit: 'serving', defaultQty: 1 },
+      'paneer tikka': { cal: 310, unit: 'serving', defaultQty: 1 },
+      'matar paneer': { cal: 280, unit: 'serving', defaultQty: 1 },
+      
+      'vegetables': { cal: 80, unit: 'serving', defaultQty: 1 },
+      'mixed veg': { cal: 100, unit: 'serving', defaultQty: 1 },
+      'bhindi': { cal: 150, unit: 'serving', defaultQty: 1 },
+      'aloo': { cal: 150, unit: 'serving', defaultQty: 1 },
+      'gobhi': { cal: 150, unit: 'serving', defaultQty: 1 },
+      'mushroom': { cal: 15, unit: 'serving', defaultQty: 1 },
+      'spinach': { cal: 23, unit: 'serving', defaultQty: 1 },
+      'potato': { cal: 163, unit: 'piece', defaultQty: 1 },
+      'sweet potato': { cal: 103, unit: 'piece', defaultQty: 1 },
+      'carrot': { cal: 25, unit: 'piece', defaultQty: 1 },
+      'broccoli': { cal: 55, unit: 'serving', defaultQty: 1 },
+      
+      'soup': { cal: 80, unit: 'cup', defaultQty: 1 },
+      'chicken soup': { cal: 120, unit: 'cup', defaultQty: 1 },
+      'veg soup': { cal: 60, unit: 'cup', defaultQty: 1 },
+      'tomato soup': { cal: 75, unit: 'cup', defaultQty: 1 },
+      'sambar': { cal: 120, unit: 'serving', defaultQty: 1 },
+      'rasam': { cal: 80, unit: 'serving', defaultQty: 1 },
+      
+      'curry': { cal: 250, unit: 'serving', defaultQty: 1 },
+      'dosa': { cal: 150, unit: 'piece', defaultQty: 1 },
+      'masala dosa': { cal: 280, unit: 'piece', defaultQty: 1 },
+      'idli': { cal: 72, unit: 'piece', defaultQty: 1 },
+      'two idlis': { cal: 144, unit: 'serving', defaultQty: 2 },
+      'three idlis': { cal: 216, unit: 'serving', defaultQty: 3 },
+      'uttapam': { cal: 200, unit: 'piece', defaultQty: 1 },
+      'vada': { cal: 150, unit: 'piece', defaultQty: 1 },
+      'samosa': { cal: 260, unit: 'piece', defaultQty: 1 },
+      
+      'puran poli': { cal: 280, unit: 'piece', defaultQty: 1 },
+      'modak': { cal: 100, unit: 'piece', defaultQty: 1 },
+      'laddu': { cal: 80, unit: 'piece', defaultQty: 1 },
+      'barfi': { cal: 120, unit: 'piece', defaultQty: 1 },
+      'halwa': { cal: 180, unit: 'serving', defaultQty: 1 },
+      'gulab jamun': { cal: 180, unit: 'piece', defaultQty: 1 },
+      'rasgulla': { cal: 120, unit: 'piece', defaultQty: 1 },
+      'jalebi': { cal: 150, unit: 'piece', defaultQty: 1 },
+      'mithai': { cal: 150, unit: 'serving', defaultQty: 1 },
+      
+      'ice cream': { cal: 137, unit: 'scoop', defaultQty: 1 },
+      'scoop ice cream': { cal: 137, unit: 'scoop', defaultQty: 1 },
+      'vanilla ice cream': { cal: 137, unit: 'scoop', defaultQty: 1 },
+      'chocolate ice cream': { cal: 180, unit: 'scoop', defaultQty: 1 },
+      'chocolate': { cal: 230, unit: 'bar', defaultQty: 1 },
+      'candy': { cal: 40, unit: 'piece', defaultQty: 1 },
+      'cookie': { cal: 50, unit: 'piece', defaultQty: 1 },
+      'biscuit': { cal: 50, unit: 'piece', defaultQty: 1 },
+      'dark chocolate': { cal: 170, unit: 'piece', defaultQty: 1 },
+      
+      'chips': { cal: 152, unit: 'serving', defaultQty: 1 },
+      'fries': { cal: 312, unit: 'serving', defaultQty: 1 },
+      'french fries': { cal: 312, unit: 'serving', defaultQty: 1 },
+      'popcorn': { cal: 31, unit: 'cup', defaultQty: 1 },
+      'nuts': { cal: 185, unit: 'serving', defaultQty: 1 },
+      'almonds': { cal: 164, unit: 'serving', defaultQty: 1 },
+      'cashew': { cal: 157, unit: 'serving', defaultQty: 1 },
+      'peanuts': { cal: 161, unit: 'serving', defaultQty: 1 },
+      'walnuts': { cal: 185, unit: 'serving', defaultQty: 1 },
+      'pistachio': { cal: 159, unit: 'serving', defaultQty: 1 },
+      
+      'coffee': { cal: 5, unit: 'cup', defaultQty: 1 },
+      'cup of coffee': { cal: 5, unit: 'cup', defaultQty: 1 },
+      'tea': { cal: 45, unit: 'cup', defaultQty: 1 },
+      'cup of tea': { cal: 45, unit: 'cup', defaultQty: 1 },
+      'black coffee': { cal: 2, unit: 'cup', defaultQty: 1 },
+      'black tea': { cal: 2, unit: 'cup', defaultQty: 1 },
+      'latte': { cal: 120, unit: 'cup', defaultQty: 1 },
+      'cappuccino': { cal: 80, unit: 'cup', defaultQty: 1 },
+      'espresso': { cal: 3, unit: 'shot', defaultQty: 1 },
+      'masala tea': { cal: 80, unit: 'cup', defaultQty: 1 },
+      
+      'juice': { cal: 110, unit: 'cup', defaultQty: 1 },
+      'orange juice': { cal: 112, unit: 'cup', defaultQty: 1 },
+      'apple juice': { cal: 114, unit: 'cup', defaultQty: 1 },
+      'mango juice': { cal: 120, unit: 'cup', defaultQty: 1 },
+      'cold drink': { cal: 140, unit: 'can', defaultQty: 1 },
+      'soda': { cal: 140, unit: 'can', defaultQty: 1 },
+      'coke': { cal: 140, unit: 'can', defaultQty: 1 },
+      'pepsi': { cal: 150, unit: 'can', defaultQty: 1 },
+      'fanta': { cal: 150, unit: 'can', defaultQty: 1 },
+      'sprite': { cal: 140, unit: 'can', defaultQty: 1 },
+      'diet coke': { cal: 0, unit: 'can', defaultQty: 1 },
+      'diet soda': { cal: 0, unit: 'can', defaultQty: 1 },
+      'red bull': { cal: 110, unit: 'can', defaultQty: 1 },
+      'milkshake': { cal: 250, unit: 'glass', defaultQty: 1 },
+      'mango milkshake': { cal: 280, unit: 'glass', defaultQty: 1 },
+      'banana milkshake': { cal: 230, unit: 'glass', defaultQty: 1 },
+      
+      'water': { cal: 0, unit: 'glass', defaultQty: 1 },
+      'glass of water': { cal: 0, unit: 'glass', defaultQty: 1 },
+      
+      'oats': { cal: 150, unit: 'cup', defaultQty: 1 },
+      'cereal': { cal: 150, unit: 'bowl', defaultQty: 1 },
+      'cornflakes': { cal: 110, unit: 'bowl', defaultQty: 1 },
+      'granola': { cal: 120, unit: 'bowl', defaultQty: 1 },
+      'muesli': { cal: 140, unit: 'bowl', defaultQty: 1 },
+      'oatmeal': { cal: 150, unit: 'bowl', defaultQty: 1 },
+      
+      'yogurt': { cal: 100, unit: 'cup', defaultQty: 1 },
+      'curd': { cal: 100, unit: 'cup', defaultQty: 1 },
+      'raita': { cal: 60, unit: 'serving', defaultQty: 1 },
+      'buttermilk': { cal: 40, unit: 'glass', defaultQty: 1 },
+      'lassi': { cal: 130, unit: 'glass', defaultQty: 1 },
+      'sweet lassi': { cal: 180, unit: 'glass', defaultQty: 1 },
+      
+      'butter': { cal: 102, unit: 'tbsp', defaultQty: 1 },
+      'cheese': { cal: 113, unit: 'slice', defaultQty: 1 },
+      'cheddar': { cal: 113, unit: 'slice', defaultQty: 1 },
+      'mozzarella': { cal: 85, unit: 'slice', defaultQty: 1 },
+      'cream': { cal: 200, unit: 'tbsp', defaultQty: 1 },
+      'pizza cheese': { cal: 270, unit: 'serving', defaultQty: 1 },
+      
+      'idli sambar': { cal: 250, unit: 'serving', defaultQty: 1 },
+      'dosa sambar': { cal: 280, unit: 'serving', defaultQty: 1 },
+      'bhelpuri': { cal: 150, unit: 'serving', defaultQty: 1 },
+      'pani puri': { cal: 120, unit: 'piece', defaultQty: 1 },
+      'chaat': { cal: 200, unit: 'serving', defaultQty: 1 },
+      'pakora': { cal: 180, unit: 'serving', defaultQty: 1 },
+      'dhokla': { cal: 100, unit: 'piece', defaultQty: 1 },
+      
+      'upma': { cal: 200, unit: 'serving', defaultQty: 1 },
+      'poha': { cal: 200, unit: 'serving', defaultQty: 1 },
+      'parantha': { cal: 260, unit: 'piece', defaultQty: 1 },
+      'aloo paratha': { cal: 300, unit: 'piece', defaultQty: 1 },
+      'gobi paratha': { cal: 280, unit: 'piece', defaultQty: 1 },
+      
+      'khichdi': { cal: 200, unit: 'serving', defaultQty: 1 },
+      'pongal': { cal: 280, unit: 'serving', defaultQty: 1 },
+      'poori': { cal: 230, unit: 'piece', defaultQty: 1 },
+      'two pooris': { cal: 460, unit: 'serving', defaultQty: 2 },
+      'bhature': { cal: 300, unit: 'piece', defaultQty: 1 },
+      'chole bhature': { cal: 450, unit: 'serving', defaultQty: 1 },
+      
+      'pickle': { cal: 20, unit: 'serving', defaultQty: 1 },
+      'chutney': { cal: 30, unit: 'serving', defaultQty: 1 },
+      'mint chutney': { cal: 25, unit: 'serving', defaultQty: 1 },
+      'tomato ketchup': { cal: 20, unit: 'tbsp', defaultQty: 1 },
+      'mayonnaise': { cal: 90, unit: 'tbsp', defaultQty: 1 },
+      
+      'poutine': { cal: 530, unit: 'serving', defaultQty: 1 },
+      'tacos': { cal: 170, unit: 'piece', defaultQty: 1 },
+      'burrito': { cal: 450, unit: 'piece', defaultQty: 1 },
+      'quesadilla': { cal: 350, unit: 'piece', defaultQty: 1 },
+      'nachos': { cal: 350, unit: 'serving', defaultQty: 1 },
+      'tortilla': { cal: 140, unit: 'piece', defaultQty: 1 },
+      'wrap': { cal: 250, unit: 'piece', defaultQty: 1 },
+      
+      'sushi': { cal: 200, unit: 'piece', defaultQty: 1 },
+      'ramen': { cal: 350, unit: 'bowl', defaultQty: 1 },
+      'dumplings': { cal: 200, unit: 'serving', defaultQty: 1 },
+      'dim sum': { cal: 180, unit: 'serving', defaultQty: 1 },
+      'fried rice': { cal: 300, unit: 'serving', defaultQty: 1 },
+      'pad thai': { cal: 400, unit: 'serving', defaultQty: 1 },
+      
+      'dhal': { cal: 230, unit: 'serving', defaultQty: 1 },
+      'tadka dal': { cal: 240, unit: 'serving', defaultQty: 1 },
+      'veg biryani': { cal: 280, unit: 'serving', defaultQty: 1 },
+      'chicken biryani': { cal: 320, unit: 'serving', defaultQty: 1 },
+      'mutton biryani': { cal: 350, unit: 'serving', defaultQty: 1 },
+      
+      'hummus': { cal: 70, unit: 'tbsp', defaultQty: 1 },
+      'falafel': { cal: 330, unit: 'serving', defaultQty: 1 },
+      'shawarma': { cal: 350, unit: 'wrap', defaultQty: 1 },
+      'falafel wrap': { cal: 380, unit: 'wrap', defaultQty: 1 },
+      
+      'pancakes': { cal: 175, unit: 'piece', defaultQty: 1 },
+      'waffle': { cal: 218, unit: 'piece', defaultQty: 1 },
+      'french toast': { cal: 150, unit: 'slice', defaultQty: 1 },
+      'breakfast sandwich': { cal: 350, unit: 'piece', defaultQty: 1 },
+      'bagel': { cal: 277, unit: 'piece', defaultQty: 1 },
+      'croissant': { cal: 231, unit: 'piece', defaultQty: 1 },
+      'muffin': { cal: 377, unit: 'piece', defaultQty: 1 },
+      'donut': { cal: 269, unit: 'piece', defaultQty: 1 },
+      
+      'protein shake': { cal: 150, unit: 'serving', defaultQty: 1 },
+      'smoothie': { cal: 180, unit: 'glass', defaultQty: 1 },
+      'fruit smoothie': { cal: 150, unit: 'glass', defaultQty: 1 },
+      'green smoothie': { cal: 120, unit: 'glass', defaultQty: 1 },
+      
+      'quinoa': { cal: 222, unit: 'cup', defaultQty: 1 },
+      'couscous': { cal: 176, unit: 'cup', defaultQty: 1 },
+      'barley': { cal: 193, unit: 'cup', defaultQty: 1 },
+      'bulgur': { cal: 151, unit: 'cup', defaultQty: 1 },
+      
+      'tofu': { cal: 144, unit: 'serving', defaultQty: 1 },
+      'tempeh': { cal: 192, unit: 'serving', defaultQty: 1 },
+      'seitan': { cal: 370, unit: 'serving', defaultQty: 1 },
+      'vegetable stir fry': { cal: 180, unit: 'serving', defaultQty: 1 },
+      'mixed fry': { cal: 320, unit: 'serving', defaultQty: 1 },
+      
+      'pav bhaji': { cal: 350, unit: 'serving', defaultQty: 1 },
+      'vada pav': { cal: 290, unit: 'piece', defaultQty: 1 },
+      'misal pav': { cal: 320, unit: 'serving', defaultQty: 1 },
+      'shrikhand': { cal: 200, unit: 'serving', defaultQty: 1 },
+      'khandvi': { cal: 100, unit: 'piece', defaultQty: 1 },
+      'thepla': { cal: 150, unit: 'piece', defaultQty: 1 },
+      'methi thepla': { cal: 140, unit: 'piece', defaultQty: 1 },
+      'undhiyu': { cal: 250, unit: 'serving', defaultQty: 1 },
+      'dal dhokli': { cal: 280, unit: 'serving', defaultQty: 1 },
+      'gujrati dal': { cal: 200, unit: 'serving', defaultQty: 1 }
+    };
+
+    const quantityPatterns = [
+      { regex: /(\d+\.?\d*)\s*(ml|milliliter|milliliters)/gi, factor: 1, baseMl: 100 },
+      { regex: /(\d+\.?\d*)\s*(l|liter|liters)/gi, factor: 1000, baseMl: 1000 },
+      { regex: /(\d+\.?\d*)\s*(g|gram|grams)/gi, factor: 1, baseGram: 100 },
+      { regex: /(\d+\.?\d*)\s*(kg|kilogram|kilograms)/gi, factor: 1000, baseGram: 1000 },
+      { regex: /(\d+\.?\d*)\s*(oz|ounce|ounces)/gi, factor: 28.35, baseGram: 28.35 },
+      { regex: /(\d+\.?\d*)\s*(lb|lbs|pound|pounds)/gi, factor: 453.6, baseGram: 453.6 },
+      { regex: /(\d+\.?\d*)\s*(cup|cups)/gi, factor: 1, baseCup: 1 },
+      { regex: /(\d+\.?\d*)\s*(glass|glasses)/gi, factor: 1, baseGlass: 1 },
+      { regex: /(\d+\.?\d*)\s*(bowl|bowls)/gi, factor: 1, baseBowl: 1 },
+      { regex: /(\d+\.?\d*)\s*(piece|pieces|pc|pce)/gi, factor: 1, basePiece: 1 },
+      { regex: /(\d+\.?\d*)\s*(slice|slices)/gi, factor: 1, baseSlice: 1 },
+      { regex: /(\d+\.?\d*)\s*(scoop|scoops)/gi, factor: 1, baseScoop: 1 },
+      { regex: /(\d+\.?\d*)\s*(tbsp|tablespoon|tablespoons)/gi, factor: 1, baseTbsp: 1 },
+      { regex: /(\d+\.?\d*)\s*(tsp|teaspoon|teaspoons)/gi, factor: 1, baseTsp: 1 },
+      { regex: /(\d+\.?\d*)\s*(can|cans)/gi, factor: 1, baseCan: 1 },
+      { regex: /(\d+\.?\d*)\s*(bottle|bottles)/gi, factor: 1, baseBottle: 1 },
+      { regex: /(\d+\.?\d*)\s*(serving|servings)/gi, factor: 1, baseServing: 1 },
+      { regex: /(\d+\.?\d*)\s*(wrap|wraps)/gi, factor: 1, baseWrap: 1 },
+      { regex: /(\d+\.?\d*)\s*(shot|shots)/gi, factor: 1, baseShot: 1 },
+      { regex: /(\d+\.?\d*)\s*(bar|bars)/gi, factor: 1, baseBar: 1 }
+    ];
+
+    const liquidCalorieDensity = {
+      'coke': 0.31, 'pepsi': 0.33, 'fanta': 0.33, 'sprite': 0.31, 
+      'cold drink': 0.32, 'soda': 0.31, 'juice': 0.44, 'orange juice': 0.44,
+      'apple juice': 0.46, 'mango juice': 0.48, 'milk': 0.6, 'almond milk': 0.16,
+      'soy milk': 0.32, 'oat milk': 0.48, 'water': 0, 'diet coke': 0,
+      'diet soda': 0, 'red bull': 0.44, 'lassi': 0.52, 'milkshake': 0.65,
+      'smoothie': 0.55, 'coffee': 0.02, 'tea': 0.18, 'black coffee': 0.008,
+      'black tea': 0.008, 'latte': 0.36, 'cappuccino': 0.32
     };
 
     const modifierPatterns = [
@@ -179,6 +524,8 @@
     const today = new Date().toISOString().split('T')[0];
     let saveTimeout;
     let currentDate = today;
+    let apiFetchQueue = [];
+    let isProcessingQueue = false;
 
     function init() {
       document.getElementById('datePicker').value = today;
@@ -193,7 +540,7 @@
         row.className = 'food-row';
         row.innerHTML = `
           <span class="food-label">${period}</span>
-          <textarea id="food${index}" placeholder="Enter food items (e.g., 2 eggs, no sugar, light butter)..."></textarea>
+          <textarea id="food${index}" placeholder="Enter food items (e.g., 2 eggs, 450ml coke, 1 slice pizza, 200g rice)..."></textarea>
           <div class="detected-foods" id="detected${index}"></div>
         `;
         grid.appendChild(row);
@@ -216,13 +563,144 @@
       loadData();
     }
 
-    function parseFood(text) {
+    function parseQuantity(text) {
+      for (const pattern of quantityPatterns) {
+        const match = text.match(pattern.regex);
+        if (match) {
+          const num = parseFloat(match[1]);
+          return { quantity: num, unit: match[2].toLowerCase(), matched: true };
+        }
+      }
+      return { quantity: 1, unit: 'default', matched: false };
+    }
+
+    function calculateLiquidCalories(foodName, ml) {
+      for (const [liquid, calPerMl] of Object.entries(liquidCalorieDensity)) {
+        if (foodName.includes(liquid)) {
+          return Math.round(ml * calPerMl);
+        }
+      }
+      return null;
+    }
+
+    async function fetchFromAPI(foodName) {
+      try {
+        const searchTerm = foodName.split(' ').slice(-3).join(' ');
+        const response = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(searchTerm)}&search_simple=1&action=process&json=1&page_size=5`);
+        const data = await response.json();
+        
+        if (data.products && data.products.length > 0) {
+          const product = data.products[0];
+          if (product.nutriments && product.nutriments['energy-kcal_100g']) {
+            return {
+              found: true,
+              calories: product.nutriments['energy-kcal_100g'],
+              name: product.product_name || product.product_name_en || foodName,
+              source: 'Open Food Facts'
+            };
+          }
+        }
+        return { found: false };
+      } catch (error) {
+        console.error('API Error:', error);
+        return { found: false };
+      }
+    }
+
+    async function findFood(foodText, quantity, unit) {
+      const lower = foodText.toLowerCase();
+      
+      for (const [food, data] of Object.entries(foodDatabase)) {
+        if (lower.includes(food)) {
+          let qty = quantity;
+          
+          if (unit !== 'default' && unit !== 'piece' && unit !== 'serving' && unit !== 'slice' && unit !== 'cup' && unit !== 'glass' && unit !== 'bowl') {
+            const { quantity: parsedQty, unit: parsedUnit } = parseQuantity(foodText);
+            
+            if (parsedUnit === 'ml' || parsedUnit === 'l') {
+              const ml = parsedUnit === 'l' ? parsedQty * 1000 : parsedQty;
+              const calPerMl = liquidCalorieDensity[food] || 1;
+              if (calPerMl > 0) {
+                return {
+                  name: food,
+                  calories: Math.round(ml * calPerMl),
+                  source: 'calculated',
+                  isApi: false
+                };
+              }
+            } else if (parsedUnit === 'g' || parsedUnit === 'kg' || parsedUnit === 'oz' || parsedUnit === 'lb') {
+              const grams = parsedUnit === 'kg' ? parsedQty * 1000 : 
+                           parsedUnit === 'oz' ? parsedQty * 28.35 : 
+                           parsedUnit === 'lb' ? parsedQty * 453.6 : parsedQty;
+              const calPerGram = data.cal / 100;
+              return {
+                name: food,
+                calories: Math.round(grams * calPerGram),
+                source: 'calculated',
+                isApi: false
+              };
+            }
+          }
+          
+          if (data.unit === unit || unit === 'default' || unit === 'piece') {
+            return {
+              name: food,
+              calories: data.cal * (qty / data.defaultQty),
+              source: 'database',
+              isApi: false
+            };
+          } else if (data.unit === 'piece' && unit === 'serving') {
+            return {
+              name: food,
+              calories: data.cal * qty,
+              source: 'database',
+              isApi: false
+            };
+          }
+        }
+      }
+      
+      const { quantity: parsedQty } = parseQuantity(foodText);
+      if (unit === 'ml' || unit === 'l') {
+        const ml = unit === 'l' ? parsedQty * 1000 : parsedQty;
+        const cal = calculateLiquidCalories(lower, ml);
+        if (cal !== null) {
+          return {
+            name: foodText,
+            calories: cal,
+            source: 'calculated',
+            isApi: false
+          };
+        }
+      }
+      
+      const apiResult = await fetchFromAPI(foodText);
+      if (apiResult.found) {
+        let grams = 100;
+        const { quantity: qty } = parseQuantity(foodText);
+        if (unit === 'g') grams = qty;
+        else if (unit === 'kg') grams = qty * 1000;
+        else if (unit === 'ml') grams = qty;
+        else if (unit === 'oz') grams = qty * 28.35;
+        
+        return {
+          name: apiResult.name,
+          calories: Math.round(apiResult.calories * grams / 100),
+          source: apiResult.source,
+          isApi: true
+        };
+      }
+      
+      return { found: false };
+    }
+
+    async function parseFood(text) {
       const lower = text.toLowerCase();
-      const words = lower.split(/\s+/);
+      const sentences = lower.split(/,|and|\n/).filter(s => s.trim());
       let total = 0;
       let detected = [];
       let modifiers = [];
-      let quantity = 1;
+      let apiFoods = [];
 
       for (const mod of modifierPatterns) {
         if (lower.includes(mod.pattern)) {
@@ -231,51 +709,78 @@
         }
       }
 
-      for (let i = 0; i < words.length; i++) {
-        const word = words[i];
+      for (const sentence of sentences) {
+        const { quantity, unit, matched } = parseQuantity(sentence);
         
-        if (word === 'one' || word === 'a' || word === 'an') {
-          quantity = 1;
-        } else if (word === 'two' || word === '2') {
-          quantity = 2;
-        } else if (word === 'three' || word === '3') {
-          quantity = 3;
-        } else if (word === 'four' || word === '4') {
-          quantity = 4;
-        } else if (word === 'five' || word === '5') {
-          quantity = 5;
-        } else if (word === 'half') {
-          quantity = 0.5;
-        } else if (word === 'quarter') {
-          quantity = 0.25;
-        } else if (!isNaN(word) && word !== '') {
-          quantity = parseFloat(word);
-        }
-
-        for (const [food, cal] of Object.entries(foodDatabase)) {
-          if (lower.includes(food)) {
-            const calPerUnit = cal;
-            total += calPerUnit * quantity;
-            detected.push(`${quantity} ${food}`);
-            quantity = 1;
+        let found = false;
+        
+        for (const [food, data] of Object.entries(foodDatabase)) {
+          if (sentence.includes(food)) {
+            let qty = quantity;
+            
+            if (unit !== 'default' && unit !== 'piece' && unit !== 'serving') {
+              if (unit === 'ml' || unit === 'l') {
+                const ml = unit === 'l' ? quantity * 1000 : quantity;
+                const cal = calculateLiquidCalories(food, ml);
+                if (cal !== null) {
+                  total += cal;
+                  detected.push(`${quantity}${unit} ${food} (${cal} cal)`);
+                  found = true;
+                  break;
+                }
+              } else if (unit === 'g' || unit === 'kg' || unit === 'oz' || unit === 'lb') {
+                const grams = unit === 'kg' ? quantity * 1000 : 
+                             unit === 'oz' ? quantity * 28.35 : 
+                             unit === 'lb' ? quantity * 453.6 : quantity;
+                const calPerGram = data.cal / 100;
+                total += Math.round(grams * calPerGram);
+                detected.push(`${quantity}${unit} ${food} (~${Math.round(grams * calPerGram)} cal)`);
+                found = true;
+                break;
+              }
+            }
+            
+            const calories = data.cal * (qty / data.defaultQty);
+            total += calories;
+            detected.push(`${quantity} ${food} (${Math.round(calories)} cal)`);
+            found = true;
             break;
+          }
+        }
+        
+        if (!found) {
+          const apiResult = await findFood(sentence, quantity, unit);
+          if (apiResult.found !== false) {
+            total += apiResult.calories;
+            if (apiResult.isApi) {
+              apiFoods.push(`${sentence.trim()} - ${apiResult.calories} cal (${apiResult.source})`);
+              detected.push(`<span class="api-match">${sentence.trim()}: ${apiResult.calories} cal</span>`);
+            } else {
+              detected.push(`${sentence.trim()}: ${apiResult.calories} cal`);
+            }
+          } else {
+            detected.push(`<span class="not-found">${sentence.trim()} (not found)</span>`);
           }
         }
       }
 
-      return { total, detected, modifiers };
+      return { total, detected, modifiers, apiFoods };
     }
 
-    function calculateFoodCalories(index) {
+    async function calculateFoodCalories(index) {
       const text = document.getElementById(`food${index}`).value;
-      const { total, detected, modifiers } = parseFood(text);
+      const { total, detected, modifiers } = await parseFood(text);
       
       document.getElementById(`cal${index}`).textContent = total;
 
       const detectedDiv = document.getElementById(`detected${index}`);
       let html = '';
       if (detected.length > 0) {
-        html += detected.map(d => `<span>${d}</span>`).join('');
+        html += detected.map(d => {
+          if (d.includes('api-match')) return d;
+          if (d.includes('not-found')) return d;
+          return `<span>${d}</span>`;
+        }).join('');
       }
       if (modifiers.length > 0) {
         html += modifiers.map(m => `<span class="modifier">${m}</span>`).join('');
