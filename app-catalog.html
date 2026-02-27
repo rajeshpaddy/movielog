@@ -17,12 +17,21 @@
     .app-name { font-size: 20px; font-weight: bold; margin-bottom: 8px; color: #fff; }
     .app-desc { font-size: 14px; color: #aaa; line-height: 1.4; }
     .app-date { font-size: 12px; color: #666; margin-top: 15px; }
+    .search-container { margin-bottom: 20px; }
+    .search-input { width: 100%; background: #0f3460; border: 1px solid #00d9ff; color: #fff; padding: 12px 20px; border-radius: 30px; font-size: 16px; }
+    .search-input::placeholder { color: #666; }
+    .search-input:focus { outline: none; box-shadow: 0 0 15px rgba(0, 217, 255, 0.3); }
+    .no-results { text-align: center; color: #666; padding: 40px; grid-column: 1 / -1; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>📱 App Catalog</h1>
     <p class="subtitle">Your personal app collection, all data is saved in your browsers local storage and no data leaves your device.</p>
+    
+    <div class="search-container">
+      <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search apps...">
+    </div>
     
     <div class="app-grid" id="appGrid"></div>
   </div>
@@ -88,25 +97,46 @@
     ];
 
     const grid = document.getElementById('appGrid');
+    const searchInput = document.getElementById('searchInput');
     
-    apps.forEach(app => {
-      const card = document.createElement('div');
-      card.className = 'app-card';
-      card.innerHTML = `
-        <div class="app-icon">${app.icon}</div>
-        <div class="app-name">${app.name}</div>
-        <div class="app-desc">${app.desc}</div>
-        <div class="app-date">${app.date}</div>
-      `;
-      card.addEventListener('click', () => {
-        if (app.file.startsWith('http')) {
-          window.open(app.file, '_blank');
-        } else {
-          window.location.href = app.file;
-        }
+    function renderApps(filteredApps) {
+      grid.innerHTML = '';
+      
+      if (filteredApps.length === 0) {
+        grid.innerHTML = '<div class="no-results">No apps found matching your search</div>';
+        return;
+      }
+      
+      filteredApps.forEach(app => {
+        const card = document.createElement('div');
+        card.className = 'app-card';
+        card.innerHTML = `
+          <div class="app-icon">${app.icon}</div>
+          <div class="app-name">${app.name}</div>
+          <div class="app-desc">${app.desc}</div>
+          <div class="app-date">${app.date}</div>
+        `;
+        card.addEventListener('click', () => {
+          if (app.file.startsWith('http')) {
+            window.open(app.file, '_blank');
+          } else {
+            window.location.href = app.file;
+          }
+        });
+        grid.appendChild(card);
       });
-      grid.appendChild(card);
+    }
+    
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      const filtered = apps.filter(app => 
+        app.name.toLowerCase().includes(query) || 
+        app.desc.toLowerCase().includes(query)
+      );
+      renderApps(filtered);
     });
+    
+    renderApps(apps);
   </script>
 </body>
 </html>
