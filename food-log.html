@@ -614,7 +614,7 @@
         if (lower.includes(food)) {
           let qty = quantity;
           
-          if (unit !== 'default' && unit !== 'piece' && unit !== 'serving' && unit !== 'slice' && unit !== 'cup' && unit !== 'glass' && unit !== 'bowl') {
+          if (unit !== 'default' && unit !== 'piece' && unit !== 'serving' && unit !== 'slice' && unit !== 'cup' && unit !== 'glass' && unit !== 'bowl' && unit !== 'scoop' && unit !== 'can' && unit !== 'bottle') {
             const { quantity: parsedQty, unit: parsedUnit } = parseQuantity(foodText);
             
             if (parsedUnit === 'ml' || parsedUnit === 'l') {
@@ -718,7 +718,7 @@
           if (sentence.includes(food)) {
             let qty = quantity;
             
-            if (unit !== 'default' && unit !== 'piece' && unit !== 'serving') {
+            if (unit !== 'default' && unit !== 'piece' && unit !== 'serving' && unit !== 'slice' && unit !== 'cup' && unit !== 'glass' && unit !== 'bowl' && unit !== 'scoop' && unit !== 'can' && unit !== 'bottle') {
               if (unit === 'ml' || unit === 'l') {
                 const ml = unit === 'l' ? quantity * 1000 : quantity;
                 const cal = calculateLiquidCalories(food, ml);
