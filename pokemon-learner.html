@@ -326,7 +326,7 @@
 
   <script>
     const POKEMON_API = 'https://pokeapi.co/api/v2';
-    const TOTAL_POKEMON = 151;
+    const TOTAL_POKEMON = 1300;
     
     let allPokemon = [];
     let learnedPokemon = new Set();
@@ -387,7 +387,7 @@
       `).join('');
       
       leftList.querySelectorAll('.pokemon-item').forEach(item => {
-        itemclick', () =>.addEventListener(' selectPokemon(parseInt(item.dataset.number), false));
+        item.addEventListener('click', () => selectPokemon(parseInt(item.dataset.number), false));
       });
     }
     
