@@ -371,9 +371,69 @@
       font-weight: bold;
       color: #00d9ff;
     }
+
+    .shortcuts-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: transparent;
+      z-index: 1000;
+      padding: 40px;
+    }
+    .shortcuts-overlay.visible {
+      display: block;
+    }
+    .shortcuts-panel {
+      background: rgba(22, 33, 62, 0.95);
+      border: 1px solid #00d9ff;
+      border-radius: 15px;
+      padding: 20px 30px;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    .shortcuts-panel h2 {
+      color: #00d9ff;
+      margin-bottom: 15px;
+      font-size: 20px;
+    }
+    .shortcut-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #2d2d3a;
+    }
+    .shortcut-item:last-child {
+      border-bottom: none;
+    }
+    .shortcut-key {
+      background: #0f3460;
+      padding: 3px 10px;
+      border-radius: 5px;
+      font-family: monospace;
+      color: #00d9ff;
+    }
+    .shortcut-desc {
+      color: #aaa;
+    }
   </style>
 </head>
 <body>
+  <div class="shortcuts-overlay" id="shortcutsOverlay">
+    <div class="shortcuts-panel">
+      <h2>Keyboard Shortcuts</h2>
+      <div class="shortcut-item"><span class="shortcut-desc">Toggle shortcuts</span><span class="shortcut-key">Ctrl + /</span></div>
+      <div class="shortcut-item"><span class="shortcut-desc">Focus search</span><span class="shortcut-key">/</span></div>
+      <div class="shortcut-item"><span class="shortcut-desc">Learn/Unlearn Pokemon</span><span class="shortcut-key">L</span></div>
+      <div class="shortcut-item"><span class="shortcut-desc">Select/Unselect</span><span class="shortcut-key">Space</span></div>
+      <div class="shortcut-item"><span class="shortcut-desc">Navigate up/down</span><span class="shortcut-key">↑ / ↓</span></div>
+      <div class="shortcut-item"><span class="shortcut-desc">Next element</span><span class="shortcut-key">Tab</span></div>
+      <div class="shortcut-item"><span class="shortcut-desc">Close/Clear</span><span class="shortcut-key">Escape</span></div>
+      <div class="shortcut-item"><span class="shortcut-desc">View evolution</span><span class="shortcut-key">Enter</span></div>
+    </div>
+  </div>
   <div class="stats-bar" id="statsBar"></div>
   <div class="region-stats" id="regionStats"></div>
   <div class="app-container">
@@ -426,6 +486,7 @@
     const centerContent = document.getElementById('centerContent');
     const statsBar = document.getElementById('statsBar');
     const regionStats = document.getElementById('regionStats');
+    const shortcutsOverlay = document.getElementById('shortcutsOverlay');
     
     function loadLearnedPokemon() {
       const saved = localStorage.getItem('learnedPokemon');
@@ -718,6 +779,19 @@
     rightSearch.addEventListener('input', renderRightList);
     
     document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key === '/') {
+        e.preventDefault();
+        shortcutsOverlay.classList.toggle('visible');
+        return;
+      }
+      
+      if (shortcutsOverlay.classList.contains('visible')) {
+        if (e.key === 'Escape') {
+          shortcutsOverlay.classList.remove('visible');
+        }
+        return;
+      }
+      
       if (e.target === document.body || e.target === document.documentElement) {
         if (e.key === 'l' || e.key === 'L') {
           if (selectedPokemon) {
@@ -739,18 +813,26 @@
     leftSearch.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         e.preventDefault();
-        leftSearch.value = '';
-        leftSearch.blur();
-        renderLeftList();
+        if (shortcutsOverlay.classList.contains('visible')) {
+          shortcutsOverlay.classList.remove('visible');
+        } else {
+          leftSearch.value = '';
+          leftSearch.blur();
+          renderLeftList();
+        }
       }
     });
     
     rightSearch.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         e.preventDefault();
-        rightSearch.value = '';
-        rightSearch.blur();
-        renderRightList();
+        if (shortcutsOverlay.classList.contains('visible')) {
+          shortcutsOverlay.classList.remove('visible');
+        } else {
+          rightSearch.value = '';
+          rightSearch.blur();
+          renderRightList();
+        }
       }
     });
     
