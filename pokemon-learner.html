@@ -301,9 +301,72 @@
       background: #00d9ff;
       border-radius: 4px;
     }
+
+    .stats-bar {
+      display: flex;
+      gap: 15px;
+      padding: 15px 20px;
+      background: #16213e;
+      border-radius: 15px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .stats-bar .stat-item {
+      background: #0f3460;
+      padding: 10px 20px;
+      border-radius: 10px;
+      text-align: center;
+      min-width: 120px;
+    }
+    .stats-bar .stat-item .stat-label {
+      font-size: 11px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .stats-bar .stat-item .stat-number {
+      font-size: 24px;
+      font-weight: bold;
+      color: #00d9ff;
+    }
+    .stats-bar .stat-item.highlight .stat-number {
+      color: #fbbf24;
+    }
+
+    .region-stats {
+      display: flex;
+      gap: 10px;
+      padding: 10px 20px;
+      background: #16213e;
+      border-radius: 15px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .region-stat {
+      background: #0f3460;
+      padding: 8px 15px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .region-stat .region-name {
+      font-size: 12px;
+      color: #aaa;
+      text-transform: capitalize;
+    }
+    .region-stat .region-count {
+      font-size: 16px;
+      font-weight: bold;
+      color: #00d9ff;
+    }
   </style>
 </head>
 <body>
+  <div class="stats-bar" id="statsBar"></div>
+  <div class="region-stats" id="regionStats"></div>
   <div class="app-container">
     <div class="pane left-pane">
       <div class="pane-title">Unlearned Pokemon</div>
@@ -328,8 +391,20 @@
     const POKEMON_API = 'https://pokeapi.co/api/v2';
     const TOTAL_POKEMON = 1300;
     
+    const REGIONS = [
+      { name: 'Kanto', start: 1, end: 151 },
+      { name: 'Johto', start: 152, end: 251 },
+      { name: 'Hoenn', start: 252, end: 386 },
+      { name: 'Sinnoh', start: 387, end: 493 },
+      { name: 'Unova', start: 494, end: 649 },
+      { name: 'Kalos', start: 650, end: 721 },
+      { name: 'Alola', start: 722, end: 809 },
+      { name: 'Galar', start: 810, end: 905 },
+      { name: 'Paldea', start: 906, end: 1025 }
+    ];
+    
     let allPokemon = [];
-    let learnedPokemon = new Set();
+    let learnedPokemon = {};
     let selectedPokemon = null;
     let selectedFromRight = false;
     
@@ -338,16 +413,81 @@
     const leftList = document.getElementById('leftList');
     const rightList = document.getElementById('rightList');
     const centerContent = document.getElementById('centerContent');
+    const statsBar = document.getElementById('statsBar');
+    const regionStats = document.getElementById('regionStats');
     
     function loadLearnedPokemon() {
       const saved = localStorage.getItem('learnedPokemon');
       if (saved) {
-        learnedPokemon = new Set(JSON.parse(saved));
+        learnedPokemon = JSON.parse(saved);
       }
     }
     
     function saveLearnedPokemon() {
-      localStorage.setItem('learnedPokemon', JSON.stringify([...learnedPokemon]));
+      localStorage.setItem('learnedPokemon', JSON.stringify(learnedPokemon));
+    }
+    
+    function getRegion(number) {
+      for (const region of REGIONS) {
+        if (number >= region.start && number <= region.end) {
+          return region.name;
+        }
+      }
+      return 'Other';
+    }
+    
+    function calculateStats() {
+      const now = Date.now();
+      const day = 24 * 60 * 60 * 1000;
+      
+      const learned = Object.keys(learnedPokemon).map(Number);
+      const unlearned = TOTAL_POKEMON - learned.length;
+      
+      const last24h = learned.filter(n => now - learnedPokemon[n] < day).length;
+      const last7d = learned.filter(n => now - learnedPokemon[n] < 7 * day).length;
+      const last30d = learned.filter(n => now - learnedPokemon[n] < 30 * day).length;
+      const last365d = learned.filter(n => now - learnedPokemon[n] < 365 * day).length;
+      
+      const regionCounts = {};
+      REGIONS.forEach(r => regionCounts[r.name] = 0);
+      learned.forEach(n => {
+        const region = getRegion(n);
+        regionCounts[region] = (regionCounts[region] || 0) + 1;
+      });
+      
+      statsBar.innerHTML = `
+        <div class="stat-item">
+          <div class="stat-label">Unlearned</div>
+          <div class="stat-number">${unlearned}</div>
+        </div>
+        <div class="stat-item highlight">
+          <div class="stat-label">Learned</div>
+          <div class="stat-number">${learned.length}</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Last 24h</div>
+          <div class="stat-number">${last24h}</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Last 7d</div>
+          <div class="stat-number">${last7d}</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Last 30d</div>
+          <div class="stat-number">${last30d}</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Last 365d</div>
+          <div class="stat-number">${last365d}</div>
+        </div>
+      `;
+      
+      regionStats.innerHTML = REGIONS.map(r => `
+        <div class="region-stat">
+          <span class="region-name">${r.name}</span>
+          <span class="region-count">${regionCounts[r.name]}</span>
+        </div>
+      `).join('');
     }
     
     async function fetchAllPokemon() {
@@ -374,7 +514,7 @@
     
     function renderLeftList() {
       const query = leftSearch.value.toLowerCase();
-      const unlearned = allPokemon.filter(p => !learnedPokemon.has(p.number) && p.name.includes(query));
+      const unlearned = allPokemon.filter(p => !learnedPokemon[p.number] && p.name.includes(query));
       
       leftList.innerHTML = unlearned.map(p => `
         <div class="pokemon-item ${selectedPokemon?.number === p.number && !selectedFromRight ? 'selected' : ''}" data-number="${p.number}">
@@ -393,7 +533,7 @@
     
     function renderRightList() {
       const query = rightSearch.value.toLowerCase();
-      const learned = allPokemon.filter(p => learnedPokemon.has(p.number) && p.name.includes(query));
+      const learned = allPokemon.filter(p => learnedPokemon[p.number] && p.name.includes(query));
       
       rightList.innerHTML = learned.map(p => `
         <div class="pokemon-item ${selectedPokemon?.number === p.number && selectedFromRight ? 'selected' : ''}" data-number="${p.number}">
@@ -501,7 +641,7 @@
           item.addEventListener('click', () => {
             const num = parseInt(item.dataset.number);
             const evo = allPokemon.find(p => p.number === num);
-            if (evo) selectPokemon(num, learnedPokemon.has(num));
+            if (evo) selectPokemon(num, !!learnedPokemon[num]);
           });
         });
         
@@ -541,13 +681,14 @@
       if (!selectedPokemon) return;
       
       if (selectedFromRight) {
-        learnedPokemon.delete(selectedPokemon.number);
+        delete learnedPokemon[selectedPokemon.number];
       } else {
-        learnedPokemon.add(selectedPokemon.number);
+        learnedPokemon[selectedPokemon.number] = Date.now();
       }
       
       saveLearnedPokemon();
       selectedFromRight = !selectedFromRight;
+      calculateStats();
       renderLeftList();
       renderRightList();
       showPokemonDetails(selectedPokemon);
@@ -557,6 +698,7 @@
     rightSearch.addEventListener('input', renderRightList);
     
     loadLearnedPokemon();
+    calculateStats();
     fetchAllPokemon();
   </script>
 </body>
