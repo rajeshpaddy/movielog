@@ -566,11 +566,13 @@
     async function fetchAllPokemon() {
       const response = await fetch(`${POKEMON_API}/pokemon?limit=${TOTAL_POKEMON}`);
       const data = await response.json();
-      allPokemon = data.results.map((p, i) => ({
-        name: p.name,
-        number: i + 1,
-        url: p.url
-      }));
+      allPokemon = data.results
+        .map((p, i) => ({
+          name: p.name,
+          number: i + 1,
+          url: p.url
+        }))
+        .filter(p => !p.name.includes('-') && p.number <= 1025);
       renderLeftList();
       renderRightList();
     }
