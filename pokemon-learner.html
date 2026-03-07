@@ -707,9 +707,11 @@
       if (e.key === 'Tab') {
         e.preventDefault();
         leftFocusedIndex = 0;
-        renderLeftList();
         const firstItem = leftList.querySelector('.pokemon-item');
-        if (firstItem) firstItem.focus();
+        if (firstItem) {
+          const number = parseInt(firstItem.dataset.number);
+          selectPokemon(number, false);
+        }
       }
     });
     
@@ -717,9 +719,11 @@
       if (e.key === 'Tab') {
         e.preventDefault();
         rightFocusedIndex = 0;
-        renderRightList();
         const firstItem = rightList.querySelector('.pokemon-item');
-        if (firstItem) firstItem.focus();
+        if (firstItem) {
+          const number = parseInt(firstItem.dataset.number);
+          selectPokemon(number, true);
+        }
       }
     });
     
@@ -741,7 +745,8 @@
           const focused = list.querySelector('.pokemon-item.focused');
           if (focused) {
             focused.scrollIntoView({ block: 'nearest' });
-            focused.focus();
+            const number = parseInt(focused.dataset.number);
+            selectPokemon(number, !isLeft);
           }
         } else if (e.key === 'ArrowUp') {
           e.preventDefault();
@@ -755,12 +760,6 @@
           const focused = list.querySelector('.pokemon-item.focused');
           if (focused) {
             focused.scrollIntoView({ block: 'nearest' });
-            focused.focus();
-          }
-        } else if (e.key === 'Enter') {
-          e.preventDefault();
-          const focused = list.querySelector('.pokemon-item.focused');
-          if (focused) {
             const number = parseInt(focused.dataset.number);
             selectPokemon(number, !isLeft);
           }
