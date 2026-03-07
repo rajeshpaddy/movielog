@@ -474,6 +474,7 @@
     
     let allPokemon = [];
     let learnedPokemon = {};
+    let failedPokemon = new Set();
     let selectedPokemon = null;
     let selectedFromRight = false;
     let leftFocusedIndex = -1;
@@ -586,7 +587,7 @@
     
     function renderLeftList() {
       const query = leftSearch.value.toLowerCase();
-      const unlearned = allPokemon.filter(p => !learnedPokemon[p.number] && p.name.includes(query));
+      const unlearned = allPokemon.filter(p => !learnedPokemon[p.number] && !failedPokemon.has(p.number) && p.name.includes(query));
       
       leftList.innerHTML = unlearned.map((p, i) => `
         <div class="pokemon-item ${selectedPokemon?.number === p.number && !selectedFromRight ? 'selected' : ''} ${i === leftFocusedIndex ? 'focused' : ''}" data-number="${p.number}" data-index="${i}">
@@ -725,6 +726,8 @@
         });
         
       } catch (error) {
+        failedPokemon.add(pokemon.number);
+        renderLeftList();
         centerContent.innerHTML = '<div class="empty-state">Error loading Pokemon details</div>';
         console.error(error);
       }
