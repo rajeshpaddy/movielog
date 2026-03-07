@@ -230,6 +230,11 @@
     .evolution-item:hover img {
       transform: scale(1.1);
     }
+    .evolution-item:focus {
+      outline: 2px solid #00d9ff;
+      outline-offset: 4px;
+      border-radius: 10px;
+    }
     .evolution-item img {
       width: 80px;
       height: 80px;
@@ -649,6 +654,13 @@
             const evo = allPokemon.find(p => p.number === num);
             if (evo) selectPokemon(num, !!learnedPokemon[num]);
           });
+          item.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              const num = parseInt(item.dataset.number);
+              const evo = allPokemon.find(p => p.number === num);
+              if (evo) selectPokemon(num, !!learnedPokemon[num]);
+            }
+          });
         });
         
       } catch (error) {
@@ -661,7 +673,7 @@
       const num = parseInt(chain.species.url.split('/').filter(Boolean).pop());
       
       chainHtml.push(`
-        <div class="evolution-item" data-number="${num}">
+        <div class="evolution-item" data-number="${num}" tabindex="0">
           <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png" alt="${chain.species.name}">
           <div class="name">${chain.species.name}</div>
           ${trigger ? `<div class="evolution-trigger">${trigger}</div>` : ''}
@@ -704,6 +716,43 @@
     
     leftSearch.addEventListener('input', renderLeftList);
     rightSearch.addEventListener('input', renderRightList);
+    
+    document.addEventListener('keydown', (e) => {
+      if (e.target === document.body || e.target === document.documentElement) {
+        if (e.key === 'l' || e.key === 'L') {
+          if (selectedPokemon) {
+            togglePokemon();
+          }
+        } else if (e.key === '/') {
+          e.preventDefault();
+          leftSearch.focus();
+        } else if (e.key === 'Escape') {
+          leftSearch.value = '';
+          rightSearch.value = '';
+          renderLeftList();
+          renderRightList();
+          leftSearch.focus();
+        }
+      }
+    });
+    
+    leftSearch.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        leftSearch.value = '';
+        leftSearch.blur();
+        renderLeftList();
+      }
+    });
+    
+    rightSearch.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        rightSearch.value = '';
+        rightSearch.blur();
+        renderRightList();
+      }
+    });
     
     leftSearch.addEventListener('keydown', (e) => {
       if (e.key === 'Tab') {
