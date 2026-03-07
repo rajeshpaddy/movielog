@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokemon Learner</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+      background: #1a1a2e; 
+      color: #eee; 
+      min-height: 100vh; 
+      overflow: hidden;
+    }
+    .app-container { 
+      display: flex; 
+      height: 100vh; 
+      gap: 10px; 
+      padding: 10px; 
+    }
+    .pane { 
+      background: #16213e; 
+      border-radius: 15px; 
+      padding: 15px; 
+      display: flex; 
+      flex-direction: column;
+    }
+    .left-pane, .right-pane { 
+      width: 280px; 
+      flex-shrink: 0;
+    }
+    .center-pane { 
+      flex: 1; 
+      min-width: 400px;
+    }
+    .pane-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #00d9ff;
+      text-align: center;
+    }
+    .search-box {
+      width: 100%;
+      background: #0f3460;
+      border: 1px solid #00d9ff;
+      color: #fff;
+      padding: 10px 15px;
+      border-radius: 25px;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .search-box::placeholder { color: #666; }
+    .search-box:focus { outline: none; box-shadow: 0 0 10px rgba(0, 217, 255, 0.3); }
+    .pokemon-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .pokemon-item {
+      background: #0f3460;
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .pokemon-item:hover { 
+      background: #1a4a7a; 
+      transform: translateX(3px);
+    }
+    .pokemon-item.selected {
+      background: #00d9ff;
+      color: #1a1a2e;
+    }
+    .pokemon-item img {
+      width: 40px;
+      height: 40px;
+    }
+    .pokemon-item .name {
+      font-weight: 500;
+      text-transform: capitalize;
+    }
+    .pokemon-item .number {
+      font-size: 12px;
+      opacity: 0.7;
+    }
+    
+    .center-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      overflow-y: auto;
+    }
+    .select-btn {
+      background: #00d9ff;
+      color: #1a1a2e;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+      align-self: center;
+    }
+    .select-btn:hover { 
+      transform: scale(1.05); 
+      box-shadow: 0 5px 20px rgba(0, 217, 255, 0.4);
+    }
+    .select-btn.unselect {
+      background: #ff6b6b;
+    }
+    .showcase {
+      background: #0f3460;
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+    }
+    .showcase-image {
+      width: 200px;
+      height: 200px;
+      object-fit: contain;
+    }
+    .showcase-name {
+      font-size: 28px;
+      font-weight: bold;
+      text-transform: capitalize;
+      margin: 15px 0;
+    }
+    .showcase-types {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 15px;
+    }
+    .type-badge {
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      text-transform: capitalize;
+    }
+    .type-normal { background: #A8A77A; color: #1a1a2e; }
+    .type-fire { background: #EE8130; color: #fff; }
+    .type-water { background: #6390F0; color: #fff; }
+    .type-electric { background: #F7D02C; color: #1a1a2e; }
+    .type-grass { background: #7AC74C; color: #1a1a2e; }
+    .type-ice { background: #96D9D6; color: #1a1a2e; }
+    .type-fighting { background: #C22E28; color: #fff; }
+    .type-poison { background: #A33EA1; color: #fff; }
+    .type-ground { background: #E2BF65; color: #1a1a2e; }
+    .type-flying { background: #A98FF3; color: #1a1a2e; }
+    .type-psychic { background: #F95587; color: #fff; }
+    .type-bug { background: #A6B91A; color: #1a1a2e; }
+    .type-rock { background: #B6A136; color: #1a1a2e; }
+    .type-ghost { background: #735797; color: #fff; }
+    .type-dragon { background: #6F35FC; color: #fff; }
+    .type-dark { background: #705746; color: #fff; }
+    .type-steel { background: #B7B7CE; color: #1a1a2e; }
+    .type-fairy { background: #D685AD; color: #1a1a2e; }
+    
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin: 15px 0;
+    }
+    .stat-box {
+      background: #16213e;
+      padding: 10px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .stat-name {
+      font-size: 12px;
+      color: #888;
+      text-transform: capitalize;
+    }
+    .stat-value {
+      font-size: 20px;
+      font-weight: bold;
+      color: #00d9ff;
+    }
+    
+    .abilities-section, .evolution-section, .description-section {
+      background: #0f3460;
+      border-radius: 15px;
+      padding: 15px;
+    }
+    .section-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #00d9ff;
+      margin-bottom: 10px;
+    }
+    .ability-tag {
+      display: inline-block;
+      background: #1a4a7a;
+      padding: 5px 12px;
+      border-radius: 15px;
+      margin: 3px;
+      font-size: 14px;
+    }
+    .ability-tag.hidden {
+      background: #7a1a4a;
+    }
+    
+    .evolution-chain {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    .evolution-item {
+      text-align: center;
+      cursor: pointer;
+    }
+    .evolution-item:hover img {
+      transform: scale(1.1);
+    }
+    .evolution-item img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      transition: transform 0.2s;
+    }
+    .evolution-item .name {
+      font-size: 14px;
+      text-transform: capitalize;
+      margin-top: 5px;
+    }
+    .evolution-arrow {
+      font-size: 24px;
+      color: #888;
+    }
+    .evolution-trigger {
+      font-size: 12px;
+      color: #666;
+    }
+    
+    .flavor-text {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #ccc;
+    }
+    
+    .height-weight {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-bottom: 15px;
+    }
+    .hw-item {
+      text-align: center;
+    }
+    .hw-label {
+      font-size: 12px;
+      color: #888;
+    }
+    .hw-value {
+      font-size: 18px;
+      font-weight: bold;
+      color: #00d9ff;
+    }
+    
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #666;
+      font-size: 18px;
+    }
+    .empty-state {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #666;
+      font-size: 16px;
+      text-align: center;
+      padding: 20px;
+    }
+    
+    .pokemon-list::-webkit-scrollbar {
+      width: 8px;
+    }
+    .pokemon-list::-webkit-scrollbar-track {
+      background: #0f3460;
+      border-radius: 4px;
+    }
+    .pokemon-list::-webkit-scrollbar-thumb {
+      background: #00d9ff;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <div class="pane left-pane">
+      <div class="pane-title">Unlearned Pokemon</div>
+      <input type="text" class="search-box" id="leftSearch" placeholder="Search Pokemon...">
+      <div class="pokemon-list" id="leftList"></div>
+    </div>
+    
+    <div class="pane center-pane">
+      <div class="center-content" id="centerContent">
+        <div class="empty-state">Click a Pokemon to learn about it!</div>
+      </div>
+    </div>
+    
+    <div class="pane right-pane">
+      <div class="pane-title">Learned Pokemon</div>
+      <input type="text" class="search-box" id="rightSearch" placeholder="Search learned...">
+      <div class="pokemon-list" id="rightList"></div>
+    </div>
+  </div>
+
+  <script>
+    const POKEMON_API = 'https://pokeapi.co/api/v2';
+    const TOTAL_POKEMON = 151;
+    
+    let allPokemon = [];
+    let learnedPokemon = new Set();
+    let selectedPokemon = null;
+    let selectedFromRight = false;
+    
+    const leftSearch = document.getElementById('leftSearch');
+    const rightSearch = document.getElementById('rightSearch');
+    const leftList = document.getElementById('leftList');
+    const rightList = document.getElementById('rightList');
+    const centerContent = document.getElementById('centerContent');
+    
+    function loadLearnedPokemon() {
+      const saved = localStorage.getItem('learnedPokemon');
+      if (saved) {
+        learnedPokemon = new Set(JSON.parse(saved));
+      }
+    }
+    
+    function saveLearnedPokemon() {
+      localStorage.setItem('learnedPokemon', JSON.stringify([...learnedPokemon]));
+    }
+    
+    async function fetchAllPokemon() {
+      const response = await fetch(`${POKEMON_API}/pokemon?limit=${TOTAL_POKEMON}`);
+      const data = await response.json();
+      allPokemon = data.results.map((p, i) => ({
+        name: p.name,
+        number: i + 1,
+        url: p.url
+      }));
+      renderLeftList();
+      renderRightList();
+    }
+    
+    async function fetchPokemonDetails(url) {
+      const response = await fetch(url);
+      return await response.json();
+    }
+    
+    async function fetchPokemonSpecies(name) {
+      const response = await fetch(`${POKEMON_API}/pokemon-species/${name}`);
+      return await response.json();
+    }
+    
+    function renderLeftList() {
+      const query = leftSearch.value.toLowerCase();
+      const unlearned = allPokemon.filter(p => !learnedPokemon.has(p.number) && p.name.includes(query));
+      
+      leftList.innerHTML = unlearned.map(p => `
+        <div class="pokemon-item ${selectedPokemon?.number === p.number && !selectedFromRight ? 'selected' : ''}" data-number="${p.number}">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.number}.png" alt="${p.name}">
+          <div>
+            <div class="name">${p.name}</div>
+            <div class="number">#${String(p.number).padStart(3, '0')}</div>
+          </div>
+        </div>
+      `).join('');
+      
+      leftList.querySelectorAll('.pokemon-item').forEach(item => {
+        itemclick', () =>.addEventListener(' selectPokemon(parseInt(item.dataset.number), false));
+      });
+    }
+    
+    function renderRightList() {
+      const query = rightSearch.value.toLowerCase();
+      const learned = allPokemon.filter(p => learnedPokemon.has(p.number) && p.name.includes(query));
+      
+      rightList.innerHTML = learned.map(p => `
+        <div class="pokemon-item ${selectedPokemon?.number === p.number && selectedFromRight ? 'selected' : ''}" data-number="${p.number}">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.number}.png" alt="${p.name}">
+          <div>
+            <div class="name">${p.name}</div>
+            <div class="number">#${String(p.number).padStart(3, '0')}</div>
+          </div>
+        </div>
+      `).join('');
+      
+      rightList.querySelectorAll('.pokemon-item').forEach(item => {
+        item.addEventListener('click', () => selectPokemon(parseInt(item.dataset.number), true));
+      });
+    }
+    
+    async function selectPokemon(number, fromRight) {
+      selectedPokemon = allPokemon.find(p => p.number === number);
+      selectedFromRight = fromRight;
+      renderLeftList();
+      renderRightList();
+      await showPokemonDetails(selectedPokemon);
+    }
+    
+    async function showPokemonDetails(pokemon) {
+      centerContent.innerHTML = '<div class="loading">Loading...</div>';
+      
+      try {
+        const [details, species] = await Promise.all([
+          fetchPokemonDetails(pokemon.url),
+          fetchPokemonSpecies(pokemon.name)
+        ]);
+        
+        const flavorText = species.flavor_text_entries.find(f => f.language.name === 'en')?.flavor_text || '';
+        const height = details.height / 10;
+        const weight = details.weight / 10;
+        const abilities = details.abilities.map(a => ({
+          name: a.ability.name,
+          isHidden: a.is_hidden
+        }));
+        const stats = details.stats.map(s => ({
+          name: s.stat.name.replace('-', ' '),
+          value: s.base_stat
+        }));
+        const types = details.types.map(t => t.type.name);
+        
+        let evolutionHtml = '<div class="empty-state">No evolution data</div>';
+        if (species.evolution_chain.url) {
+          const evoResponse = await fetch(species.evolution_chain.url);
+          const evoData = await evoResponse.json();
+          evolutionHtml = renderEvolutionChain(evoData.chain);
+        }
+        
+        centerContent.innerHTML = `
+          <button class="select-btn ${selectedFromRight ? 'unselect' : ''}" id="selectBtn">
+            ${selectedFromRight ? 'Unselect' : 'Select'}
+          </button>
+          
+          <div class="showcase">
+            <img class="showcase-image" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.number}.png" alt="${pokemon.name}" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.number}.png'">
+            <div class="showcase-name">${pokemon.name}</div>
+            <div class="showcase-types">
+              ${types.map(t => `<span class="type-badge type-${t}">${t}</span>`).join('')}
+            </div>
+            <div class="height-weight">
+              <div class="hw-item">
+                <div class="hw-label">Height</div>
+                <div class="hw-value">${height}m</div>
+              </div>
+              <div class="hw-item">
+                <div class="hw-label">Weight</div>
+                <div class="hw-value">${weight}kg</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="stats-container">
+            ${stats.slice(0, 6).map(s => `
+              <div class="stat-box">
+                <div class="stat-name">${s.name}</div>
+                <div class="stat-value">${s.value}</div>
+              </div>
+            `).join('')}
+          </div>
+          
+          <div class="abilities-section">
+            <div class="section-title">Abilities</div>
+            ${abilities.map(a => `<span class="ability-tag ${a.isHidden ? 'hidden' : ''}">${a.name}${a.isHidden ? ' (hidden)' : ''}</span>`).join('')}
+          </div>
+          
+          <div class="description-section">
+            <div class="section-title">About</div>
+            <div class="flavor-text">${flavorText.replace(/\f/g, ' ')}</div>
+          </div>
+          
+          <div class="evolution-section">
+            <div class="section-title">Evolution</div>
+            <div class="evolution-chain" id="evolutionChain">${evolutionHtml}</div>
+          </div>
+        `;
+        
+        document.getElementById('selectBtn').addEventListener('click', togglePokemon);
+        
+        document.querySelectorAll('.evolution-item').forEach(item => {
+          item.addEventListener('click', () => {
+            const num = parseInt(item.dataset.number);
+            const evo = allPokemon.find(p => p.number === num);
+            if (evo) selectPokemon(num, learnedPokemon.has(num));
+          });
+        });
+        
+      } catch (error) {
+        centerContent.innerHTML = '<div class="empty-state">Error loading Pokemon details</div>';
+        console.error(error);
+      }
+    }
+    
+    function renderEvolutionChain(chain, chainHtml = [], trigger = '') {
+      const num = parseInt(chain.species.url.split('/').filter(Boolean).pop());
+      
+      chainHtml.push(`
+        <div class="evolution-item" data-number="${num}">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png" alt="${chain.species.name}">
+          <div class="name">${chain.species.name}</div>
+          ${trigger ? `<div class="evolution-trigger">${trigger}</div>` : ''}
+        </div>
+      `);
+      
+      if (chain.evolves_to.length > 0) {
+        chain.evolves_to.forEach(evo => {
+          const evolutionDetails = evo.evolution_details[0];
+          let triggerText = '';
+          if (evolutionDetails.min_level) triggerText = `Lv. ${evolutionDetails.min_level}`;
+          if (evolutionDetails.item) triggerText = evolutionDetails.item.name;
+          if (evolutionDetails.trigger?.name === 'trade') triggerText = 'Trade';
+          
+          renderEvolutionChain(evo, chainHtml, triggerText);
+        });
+      }
+      
+      return chainHtml.join('<span class="evolution-arrow">→</span>');
+    }
+    
+    function togglePokemon() {
+      if (!selectedPokemon) return;
+      
+      if (selectedFromRight) {
+        learnedPokemon.delete(selectedPokemon.number);
+      } else {
+        learnedPokemon.add(selectedPokemon.number);
+      }
+      
+      saveLearnedPokemon();
+      selectedFromRight = !selectedFromRight;
+      renderLeftList();
+      renderRightList();
+      showPokemonDetails(selectedPokemon);
+    }
+    
+    leftSearch.addEventListener('input', renderLeftList);
+    rightSearch.addEventListener('input', renderRightList);
+    
+    loadLearnedPokemon();
+    fetchAllPokemon();
+  </script>
+</body>
+</html>
