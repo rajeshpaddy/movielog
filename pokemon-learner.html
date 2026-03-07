@@ -700,41 +700,77 @@
       showPokemonDetails(selectedPokemon);
     }
     
+    let tabFocus = 'leftSearch';
+    
     leftSearch.addEventListener('input', renderLeftList);
     rightSearch.addEventListener('input', renderRightList);
     
     leftSearch.addEventListener('keydown', (e) => {
       if (e.key === 'Tab') {
         e.preventDefault();
-        leftFocusedIndex = 0;
-        const firstItem = leftList.querySelector('.pokemon-item');
-        if (firstItem) {
-          const number = parseInt(firstItem.dataset.number);
-          selectPokemon(number, false);
+        if (tabFocus === 'leftSearch') {
+          tabFocus = 'leftList';
+          leftFocusedIndex = 0;
+          renderLeftList();
+          const firstItem = leftList.querySelector('.pokemon-item');
+          if (firstItem) {
+            const number = parseInt(firstItem.dataset.number);
+            selectPokemon(number, false);
+          }
+        } else if (tabFocus === 'rightList') {
+          tabFocus = 'leftSearch';
+          leftSearch.focus();
         }
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        const btn = document.getElementById('selectBtn');
+        if (btn) btn.click();
       }
     });
     
     rightSearch.addEventListener('keydown', (e) => {
       if (e.key === 'Tab') {
         e.preventDefault();
-        rightFocusedIndex = 0;
-        const firstItem = rightList.querySelector('.pokemon-item');
-        if (firstItem) {
-          const number = parseInt(firstItem.dataset.number);
-          selectPokemon(number, true);
+        if (tabFocus === 'leftList') {
+          tabFocus = 'rightSearch';
+          rightSearch.focus();
+        } else if (tabFocus === 'rightSearch') {
+          tabFocus = 'rightList';
+          rightFocusedIndex = 0;
+          renderRightList();
+          const firstItem = rightList.querySelector('.pokemon-item');
+          if (firstItem) {
+            const number = parseInt(firstItem.dataset.number);
+            selectPokemon(number, true);
+          }
         }
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        const btn = document.getElementById('selectBtn');
+        if (btn) btn.click();
       }
     });
     
     function handleListKeydown(isLeft) {
       return (e) => {
         const list = isLeft ? leftList : rightList;
-        const items = list.querySelectorAll('.pokemon-item');
-        const focusedIndex = isLeft ? leftFocusedIndex : rightFocusedIndex;
         
-        if (e.key === 'ArrowDown') {
+        if (e.key === 'Tab') {
           e.preventDefault();
+          if (isLeft && tabFocus === 'leftList') {
+            tabFocus = 'rightSearch';
+            rightSearch.focus();
+          } else if (!isLeft && tabFocus === 'rightList') {
+            tabFocus = 'leftSearch';
+            leftSearch.focus();
+          }
+        } else if (e.key === ' ') {
+          e.preventDefault();
+          const btn = document.getElementById('selectBtn');
+          if (btn) btn.click();
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          const items = list.querySelectorAll('.pokemon-item');
           if (isLeft) {
             leftFocusedIndex = Math.min(leftFocusedIndex + 1, items.length - 1);
           } else {
@@ -750,6 +786,7 @@
           }
         } else if (e.key === 'ArrowUp') {
           e.preventDefault();
+          const items = list.querySelectorAll('.pokemon-item');
           if (isLeft) {
             leftFocusedIndex = Math.max(leftFocusedIndex - 1, 0);
           } else {
