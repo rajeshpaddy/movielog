@@ -78,6 +78,10 @@
       background: #00d9ff;
       color: #1a1a2e;
     }
+    .pokemon-item.focused {
+      outline: 2px solid #00d9ff;
+      outline-offset: -2px;
+    }
     .pokemon-item img {
       width: 40px;
       height: 40px;
@@ -407,6 +411,8 @@
     let learnedPokemon = {};
     let selectedPokemon = null;
     let selectedFromRight = false;
+    let leftFocusedIndex = -1;
+    let rightFocusedIndex = -1;
     
     const leftSearch = document.getElementById('leftSearch');
     const rightSearch = document.getElementById('rightSearch');
@@ -516,8 +522,8 @@
       const query = leftSearch.value.toLowerCase();
       const unlearned = allPokemon.filter(p => !learnedPokemon[p.number] && p.name.includes(query));
       
-      leftList.innerHTML = unlearned.map(p => `
-        <div class="pokemon-item ${selectedPokemon?.number === p.number && !selectedFromRight ? 'selected' : ''}" data-number="${p.number}">
+      leftList.innerHTML = unlearned.map((p, i) => `
+        <div class="pokemon-item ${selectedPokemon?.number === p.number && !selectedFromRight ? 'selected' : ''} ${i === leftFocusedIndex ? 'focused' : ''}" data-number="${p.number}" data-index="${i}">
           <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.number}.png" alt="${p.name}">
           <div>
             <div class="name">${p.name}</div>
@@ -535,8 +541,8 @@
       const query = rightSearch.value.toLowerCase();
       const learned = allPokemon.filter(p => learnedPokemon[p.number] && p.name.includes(query));
       
-      rightList.innerHTML = learned.map(p => `
-        <div class="pokemon-item ${selectedPokemon?.number === p.number && selectedFromRight ? 'selected' : ''}" data-number="${p.number}">
+      rightList.innerHTML = learned.map((p, i) => `
+        <div class="pokemon-item ${selectedPokemon?.number === p.number && selectedFromRight ? 'selected' : ''} ${i === rightFocusedIndex ? 'focused' : ''}" data-number="${p.number}" data-index="${i}">
           <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.number}.png" alt="${p.name}">
           <div>
             <div class="name">${p.name}</div>
@@ -696,6 +702,74 @@
     
     leftSearch.addEventListener('input', renderLeftList);
     rightSearch.addEventListener('input', renderRightList);
+    
+    leftSearch.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        leftFocusedIndex = 0;
+        renderLeftList();
+        const firstItem = leftList.querySelector('.pokemon-item');
+        if (firstItem) firstItem.focus();
+      }
+    });
+    
+    rightSearch.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        rightFocusedIndex = 0;
+        renderRightList();
+        const firstItem = rightList.querySelector('.pokemon-item');
+        if (firstItem) firstItem.focus();
+      }
+    });
+    
+    function handleListKeydown(isLeft) {
+      return (e) => {
+        const list = isLeft ? leftList : rightList;
+        const items = list.querySelectorAll('.pokemon-item');
+        const focusedIndex = isLeft ? leftFocusedIndex : rightFocusedIndex;
+        
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          if (isLeft) {
+            leftFocusedIndex = Math.min(leftFocusedIndex + 1, items.length - 1);
+          } else {
+            rightFocusedIndex = Math.min(rightFocusedIndex + 1, items.length - 1);
+          }
+          renderLeftList();
+          renderRightList();
+          const focused = list.querySelector('.pokemon-item.focused');
+          if (focused) {
+            focused.scrollIntoView({ block: 'nearest' });
+            focused.focus();
+          }
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          if (isLeft) {
+            leftFocusedIndex = Math.max(leftFocusedIndex - 1, 0);
+          } else {
+            rightFocusedIndex = Math.max(rightFocusedIndex - 1, 0);
+          }
+          renderLeftList();
+          renderRightList();
+          const focused = list.querySelector('.pokemon-item.focused');
+          if (focused) {
+            focused.scrollIntoView({ block: 'nearest' });
+            focused.focus();
+          }
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          const focused = list.querySelector('.pokemon-item.focused');
+          if (focused) {
+            const number = parseInt(focused.dataset.number);
+            selectPokemon(number, !isLeft);
+          }
+        }
+      };
+    }
+    
+    leftList.addEventListener('keydown', handleListKeydown(true));
+    rightList.addEventListener('keydown', handleListKeydown(false));
     
     loadLearnedPokemon();
     calculateStats();
