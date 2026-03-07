@@ -6,149 +6,151 @@
   <title>Pokemon Learner</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
     body { 
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
       background: #1a1a2e; 
       color: #eee; 
       min-height: 100vh; 
-      overflow: hidden;
+      overflow-x: hidden;
     }
     .app-container { 
       display: flex; 
       height: 100vh; 
-      gap: 10px; 
-      padding: 10px; 
+      gap: 12px; 
+      padding: 12px; 
     }
     .pane { 
       background: #16213e; 
-      border-radius: 15px; 
-      padding: 15px; 
+      border-radius: 20px; 
+      padding: 20px; 
       display: flex; 
       flex-direction: column;
     }
     .left-pane, .right-pane { 
-      width: 280px; 
+      width: 320px; 
       flex-shrink: 0;
     }
     .center-pane { 
       flex: 1; 
-      min-width: 400px;
+      min-width: 350px;
     }
     .pane-title {
-      font-size: 18px;
+      font-size: 24px;
       font-weight: bold;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
       color: #00d9ff;
       text-align: center;
     }
     .search-box {
       width: 100%;
       background: #0f3460;
-      border: 1px solid #00d9ff;
+      border: 2px solid #00d9ff;
       color: #fff;
-      padding: 10px 15px;
-      border-radius: 25px;
-      font-size: 14px;
-      margin-bottom: 10px;
+      padding: 14px 20px;
+      border-radius: 30px;
+      font-size: 18px;
+      margin-bottom: 12px;
     }
-    .search-box::placeholder { color: #666; }
-    .search-box:focus { outline: none; box-shadow: 0 0 10px rgba(0, 217, 255, 0.3); }
+    .search-box::placeholder { color: #888; }
+    .search-box:focus { outline: none; box-shadow: 0 0 15px rgba(0, 217, 255, 0.4); }
     .pokemon-list {
       flex: 1;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 12px;
     }
     .pokemon-item {
       background: #0f3460;
-      padding: 10px;
-      border-radius: 10px;
+      padding: 14px;
+      border-radius: 14px;
       cursor: pointer;
       transition: all 0.2s;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 14px;
     }
     .pokemon-item:hover { 
       background: #1a4a7a; 
-      transform: translateX(3px);
+      transform: translateX(5px);
     }
     .pokemon-item.selected {
       background: #00d9ff;
       color: #1a1a2e;
     }
     .pokemon-item.focused {
-      outline: 2px solid #00d9ff;
-      outline-offset: -2px;
+      outline: 3px solid #00d9ff;
+      outline-offset: -3px;
     }
     .pokemon-item img {
-      width: 40px;
-      height: 40px;
+      width: 56px;
+      height: 56px;
     }
     .pokemon-item .name {
-      font-weight: 500;
+      font-weight: 600;
+      font-size: 18px;
       text-transform: capitalize;
     }
     .pokemon-item .number {
-      font-size: 12px;
-      opacity: 0.7;
+      font-size: 16px;
+      opacity: 0.8;
     }
     
     .center-content {
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 15px;
+      gap: 20px;
       overflow-y: auto;
     }
     .select-btn {
       background: #00d9ff;
       color: #1a1a2e;
       border: none;
-      padding: 12px 30px;
-      border-radius: 25px;
-      font-size: 16px;
+      padding: 16px 40px;
+      border-radius: 30px;
+      font-size: 20px;
       font-weight: bold;
       cursor: pointer;
       transition: all 0.2s;
       align-self: center;
     }
     .select-btn:hover { 
-      transform: scale(1.05); 
-      box-shadow: 0 5px 20px rgba(0, 217, 255, 0.4);
+      transform: scale(1.08); 
+      box-shadow: 0 8px 25px rgba(0, 217, 255, 0.5);
     }
     .select-btn.unselect {
       background: #ff6b6b;
     }
     .showcase {
       background: #0f3460;
-      border-radius: 15px;
-      padding: 20px;
+      border-radius: 20px;
+      padding: 30px;
       text-align: center;
     }
     .showcase-image {
-      width: 200px;
-      height: 200px;
+      width: 280px;
+      height: 280px;
       object-fit: contain;
     }
     .showcase-name {
-      font-size: 28px;
+      font-size: 36px;
       font-weight: bold;
       text-transform: capitalize;
-      margin: 15px 0;
+      margin: 20px 0;
     }
     .showcase-types {
       display: flex;
-      gap: 10px;
+      gap: 14px;
       justify-content: center;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
     }
     .type-badge {
-      padding: 5px 15px;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 500;
+      padding: 8px 20px;
+      border-radius: 25px;
+      font-size: 18px;
+      font-weight: 600;
       text-transform: capitalize;
     }
     .type-normal { background: #A8A77A; color: #1a1a2e; }
@@ -173,44 +175,44 @@
     .stats-container {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      margin: 15px 0;
+      gap: 14px;
+      margin: 20px 0;
     }
     .stat-box {
       background: #16213e;
-      padding: 10px;
-      border-radius: 10px;
+      padding: 14px;
+      border-radius: 14px;
       text-align: center;
     }
     .stat-name {
-      font-size: 12px;
-      color: #888;
+      font-size: 15px;
+      color: #aaa;
       text-transform: capitalize;
     }
     .stat-value {
-      font-size: 20px;
+      font-size: 26px;
       font-weight: bold;
       color: #00d9ff;
     }
     
     .abilities-section, .evolution-section, .description-section {
       background: #0f3460;
-      border-radius: 15px;
-      padding: 15px;
+      border-radius: 20px;
+      padding: 20px;
     }
     .section-title {
-      font-size: 16px;
+      font-size: 22px;
       font-weight: bold;
       color: #00d9ff;
-      margin-bottom: 10px;
+      margin-bottom: 14px;
     }
     .ability-tag {
       display: inline-block;
       background: #1a4a7a;
-      padding: 5px 12px;
-      border-radius: 15px;
-      margin: 3px;
-      font-size: 14px;
+      padding: 8px 16px;
+      border-radius: 20px;
+      margin: 5px;
+      font-size: 17px;
     }
     .ability-tag.hidden {
       background: #7a1a4a;
@@ -220,7 +222,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 15px;
+      gap: 20px;
       flex-wrap: wrap;
     }
     .evolution-item {
@@ -231,51 +233,51 @@
       transform: scale(1.1);
     }
     .evolution-item:focus {
-      outline: 2px solid #00d9ff;
-      outline-offset: 4px;
-      border-radius: 10px;
+      outline: 3px solid #00d9ff;
+      outline-offset: 6px;
+      border-radius: 15px;
     }
     .evolution-item img {
-      width: 80px;
-      height: 80px;
+      width: 100px;
+      height: 100px;
       object-fit: contain;
       transition: transform 0.2s;
     }
     .evolution-item .name {
-      font-size: 14px;
+      font-size: 18px;
       text-transform: capitalize;
-      margin-top: 5px;
+      margin-top: 8px;
     }
     .evolution-arrow {
-      font-size: 24px;
-      color: #888;
+      font-size: 30px;
+      color: #999;
     }
     .evolution-trigger {
-      font-size: 12px;
-      color: #666;
+      font-size: 15px;
+      color: #777;
     }
     
     .flavor-text {
-      font-size: 14px;
-      line-height: 1.6;
-      color: #ccc;
+      font-size: 18px;
+      line-height: 1.7;
+      color: #ddd;
     }
     
     .height-weight {
       display: flex;
-      gap: 20px;
+      gap: 30px;
       justify-content: center;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
     }
     .hw-item {
       text-align: center;
     }
     .hw-label {
-      font-size: 12px;
-      color: #888;
+      font-size: 16px;
+      color: #999;
     }
     .hw-value {
-      font-size: 18px;
+      font-size: 24px;
       font-weight: bold;
       color: #00d9ff;
     }
@@ -285,51 +287,51 @@
       align-items: center;
       justify-content: center;
       height: 100%;
-      color: #666;
-      font-size: 18px;
+      color: #888;
+      font-size: 22px;
     }
     .empty-state {
       display: flex;
       align-items: center;
       justify-content: center;
       height: 100%;
-      color: #666;
-      font-size: 16px;
+      color: #888;
+      font-size: 20px;
       text-align: center;
-      padding: 20px;
+      padding: 30px;
     }
     
     .pokemon-list::-webkit-scrollbar {
-      width: 8px;
+      width: 10px;
     }
     .pokemon-list::-webkit-scrollbar-track {
       background: #0f3460;
-      border-radius: 4px;
+      border-radius: 5px;
     }
     .pokemon-list::-webkit-scrollbar-thumb {
       background: #00d9ff;
-      border-radius: 4px;
+      border-radius: 5px;
     }
 
     .stats-bar {
       display: flex;
-      gap: 15px;
-      padding: 15px 20px;
+      gap: 12px;
+      padding: 16px 24px;
       background: #16213e;
-      border-radius: 15px;
-      margin-bottom: 10px;
+      border-radius: 20px;
+      margin-bottom: 12px;
       flex-wrap: wrap;
       justify-content: center;
     }
     .stats-bar .stat-item {
       background: #0f3460;
-      padding: 10px 20px;
-      border-radius: 10px;
+      padding: 12px 20px;
+      border-radius: 14px;
       text-align: center;
-      min-width: 120px;
+      min-width: 100px;
     }
     .stats-bar .stat-item .stat-label {
-      font-size: 11px;
+      font-size: 13px;
       color: #888;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -346,28 +348,28 @@
     .region-stats {
       display: flex;
       gap: 10px;
-      padding: 10px 20px;
+      padding: 14px 24px;
       background: #16213e;
-      border-radius: 15px;
-      margin-bottom: 10px;
+      border-radius: 20px;
+      margin-bottom: 12px;
       flex-wrap: wrap;
       justify-content: center;
     }
     .region-stat {
       background: #0f3460;
-      padding: 8px 15px;
-      border-radius: 8px;
+      padding: 10px 18px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
     .region-stat .region-name {
-      font-size: 12px;
-      color: #aaa;
+      font-size: 15px;
+      color: #bbb;
       text-transform: capitalize;
     }
     .region-stat .region-count {
-      font-size: 16px;
+      font-size: 20px;
       font-weight: bold;
       color: #00d9ff;
     }
@@ -386,23 +388,74 @@
     .shortcuts-overlay.visible {
       display: block;
     }
+
+    @media (max-width: 900px) {
+      .app-container {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+        padding: 10px;
+      }
+      .pane {
+        width: 100% !important;
+        min-width: unset !important;
+        max-height: 45vh;
+      }
+      .left-pane { order: 1; }
+      .center-pane { order: 2; }
+      .right-pane { order: 3; }
+      .showcase-image {
+        width: 200px;
+        height: 200px;
+      }
+      .showcase-name {
+        font-size: 28px;
+      }
+      .stats-bar {
+        gap: 8px;
+        padding: 12px;
+      }
+      .stats-bar .stat-item {
+        padding: 8px 12px;
+        min-width: 70px;
+      }
+      .stats-bar .stat-item .stat-label {
+        font-size: 10px;
+      }
+      .stats-bar .stat-item .stat-number {
+        font-size: 18px;
+      }
+      .region-stats {
+        gap: 6px;
+        padding: 10px;
+      }
+      .region-stat {
+        padding: 6px 10px;
+      }
+      .region-stat .region-name {
+        font-size: 12px;
+      }
+      .region-stat .region-count {
+        font-size: 14px;
+      }
+    }
     .shortcuts-panel {
       background: rgba(22, 33, 62, 0.95);
-      border: 1px solid #00d9ff;
-      border-radius: 15px;
-      padding: 20px 30px;
-      max-width: 400px;
+      border: 2px solid #00d9ff;
+      border-radius: 20px;
+      padding: 24px 36px;
+      max-width: 450px;
       margin: 0 auto;
     }
     .shortcuts-panel h2 {
       color: #00d9ff;
-      margin-bottom: 15px;
-      font-size: 20px;
+      margin-bottom: 18px;
+      font-size: 26px;
     }
     .shortcut-item {
       display: flex;
       justify-content: space-between;
-      padding: 8px 0;
+      padding: 12px 0;
       border-bottom: 1px solid #2d2d3a;
     }
     .shortcut-item:last-child {
@@ -410,13 +463,15 @@
     }
     .shortcut-key {
       background: #0f3460;
-      padding: 3px 10px;
-      border-radius: 5px;
+      padding: 5px 14px;
+      border-radius: 8px;
       font-family: monospace;
       color: #00d9ff;
+      font-size: 18px;
     }
     .shortcut-desc {
-      color: #aaa;
+      color: #bbb;
+      font-size: 18px;
     }
   </style>
 </head>
