@@ -569,7 +569,6 @@
       const day = 24 * 60 * 60 * 1000;
       
       const learned = Object.keys(learnedPokemon).map(Number);
-      const unlearned = TOTAL_POKEMON - learned.length;
       
       const last24h = learned.filter(n => now - learnedPokemon[n] < day).length;
       const last7d = learned.filter(n => now - learnedPokemon[n] < 7 * day).length;
@@ -584,10 +583,6 @@
       });
       
       statsBar.innerHTML = `
-        <div class="stat-item">
-          <div class="stat-label">Unlearned</div>
-          <div class="stat-number">${unlearned}</div>
-        </div>
         <div class="stat-item highlight">
           <div class="stat-label">Learned</div>
           <div class="stat-number">${learned.length}</div>
