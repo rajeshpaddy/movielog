@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>American Presidents Learner</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+      background: #1a1a2e; 
+      color: #eee; 
+      min-height: 100vh; 
+      overflow-x: hidden;
+    }
+    .app-container { 
+      display: flex; 
+      height: 100vh; 
+      gap: 12px; 
+      padding: 12px; 
+    }
+    .pane { 
+      background: #16213e; 
+      border-radius: 20px; 
+      padding: 20px; 
+      display: flex; 
+      flex-direction: column;
+    }
+    .left-pane, .right-pane { 
+      width: 320px; 
+      flex-shrink: 0;
+    }
+    .center-pane { 
+      flex: 1; 
+      min-width: 350px;
+    }
+    .pane-title {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #fbbf24;
+      text-align: center;
+    }
+    .search-box {
+      width: 100%;
+      background: #0f3460;
+      border: 2px solid #fbbf24;
+      color: #fff;
+      padding: 14px 20px;
+      border-radius: 30px;
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+    .search-box::placeholder { color: #888; }
+    .search-box:focus { outline: none; box-shadow: 0 0 15px rgba(251, 191, 36, 0.4); }
+    .president-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .president-item {
+      background: #0f3460;
+      padding: 14px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .president-item:hover { 
+      background: #1a4a7a; 
+      transform: translateX(5px);
+    }
+    .president-item.selected {
+      background: #fbbf24;
+      color: #1a1a2e;
+    }
+    .president-item.focused {
+      outline: 3px solid #fbbf24;
+      outline-offset: -3px;
+    }
+    .president-item .number {
+      font-size: 32px;
+      font-weight: bold;
+      color: #fbbf24;
+      min-width: 50px;
+    }
+    .president-item.selected .number {
+      color: #1a1a2e;
+    }
+    .president-item .info {
+      flex: 1;
+    }
+    .president-item .name {
+      font-weight: 600;
+      font-size: 18px;
+      text-transform: capitalize;
+    }
+    .president-item .years {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    
+    .center-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+    }
+    .select-btn {
+      background: #fbbf24;
+      color: #1a1a2e;
+      border: none;
+      padding: 16px 40px;
+      border-radius: 30px;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+      align-self: center;
+    }
+    .select-btn:hover { 
+      transform: scale(1.08); 
+      box-shadow: 0 8px 25px rgba(251, 191, 36, 0.5);
+    }
+    .select-btn.unselect {
+      background: #ff6b6b;
+    }
+    .showcase {
+      background: #0f3460;
+      border-radius: 20px;
+      padding: 30px;
+      text-align: center;
+    }
+    .showcase-number {
+      font-size: 72px;
+      font-weight: bold;
+      color: #fbbf24;
+    }
+    .showcase-name {
+      font-size: 36px;
+      font-weight: bold;
+      text-transform: capitalize;
+      margin: 15px 0;
+    }
+    .showcase-years {
+      font-size: 22px;
+      color: #aaa;
+      margin-bottom: 15px;
+    }
+    .showcase-party {
+      display: inline-block;
+      padding: 8px 24px;
+      border-radius: 25px;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+    .party-democrat { background: #3333ff; color: #fff; }
+    .party-republican { background: #ff3333; color: #fff; }
+    .party-whig { background: #999; color: #fff; }
+    .party-federalist { background: #665533; color: #fff; }
+    .party-democratic-republican { background: #6666aa; color: #fff; }
+    .party-independent { background: #888; color: #fff; }
+    
+    .info-section {
+      background: #0f3460;
+      border-radius: 20px;
+      padding: 20px;
+    }
+    .section-title {
+      font-size: 22px;
+      font-weight: bold;
+      color: #fbbf24;
+      margin-bottom: 14px;
+    }
+    .info-text {
+      font-size: 18px;
+      line-height: 1.7;
+      color: #ddd;
+    }
+    
+    .nickname {
+      font-size: 20px;
+      color: #aaa;
+      font-style: italic;
+      margin-bottom: 15px;
+    }
+    
+    .birth-death {
+      font-size: 16px;
+      color: #888;
+      margin-bottom: 10px;
+    }
+    
+    .prior-office, .prior-occupation {
+      font-size: 16px;
+      color: #ccc;
+      margin-bottom: 8px;
+    }
+    
+    .vice-presidents {
+      font-size: 16px;
+      color: #ccc;
+    }
+    
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #888;
+      font-size: 22px;
+    }
+    .empty-state {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #888;
+      font-size: 20px;
+      text-align: center;
+      padding: 30px;
+    }
+    
+    .president-list::-webkit-scrollbar {
+      width: 10px;
+    }
+    .president-list::-webkit-scrollbar-track {
+      background: #0f3460;
+      border-radius: 5px;
+    }
+    .president-list::-webkit-scrollbar-thumb {
+      background: #fbbf24;
+      border-radius: 5px;
+    }
+
+    .stats-bar {
+      display: flex;
+      gap: 12px;
+      padding: 16px 24px;
+      background: #16213e;
+      border-radius: 20px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .stats-bar .stat-item {
+      background: #0f3460;
+      padding: 12px 20px;
+      border-radius: 14px;
+      text-align: center;
+      min-width: 100px;
+    }
+    .stats-bar .stat-item .stat-label {
+      font-size: 13px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .stats-bar .stat-item .stat-number {
+      font-size: 24px;
+      font-weight: bold;
+      color: #fbbf24;
+    }
+    .stats-bar .stat-item.highlight .stat-number {
+      color: #fbbf24;
+    }
+
+    .shortcuts-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: transparent;
+      z-index: 1000;
+      padding: 40px;
+    }
+    .shortcuts-overlay.visible {
+      display: block;
+    }
+    .shortcuts-panel {
+      background: rgba(22, 33, 62, 0.95);
+      border: 2px solid #fbbf24;
+      border-radius: 20px;
+      padding: 24px 36px;
+      max-width: 450px;
+      margin: 0 auto;
+    }
+    .shortcuts-panel h2 {
+      color: #fbbf24;
+      margin-bottom: 18px;
+      font-size: 26px;
+    }
+    .shortcut-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #2d2d3a;
+    }
+    .shortcut-item:last-child {
+      border-bottom: none;
+    }
+    .shortcut-key {
+      background: #0f3460;
+      padding: 5px 14px;
+      border-radius: 8px;
+      font-family: monospace;
+      color: #fbbf24;
+      font-size: 18px;
+    }
+    .shortcut-desc {
+      color: #bbb;
+      font-size: 18px;
+    }
+
+    @media (max-width: 900px) {
+      .app-container {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+        padding: 10px;
+      }
+      .pane {
+        width: 100% !important;
+        min-width: unset !important;
+        max-height: 45vh;
+      }
+      .left-pane { order: 1; }
+      .center-pane { order: 2; }
+      .right-pane { order: 3; }
+      .showcase-number {
+        font-size: 48px;
+      }
+      .showcase-name {
+        font-size: 28px;
+      }
+      .stats-bar {
+        gap: 8px;
+        padding: 12px;
+      }
+      .stats-bar .stat-item {
+        padding: 8px 12px;
+        min-width: 70px;
+      }
+      .stats-bar .stat-item .stat-label {
+        font-size: 10px;
+      }
+      .stats-bar .stat-item .stat-number {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shortcuts-overlay" id="shortcutsOverlay">
+    <div class="shortcuts-panel">
+      <h2>Keyboard Shortcuts</h2>
+      <div class="shortcut-item"><span class="shortcut-desc">Toggle shortcuts</span><span class="shortcut-key">Ctrl + /</span></div>
+      <div class="shortcut-item"><span class="shortcut-desc">Focus search</span><span class="shortcut-key">/</span></div>
+      <div class="shortcut-item"><span class="shortcut-desc">Study/Unstudy President</span><span class="shortcut-key">L</span></div>
+      <div class="shortcut-item"><span class="shortcut-desc">Select/Unselect</span><span class="shortcut-key">Space</span></div>
+      <div class="shortcut-item"><span class="shortcut-desc">Navigate up/down</span><span class="shortcut-key">↑ / ↓</span></div>
+      <div class="shortcut-item"><span class="shortcut-desc">Next element</span><span class="shortcut-key">Tab</span></div>
+      <div class="shortcut-item"><span class="shortcut-desc">Close/Clear</span><span class="shortcut-key">Escape</span></div>
+    </div>
+  </div>
+  <div class="stats-bar" id="statsBar"></div>
+  <div class="app-container">
+    <div class="pane left-pane">
+      <div class="pane-title">Unstudied Presidents</div>
+      <input type="text" class="search-box" id="leftSearch" placeholder="Search Presidents...">
+      <div class="president-list" id="leftList"></div>
+    </div>
+    
+    <div class="pane center-pane">
+      <div class="center-content" id="centerContent">
+        <div class="empty-state">Click a President to learn about them!</div>
+      </div>
+    </div>
+    
+    <div class="pane right-pane">
+      <div class="pane-title">Studied Presidents</div>
+      <input type="text" class="search-box" id="rightSearch" placeholder="Search studied...">
+      <div class="president-list" id="rightList"></div>
+    </div>
+  </div>
+
+  <script>
+    const PRESIDENTS = [
+      { number: 1, name: "George Washington", years: "1789-1797", party: "independent", nickname: "Father of His Country", birthDeath: "1732-1799", priorOffice: "Commander-in-Chief of the Continental Army", priorOccupation: "Planter, Military Leader", vicePresidents: ["John Adams"] },
+      { number: 2, name: "John Adams", years: "1797-1801", party: "federalist", nickname: "The Father of the American Navy", birthDeath: "1735-1826", priorOffice: "Vice President", priorOccupation: "Lawyer, Diplomat", vicePresidents: ["Thomas Jefferson"] },
+      { number: 3, name: "Thomas Jefferson", years: "1801-1809", party: "democratic-republican", nickname: "The Sage of Monticello", birthDeath: "1743-1826", priorOffice: "Vice President", priorOccupation: "Lawyer, Planter, Diplomat", vicePresidents: ["Aaron Burr", "George Clinton"] },
+      { number: 4, name: "James Madison", years: "1809-1817", party: "democratic-republican", nickname: "Father of the Constitution", birthDeath: "1751-1836", priorOffice: "Secretary of State", priorOccupation: "Lawyer, Planter", vicePresidents: ["George Clinton", "Elbridge Gerry"] },
+      { number: 5, name: "James Monroe", years: "1817-1825", party: "democratic-republican", nickname: "The Last of the Revolutionary Presidents", birthDeath: "1758-1831", priorOffice: "Secretary of State", priorOccupation: "Lawyer, Planter", vicePresidents: ["Daniel D. Tompkins"] },
+      { number: 6, name: "John Quincy Adams", years: "1825-1829", party: "democratic-republican", nickname: "The Last Scholar President", birthDeath: "1767-1848", priorOffice: "Secretary of State", priorOccupation: "Diplomat, Lawyer", vicePresidents: ["John C. Calhoun"] },
+      { number: 7, name: "Andrew Jackson", years: "1829-1837", party: "democrat", nickname: "Old Hickory", birthDeath: "1767-1845", priorOffice: "Military General", priorOccupation: "Lawyer, Planter", vicePresidents: ["John C. Calhoun", "Martin Van Buren"] },
+      { number: 8, name: "Martin Van Buren", years: "1837-1841", party: "democrat", nickname: "The Little Magician", birthDeath: "1782-1862", priorOffice: "Vice President", priorOccupation: "Lawyer", vicePresidents: ["Richard M. Johnson"] },
+      { number: 9, name: "William Henry Harrison", years: "1841", party: "whig", nickname: "Old Tippecanoe", birthDeath: "1773-1841", priorOffice: "Military General", priorOccupation: "Military, Politician", vicePresidents: ["John Tyler"] },
+      { number: 10, name: "John Tyler", years: "1841-1845", party: "whig", nickname: "The Accidental President", birthDeath: "1790-1862", priorOffice: "Vice President", priorOccupation: "Lawyer, Planter", vicePresidents: ["None"] },
+      { number: 11, name: "James K. Polk", years: "1845-1849", party: "democrat", nickname: "The Dark Horse President", birthDeath: "1795-1849", priorOffice: "Speaker of the House", priorOccupation: "Lawyer", vicePresidents: ["George M. Dallas"] },
+      { number: 12, name: "Zachary Taylor", years: "1849-1850", party: "whig", nickname: "Old Rough and Ready", birthDeath: "1784-1850", priorOffice: "Military General", priorOccupation: "Military Leader", vicePresidents: ["Millard Fillmore"] },
+      { number: 13, name: "Millard Fillmore", years: "1850-1853", party: "whig", nickname: "The Last of the Whigs", birthDeath: "1800-1874", priorOffice: "Vice President", priorOccupation: "Lawyer", vicePresidents: ["None"] },
+      { number: 14, name: "Franklin Pierce", years: "1853-1857", party: "democrat", nickname: "The Young Hero of the War", birthDeath: "1804-1869", priorOffice: "Military General", priorOccupation: "Lawyer, Politician", vicePresidents: ["William R. King"] },
+      { number: 15, name: "James Buchanan", years: "1857-1861", party: "democrat", nickname: "The Bachelor President", birthDeath: "1791-1868", priorOffice: "Secretary of State", priorOccupation: "Lawyer, Diplomat", vicePresidents: ["John C. Breckinridge"] },
+      { number: 16, name: "Abraham Lincoln", years: "1861-1865", party: "republican", nickname: "The Great Emancipator", birthDeath: "1809-1865", priorOffice: "U.S. Senator", priorOccupation: "Lawyer, Politician", vicePresidents: ["Andrew Johnson", "Hannibal Hamlin"] },
+      { number: 17, name: "Andrew Johnson", years: "1865-1869", party: "democrat", nickname: "The Tennessee Tailor", birthDeath: "1808-1875", priorOffice: "Military Governor", priorOccupation: "Tailor, Politician", vicePresidents: ["None"] },
+      { number: 18, name: "Ulysses S. Grant", years: "1869-1877", party: "republican", nickname: "The Hero of the Civil War", birthDeath: "1822-1885", priorOffice: "Military General", priorOccupation: "Military Leader", vicePresidents: ["Schuyler Colfax", "Henry Wilson"] },
+      { number: 19, name: "Rutherford B. Hayes", years: "1877-1881", party: "republican", nickname: "The Dark Horse President", birthDeath: "1822-1893", priorOffice: "Governor of Ohio", priorOccupation: "Lawyer, Politician", vicePresidents: ["William A. Wheeler"] },
+      { number: 20, name: "James A. Garfield", years: "1881", party: "republican", nickname: "The Preacher President", birthDeath: "1831-1881", priorOffice: "U.S. Representative", priorOccupation: "Lawyer, Educator", vicePresidents: ["Chester A. Arthur"] },
+      { number: 21, name: "Chester A. Arthur", years: "1881-1885", party: "republican", nickname: "The Gentleman Boss", birthDeath: "1829-1886", priorOffice: "Vice President", priorOccupation: "Lawyer", vicePresidents: ["None"] },
+      { number: 22, name: "Grover Cleveland", years: "1885-1889", party: "democrat", nickname: "The Veto President", birthDeath: "1837-1908", priorOffice: "Governor of New York", priorOccupation: "Lawyer", vicePresidents: ["Thomas A. Hendricks"] },
+      { number: 23, name: "Benjamin Harrison", years: "1889-1893", party: "republican", nickname: "The Kid Lover President", birthDeath: "1833-1901", priorOffice: "U.S. Senator", priorOccupation: "Lawyer", vicePresidents: ["Levi P. Morton"] },
+      { number: 24, name: "Grover Cleveland", years: "1893-1897", party: "democrat", nickname: "The Veto President", birthDeath: "1837-1908", priorOffice: "Former President", priorOccupation: "Lawyer", vicePresidents: ["Adlai Stevenson I"] },
+      { number: 25, name: "William McKinley", years: "1897-1901", party: "republican", nickname: "The Napoleon of the West", birthDeath: "1843-1901", priorOffice: "Governor of Ohio", priorOccupation: "Lawyer, Soldier", vicePresidents: ["Garret A. Hobart", "Theodore Roosevelt"] },
+      { number: 26, name: "Theodore Roosevelt", years: "1901-1909", party: "republican", nickname: "Teddy", birthDeath: "1858-1919", priorOffice: "Vice President", priorOccupation: "Writer, Soldier, Politician", vicePresidents: ["Charles W. Fairbanks"] },
+      { number: 27, name: "William Howard Taft", years: "1909-1913", party: "republican", nickname: "The President Who Lost a Fight", birthDeath: "1857-1930", priorOffice: "Secretary of War", priorOccupation: "Lawyer, Judge", vicePresidents: ["James S. Sherman"] },
+      { number: 28, name: "Woodrow Wilson", years: "1913-1921", party: "democrat", nickname: "The Schoolmaster President", birthDeath: "1856-1924", priorOffice: "Governor of New Jersey", priorOccupation: "Academic, Politician", vicePresidents: ["Thomas R. Marshall"] },
+      { number: 29, name: "Warren G. Harding", years: "1921-1923", party: "republican", nickname: "The Dancing President", birthDeath: "1865-1923", priorOffice: "U.S. Senator", priorOccupation: "Newspaper Publisher", vicePresidents: ["Calvin Coolidge"] },
+      { number: 30, name: "Calvin Coolidge", years: "1923-1929", party: "republican", nickname: "Silent Cal", birthDeath: "1872-1933", priorOffice: "Vice President", priorOccupation: "Lawyer, Politician", vicePresidents: ["Charles G. Dawes"] },
+      { number: 31, name: "Herbert Hoover", years: "1929-1933", party: "republican", nickname: "The Great Engineer", birthDeath: "1874-1964", priorOffice: "Secretary of Commerce", priorOccupation: "Engineer, Humanitarian", vicePresidents: ["Charles Curtis"] },
+      { number: 32, name: "Franklin D. Roosevelt", years: "1933-1945", party: "democrat", nickname: "FDR", birthDeath: "1882-1945", priorOffice: "Governor of New York", priorOccupation: "Lawyer, Politician", vicePresidents: ["John N. Garner", "Henry A. Wallace", "Harry S. Truman"] },
+      { number: 33, name: "Harry S. Truman", years: "1945-1953", party: "democrat", nickname: "Give 'Em Hell Harry", birthDeath: "1884-1972", priorOffice: "Vice President", priorOccupation: "Farmer, Businessman", vicePresidents: ["Alben W. Barkley"] },
+      { number: 34, name: "Dwight D. Eisenhower", years: "1953-1961", party: "republican", nickname: "Ike", birthDeath: "1890-1969", priorOffice: "Supreme Commander of Allied Forces", priorOccupation: "Military General", vicePresidents: ["Richard Nixon"] },
+      { number: 35, name: "John F. Kennedy", years: "1961-1963", party: "democrat", nickname: "JFK", birthDeath: "1917-1963", priorOffice: "U.S. Senator", priorOccupation: "Author, Naval Officer", vicePresidents: ["Lyndon B. Johnson"] },
+      { number: 36, name: "Lyndon B. Johnson", years: "1963-1969", party: "democrat", nickname: "LBJ", birthDeath: "1908-1973", priorOffice: "Vice President", priorOccupation: "Teacher, Politician", vicePresidents: ["Hubert Humphrey"] },
+      { number: 37, name: "Richard Nixon", years: "1969-1974", party: "republican", nickname: "Tricky Dick", birthDeath: "1913-1994", priorOffice: "Vice President", priorOccupation: "Lawyer, Politician", vicePresidents: ["Spiro Agnew", "Gerald Ford"] },
+      { number: 38, name: "Gerald Ford", years: "1974-1977", party: "republican", nickname: "The Nice Guy President", birthDeath: "1913-2006", priorOffice: "Vice President", priorOccupation: "Lawyer", vicePresidents: ["Nelson Rockefeller"] },
+      { number: 39, name: "Jimmy Carter", years: "1977-1981", party: "democrat", nickname: "The Peanut Farmer President", birthDeath: "1924-", priorOffice: "Governor of Georgia", priorOccupation: "Peanut Farmer, Naval Officer", vicePresidents: ["Walter Mondale"] },
+      { number: 40, name: "Ronald Reagan", years: "1981-1989", party: "republican", nickname: "The Great Communicator", birthDeath: "1911-2004", priorOffice: "Governor of California", priorOccupation: "Actor, Politician", vicePresidents: ["George H. W. Bush"] },
+      { number: 41, name: "George H. W. Bush", years: "1989-1993", party: "republican", nickname: "Bush 41", birthDeath: "1924-2018", priorOffice: "Vice President", priorOccupation: "Oil Businessman, CIA Director", vicePresidents: ["Dan Quayle"] },
+      { number: 42, name: "Bill Clinton", years: "1993-2001", party: "democrat", nickname: "Slick Willie", birthDeath: "1946-", priorOffice: "Governor of Arkansas", priorOccupation: "Lawyer, Governor", vicePresidents: ["Al Gore"] },
+      { number: 43, name: "George W. Bush", years: "2001-2009", party: "republican", nickname: "Bush 43", birthDeath: "1946-", priorOffice: "Governor of Texas", priorOccupation: "Oil Businessman, Governor", vicePresidents: ["Dick Cheney"] },
+      { number: 44, name: "Barack Obama", years: "2009-2017", party: "democrat", nickname: "The First President", birthDeath: "1961-", priorOffice: "U.S. Senator", priorOccupation: "Law Professor, Senator", vicePresidents: ["Joe Biden"] },
+      { number: 45, name: "Donald Trump", years: "2017-2021", party: "republican", nickname: "The Donald", birthDeath: "1946-", priorOffice: "Businessman", priorOccupation: "Businessman, TV Personality", vicePresidents: ["Mike Pence"] },
+      { number: 46, name: "Joe Biden", years: "2021-", party: "democrat", nickname: "Joe", birthDeath: "1942-", priorOffice: "Vice President", priorOccupation: "Lawyer, Senator", vicePresidents: ["Kamala Harris"] }
+    ];
+    
+    let allPresidents = [...PRESIDENTS];
+    let studiedPresidents = {};
+    let failedPresidents = new Set();
+    let selectedPresident = null;
+    let selectedFromRight = false;
+    let leftFocusedIndex = -1;
+    let rightFocusedIndex = -1;
+    
+    const leftSearch = document.getElementById('leftSearch');
+    const rightSearch = document.getElementById('rightSearch');
+    const leftList = document.getElementById('leftList');
+    const rightList = document.getElementById('rightList');
+    const centerContent = document.getElementById('centerContent');
+    const statsBar = document.getElementById('statsBar');
+    const shortcutsOverlay = document.getElementById('shortcutsOverlay');
+    
+    function loadStudiedPresidents() {
+      const saved = localStorage.getItem('studiedPresidents');
+      if (saved) {
+        studiedPresidents = JSON.parse(saved);
+      }
+    }
+    
+    function saveStudiedPresidents() {
+      localStorage.setItem('studiedPresidents', JSON.stringify(studiedPresidents));
+    }
+    
+    function calculateStats() {
+      const now = Date.now();
+      const day = 24 * 60 * 60 * 1000;
+      
+      const studied = Object.keys(studiedPresidents).map(Number);
+      
+      const last24h = studied.filter(n => now - studiedPresidents[n] < day).length;
+      const last7d = studied.filter(n => now - studiedPresidents[n] < 7 * day).length;
+      const last30d = studied.filter(n => now - studiedPresidents[n] < 30 * day).length;
+      const last365d = studied.filter(n => now - studiedPresidents[n] < 365 * day).length;
+      
+      statsBar.innerHTML = `
+        <div class="stat-item highlight">
+          <div class="stat-label">Studied</div>
+          <div class="stat-number">${studied.length}</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Last 24h</div>
+          <div class="stat-number">${last24h}</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Last 7d</div>
+          <div class="stat-number">${last7d}</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Last 30d</div>
+          <div class="stat-number">${last30d}</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Last 365d</div>
+          <div class="stat-number">${last365d}</div>
+        </div>
+      `;
+    }
+    
+    function getPartyClass(party) {
+      return 'party-' + party;
+    }
+    
+    function formatParty(party) {
+      return party.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    }
+    
+    function renderLeftList() {
+      const query = leftSearch.value.toLowerCase();
+      const unstudied = allPresidents.filter(p => !studiedPresidents[p.number] && !failedPresidents.has(p.number) && (p.name.toLowerCase().includes(query) || p.nickname.toLowerCase().includes(query)));
+      
+      leftList.innerHTML = unstudied.map((p, i) => `
+        <div class="president-item ${selectedPresident?.number === p.number && !selectedFromRight ? 'selected' : ''} ${i === leftFocusedIndex ? 'focused' : ''}" data-number="${p.number}" data-index="${i}" tabindex="0">
+          <div class="number">${p.number}</div>
+          <div class="info">
+            <div class="name">${p.name}</div>
+            <div class="years">${p.years}</div>
+          </div>
+        </div>
+      `).join('');
+      
+      leftList.querySelectorAll('.president-item').forEach(item => {
+        item.addEventListener('click', () => selectPresident(parseInt(item.dataset.number), false));
+      });
+    }
+    
+    function renderRightList() {
+      const query = rightSearch.value.toLowerCase();
+      const studied = allPresidents.filter(p => studiedPresidents[p.number] && (p.name.toLowerCase().includes(query) || p.nickname.toLowerCase().includes(query)));
+      
+      rightList.innerHTML = studied.map((p, i) => `
+        <div class="president-item ${selectedPresident?.number === p.number && selectedFromRight ? 'selected' : ''} ${i === rightFocusedIndex ? 'focused' : ''}" data-number="${p.number}" data-index="${i}" tabindex="0">
+          <div class="number">${p.number}</div>
+          <div class="info">
+            <div class="name">${p.name}</div>
+            <div class="years">${p.years}</div>
+          </div>
+        </div>
+      `).join('');
+      
+      rightList.querySelectorAll('.president-item').forEach(item => {
+        item.addEventListener('click', () => selectPresident(parseInt(item.dataset.number), true));
+      });
+    }
+    
+    function selectPresident(number, fromRight) {
+      selectedPresident = allPresidents.find(p => p.number === number);
+      selectedFromRight = fromRight;
+      renderLeftList();
+      renderRightList();
+      showPresidentDetails(selectedPresident);
+    }
+    
+    function showPresidentDetails(president) {
+      centerContent.innerHTML = '<div class="loading">Loading...</div>';
+      
+      try {
+        centerContent.innerHTML = `
+          <button class="select-btn ${selectedFromRight ? 'unselect' : ''}" id="selectBtn">
+            ${selectedFromRight ? 'Unstudy' : 'Study'}
+          </button>
+          
+          <div class="showcase">
+            <div class="showcase-number">${president.number}</div>
+            <div class="showcase-name">${president.name}</div>
+            <div class="showcase-years">${president.years}</div>
+            <span class="showcase-party ${getPartyClass(president.party)}">${formatParty(president.party)}</span>
+          </div>
+          
+          <div class="info-section">
+            <div class="section-title">Nickname</div>
+            <div class="nickname">${president.nickname}</div>
+          </div>
+          
+          <div class="info-section">
+            <div class="section-title">Born - Died</div>
+            <div class="birth-death">${president.birthDeath}</div>
+          </div>
+          
+          <div class="info-section">
+            <div class="section-title">Prior Office</div>
+            <div class="prior-office">${president.priorOffice}</div>
+          </div>
+          
+          <div class="info-section">
+            <div class="section-title">Prior Occupation</div>
+            <div class="prior-occupation">${president.priorOccupation}</div>
+          </div>
+          
+          <div class="info-section">
+            <div class="section-title">Vice President${president.vicePresidents.length > 1 ? 's' : ''}</div>
+            <div class="vice-presidents">${president.vicePresidents.join(', ')}</div>
+          </div>
+        `;
+        
+        document.getElementById('selectBtn').addEventListener('click', togglePresident);
+        
+      } catch (error) {
+        failedPresidents.add(president.number);
+        renderLeftList();
+        centerContent.innerHTML = '<div class="empty-state">Error loading President details</div>';
+        console.error(error);
+      }
+    }
+    
+    function togglePresident() {
+      if (!selectedPresident) return;
+      
+      if (selectedFromRight) {
+        delete studiedPresidents[selectedPresident.number];
+      } else {
+        studiedPresidents[selectedPresident.number] = Date.now();
+      }
+      
+      saveStudiedPresidents();
+      selectedFromRight = !selectedFromRight;
+      calculateStats();
+      renderLeftList();
+      renderRightList();
+      showPresidentDetails(selectedPresident);
+    }
+    
+    let tabFocus = 'leftSearch';
+    
+    leftSearch.addEventListener('input', renderLeftList);
+    rightSearch.addEventListener('input', renderRightList);
+    
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key === '/') {
+        e.preventDefault();
+        shortcutsOverlay.classList.toggle('visible');
+        return;
+      }
+      
+      if (shortcutsOverlay.classList.contains('visible')) {
+        if (e.key === 'Escape') {
+          shortcutsOverlay.classList.remove('visible');
+        }
+        return;
+      }
+      
+      if (e.target === document.body || e.target === document.documentElement) {
+        if (e.key === 'l' || e.key === 'L') {
+          if (selectedPresident) {
+            togglePresident();
+          }
+        } else if (e.key === '/') {
+          e.preventDefault();
+          leftSearch.focus();
+        } else if (e.key === 'Escape') {
+          leftSearch.value = '';
+          rightSearch.value = '';
+          renderLeftList();
+          renderRightList();
+          leftSearch.focus();
+        }
+      }
+    });
+    
+    leftSearch.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (shortcutsOverlay.classList.contains('visible')) {
+          shortcutsOverlay.classList.remove('visible');
+        } else {
+          leftSearch.value = '';
+          leftSearch.blur();
+          renderLeftList();
+        }
+      }
+    });
+    
+    rightSearch.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (shortcutsOverlay.classList.contains('visible')) {
+          shortcutsOverlay.classList.remove('visible');
+        } else {
+          rightSearch.value = '';
+          rightSearch.blur();
+          renderRightList();
+        }
+      }
+    });
+    
+    leftSearch.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        if (tabFocus === 'leftSearch') {
+          tabFocus = 'leftList';
+          leftFocusedIndex = 0;
+          renderLeftList();
+          const firstItem = leftList.querySelector('.president-item');
+          if (firstItem) {
+            const number = parseInt(firstItem.dataset.number);
+            selectPresident(number, false);
+          }
+        } else if (tabFocus === 'rightList') {
+          tabFocus = 'leftSearch';
+          leftSearch.focus();
+        }
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        const btn = document.getElementById('selectBtn');
+        if (btn) btn.click();
+      }
+    });
+    
+    rightSearch.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        if (tabFocus === 'leftList') {
+          tabFocus = 'rightSearch';
+          rightSearch.focus();
+        } else if (tabFocus === 'rightSearch') {
+          tabFocus = 'rightList';
+          rightFocusedIndex = 0;
+          renderRightList();
+          const firstItem = rightList.querySelector('.president-item');
+          if (firstItem) {
+            const number = parseInt(firstItem.dataset.number);
+            selectPresident(number, true);
+          }
+        }
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        const btn = document.getElementById('selectBtn');
+        if (btn) btn.click();
+      }
+    });
+    
+    function handleListKeydown(isLeft) {
+      return (e) => {
+        const list = isLeft ? leftList : rightList;
+        
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          if (isLeft && tabFocus === 'leftList') {
+            tabFocus = 'rightSearch';
+            rightSearch.focus();
+          } else if (!isLeft && tabFocus === 'rightList') {
+            tabFocus = 'leftSearch';
+            leftSearch.focus();
+          }
+        } else if (e.key === ' ') {
+          e.preventDefault();
+          const btn = document.getElementById('selectBtn');
+          if (btn) btn.click();
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          const items = list.querySelectorAll('.president-item');
+          if (isLeft) {
+            leftFocusedIndex = Math.min(leftFocusedIndex + 1, items.length - 1);
+          } else {
+            rightFocusedIndex = Math.min(rightFocusedIndex + 1, items.length - 1);
+          }
+          renderLeftList();
+          renderRightList();
+          const focused = list.querySelector('.president-item.focused');
+          if (focused) {
+            focused.scrollIntoView({ block: 'nearest' });
+            const number = parseInt(focused.dataset.number);
+            selectPresident(number, !isLeft);
+          }
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          const items = list.querySelectorAll('.president-item');
+          if (isLeft) {
+            leftFocusedIndex = Math.max(leftFocusedIndex - 1, 0);
+          } else {
+            rightFocusedIndex = Math.max(rightFocusedIndex - 1, 0);
+          }
+          renderLeftList();
+          renderRightList();
+          const focused = list.querySelector('.president-item.focused');
+          if (focused) {
+            focused.scrollIntoView({ block: 'nearest' });
+            const number = parseInt(focused.dataset.number);
+            selectPresident(number, !isLeft);
+          }
+        }
+      };
+    }
+    
+    leftList.addEventListener('keydown', handleListKeydown(true));
+    rightList.addEventListener('keydown', handleListKeydown(false));
+    
+    document.addEventListener('keydown', (e) => {
+      if (shortcutsOverlay.classList.contains('visible')) return;
+      
+      if (e.target.tagName === 'INPUT') return;
+      
+      const isLeft = tabFocus === 'leftList';
+      const list = isLeft ? leftList : rightList;
+      const items = list.querySelectorAll('.president-item');
+      if (items.length === 0) return;
+      
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (isLeft) {
+          leftFocusedIndex = Math.min(leftFocusedIndex + 1, items.length - 1);
+        } else {
+          rightFocusedIndex = Math.min(rightFocusedIndex + 1, items.length - 1);
+        }
+        renderLeftList();
+        renderRightList();
+        const focused = list.querySelector('.president-item.focused');
+        if (focused) {
+          focused.scrollIntoView({ block: 'nearest' });
+          const number = parseInt(focused.dataset.number);
+          selectPresident(number, !isLeft);
+        }
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (isLeft) {
+          leftFocusedIndex = Math.max(leftFocusedIndex - 1, 0);
+        } else {
+          rightFocusedIndex = Math.max(rightFocusedIndex - 1, 0);
+        }
+        renderLeftList();
+        renderRightList();
+        const focused = list.querySelector('.president-item.focused');
+        if (focused) {
+          focused.scrollIntoView({ block: 'nearest' });
+          const number = parseInt(focused.dataset.number);
+          selectPresident(number, !isLeft);
+        }
+      }
+    });
+    
+    loadStudiedPresidents();
+    calculateStats();
+    renderLeftList();
+    renderRightList();
+  </script>
+</body>
+</html>
