@@ -182,6 +182,20 @@
       position: relative;
       z-index: 1;
     }
+    .portrait-image {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid #fff;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      position: relative;
+      z-index: 1;
+      background: #223047;
+    }
+    .portrait-fallback {
+      display: none;
+    }
     .portrait-name {
       font-size: 16px;
       font-weight: bold;
@@ -560,7 +574,8 @@
       { number: 43, name: "George W. Bush", years: "2001-2009", tenureYears: 8, party: "republican", nickname: "Bush 43", birthDeath: "1946-", priorOffice: "Governor of Texas", priorOccupation: "Oil Businessman, Governor", vicePresidents: ["Dick Cheney"], image: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/George_W_Bush_Portrait.jpg/220px-George_W_Bush_Portrait.jpg", accomplishments: "Responded to 9/11, created the Department of Homeland Security, and led wars in Afghanistan and Iraq.", keyEvents: ["2001: 9/11 attacks", "2001: PATRIOT Act", "2003: Iraq War", "2008: Financial crisis"] },
       { number: 44, name: "Barack Obama", years: "2009-2017", tenureYears: 8, party: "democrat", nickname: "The First President", birthDeath: "1961-", priorOffice: "U.S. Senator", priorOccupation: "Law Professor, Senator", vicePresidents: ["Joe Biden"], image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/President_Barack_Obama.jpg/220px-President_Barack_Obama.jpg", accomplishments: "First African American president, Affordable Care Act, ended Osama bin Laden, and saved the economy.", keyEvents: ["2009: Stimulus Act", "2010: Affordable Care Act", "2011: Osama bin Laden killed", "2015: Iran Nuclear Deal"] },
       { number: 45, name: "Donald Trump", years: "2017-2021", tenureYears: 4, party: "republican", nickname: "The Donald", birthDeath: "1946-", priorOffice: "Businessman", priorOccupation: "Businessman, TV Personality", vicePresidents: ["Mike Pence"], image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Donald_Trump_official_portrait.jpg/220px-Donald_Trump_official_portrait.jpg", accomplishments: "Tax cuts, criminal justice reform, andOperation Warp Speed for COVID vaccines. First president to be impeached twice.", keyEvents: ["2017: Tax Cuts and Jobs Act", "2018: First impeachment", "2020: COVID-19 pandemic", "2021: Second impeachment"] },
-      { number: 46, name: "Joe Biden", years: "2021-", tenureYears: 4, party: "democrat", nickname: "Joe", birthDeath: "1942-", priorOffice: "Vice President", priorOccupation: "Lawyer, Senator", vicePresidents: ["Kamala Harris"], image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Joe_Biden_presidential_portrait.jpg/220px-Joe_Biden_presidential_portrait.jpg", accomplishments: "Infrastructure Investment and Jobs Act, COVID-19 response, and rejoined Paris Climate Agreement.", keyEvents: ["2021: Capitol riots", "2021: Infrastructure Act", "2022: Inflation Reduction Act", "2022: Student loan forgiveness"] }
+      { number: 46, name: "Joe Biden", years: "2021-2025", tenureYears: 4, party: "democrat", nickname: "Joe", birthDeath: "1942-", priorOffice: "Vice President", priorOccupation: "Lawyer, Senator", vicePresidents: ["Kamala Harris"], image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Joe_Biden_presidential_portrait.jpg/220px-Joe_Biden_presidential_portrait.jpg", accomplishments: "Infrastructure Investment and Jobs Act, COVID-19 response, and rejoined Paris Climate Agreement.", keyEvents: ["2021: Capitol riots", "2021: Infrastructure Act", "2022: Inflation Reduction Act", "2022: Student loan forgiveness"] },
+      { number: 47, name: "Donald Trump", years: "2025-", tenureYears: 4, party: "republican", nickname: "The Donald", birthDeath: "1946-", priorOffice: "Former President", priorOccupation: "Businessman, TV Personality", vicePresidents: ["J.D. Vance"], image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Donald_Trump_official_portrait.jpg/220px-Donald_Trump_official_portrait.jpg", accomplishments: "Began a second nonconsecutive term after being inaugurated as the 47th president on January 20, 2025.", keyEvents: ["2025: Inaugurated as 47th president", "2025: Began second nonconsecutive term", "2025: New cabinet sworn in", "2026: First State of the Union of second term"] }
     ];
     
     let allPresidents = [...PRESIDENTS];
@@ -570,6 +585,7 @@
     let selectedFromRight = false;
     let leftFocusedIndex = -1;
     let rightFocusedIndex = -1;
+    const portraitCache = {};
     
     const leftSearch = document.getElementById('leftSearch');
     const rightSearch = document.getElementById('rightSearch');
@@ -733,6 +749,62 @@
       const v = n % 100;
       return s[(v - 20) % 10] || s[v] || s[0];
     }
+
+    function getPortraitFallbackUrl(imageUrl) {
+      if (!imageUrl) return '';
+      const marker = '/220px-';
+      const markerIndex = imageUrl.lastIndexOf(marker);
+      if (markerIndex === -1) return '';
+      const fileName = imageUrl.slice(markerIndex + marker.length);
+      if (!fileName) return '';
+      return `https://commons.wikimedia.org/wiki/Special:FilePath/${fileName}`;
+    }
+
+    async function fetchWikipediaPortraitByName(name) {
+      if (!name) return '';
+      if (portraitCache[name]) return portraitCache[name];
+
+      const title = encodeURIComponent(name.replace(/\s+/g, '_'));
+      const url = `https://en.wikipedia.org/w/api.php?action=query&titles=${title}&prop=pageimages&pithumbsize=320&format=json&origin=*`;
+      try {
+        const response = await fetch(url);
+        if (!response.ok) return '';
+        const data = await response.json();
+        const pages = data?.query?.pages || {};
+        const page = Object.values(pages)[0];
+        const source = page?.thumbnail?.source || '';
+        if (source) {
+          portraitCache[name] = source;
+        }
+        return source;
+      } catch (error) {
+        return '';
+      }
+    }
+
+    async function handlePortraitError(imageElement) {
+      if (!imageElement) return;
+      const secondarySrc = imageElement.dataset.secondarySrc;
+      if (secondarySrc && imageElement.dataset.retried !== '1') {
+        imageElement.dataset.retried = '1';
+        imageElement.src = secondarySrc;
+        return;
+      }
+
+      if (imageElement.dataset.wikiTried !== '1') {
+        imageElement.dataset.wikiTried = '1';
+        const portraitName = imageElement.dataset.portraitName || '';
+        const wikiSrc = await fetchWikipediaPortraitByName(portraitName);
+        if (wikiSrc) {
+          imageElement.src = wikiSrc;
+          return;
+        }
+      }
+
+      imageElement.style.display = 'none';
+      const fallback = imageElement.nextElementSibling;
+      if (fallback) fallback.style.display = 'flex';
+    }
     
     function renderLeftList() {
       const query = leftSearch.value.toLowerCase();
@@ -797,7 +869,8 @@
               <div class="showcase-years">${president.years} (${president.tenureYears} years)</div>
             </div>
             <div class="president-portrait">
-              <div class="portrait-avatar">${president.name.split(' ').map(n => n.charAt(0)).join('').replace(/[^A-Z]/g, '')}</div>
+              <img class="portrait-image" src="${president.image}" data-secondary-src="${getPortraitFallbackUrl(president.image)}" data-portrait-name="${president.name}" alt="${president.name}" onerror="handlePortraitError(this)">
+              <div class="portrait-avatar portrait-fallback">${president.name.split(' ').map(n => n.charAt(0)).join('').replace(/[^A-Z]/g, '')}</div>
               <div class="portrait-name">${president.name.split(' ')[0]} ${president.name.split(' ')[president.name.split(' ').length - 1]}</div>
               <div class="portrait-number">${president.number}${getOrdinal(president.number)} President</div>
             </div>

@@ -13,6 +13,11 @@
     .app-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
     .app-card { background: #16213e; border-radius: 15px; padding: 25px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; text-align: center; }
     .app-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0, 217, 255, 0.2); }
+    .app-card.selected {
+      transform: translateY(-5px);
+      box-shadow: 0 0 0 2px #00d9ff, 0 10px 30px rgba(0, 217, 255, 0.25);
+    }
+    .app-card:focus { outline: none; }
     .app-icon { font-size: 48px; margin-bottom: 15px; }
     .app-name { font-size: 20px; font-weight: bold; margin-bottom: 8px; color: #fff; }
     .app-desc { font-size: 14px; color: #aaa; line-height: 1.4; }
@@ -126,18 +131,50 @@
 
     const grid = document.getElementById('appGrid');
     const searchInput = document.getElementById('searchInput');
+    let filteredApps = [...apps];
+    let selectedIndex = -1;
+
+    function openApp(app, inNewTab = false) {
+      if (!app) return;
+      if (inNewTab) {
+        window.open(app.file, '_blank');
+        return;
+      }
+      if (app.file.startsWith('http')) {
+        window.open(app.file, '_blank');
+      } else {
+        window.location.href = app.file;
+      }
+    }
+
+    function setSelectedCard(index) {
+      const cards = Array.from(grid.querySelectorAll('.app-card'));
+      cards.forEach(card => card.classList.remove('selected'));
+
+      if (cards.length === 0) {
+        selectedIndex = -1;
+        return;
+      }
+
+      const clampedIndex = Math.max(0, Math.min(index, cards.length - 1));
+      selectedIndex = clampedIndex;
+      cards[clampedIndex].classList.add('selected');
+      cards[clampedIndex].focus();
+    }
     
     function renderApps(filteredApps) {
       grid.innerHTML = '';
       
       if (filteredApps.length === 0) {
         grid.innerHTML = '<div class="no-results">No apps found matching your search</div>';
+        selectedIndex = -1;
         return;
       }
       
       filteredApps.forEach(app => {
         const card = document.createElement('div');
         card.className = 'app-card';
+        card.tabIndex = -1;
         card.innerHTML = `
           <div class="app-icon">${app.icon}</div>
           <div class="app-name">${app.name}</div>
@@ -145,11 +182,7 @@
           <div class="app-date">${app.date}</div>
         `;
         card.addEventListener('click', () => {
-          if (app.file.startsWith('http')) {
-            window.open(app.file, '_blank');
-          } else {
-            window.location.href = app.file;
-          }
+          openApp(app);
         });
         grid.appendChild(card);
       });
@@ -157,14 +190,40 @@
     
     searchInput.addEventListener('input', (e) => {
       const query = e.target.value.toLowerCase();
-      const filtered = apps.filter(app => 
+      filteredApps = apps.filter(app => 
         app.name.toLowerCase().includes(query) || 
         app.desc.toLowerCase().includes(query)
       );
-      renderApps(filtered);
+      selectedIndex = -1;
+      renderApps(filteredApps);
+    });
+
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab' && !e.shiftKey) {
+        const cards = grid.querySelectorAll('.app-card');
+        if (cards.length === 0) return;
+        e.preventDefault();
+        setSelectedCard(0);
+      }
+    });
+
+    grid.addEventListener('keydown', (e) => {
+      const cards = grid.querySelectorAll('.app-card');
+      if (cards.length === 0) return;
+
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedCard(selectedIndex + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedCard(selectedIndex - 1);
+      } else if (e.key === 'Enter' && selectedIndex >= 0) {
+        e.preventDefault();
+        openApp(filteredApps[selectedIndex], true);
+      }
     });
     
-    renderApps(apps);
+    renderApps(filteredApps);
   </script>
 </body>
 </html>
