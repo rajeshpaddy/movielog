@@ -13,7 +13,6 @@
       background: #1a1a2e; 
       color: #eee; 
       min-height: 100vh; 
-      overflow-x: hidden;
     }
     .app-container { 
       display: flex; 
@@ -55,6 +54,17 @@
     }
     .search-box::placeholder { color: #888; }
     .search-box:focus { outline: none; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+    .filter-select {
+      width: 100%;
+      background: #0f3460;
+      border: 2px solid #10b981;
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-size: 16px;
+      margin-bottom: 12px;
+    }
+    .filter-select:focus { outline: none; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
     .country-list {
       flex: 1;
       overflow-y: auto;
@@ -474,6 +484,13 @@
     <div class="pane left-pane">
       <div class="pane-title">All Countries</div>
       <input type="text" class="search-box" id="leftSearch" placeholder="Search countries...">
+      <select class="filter-select" id="leftTravelFilter">
+        <option value="all">All travel ratings</option>
+        <option value="1">Travel rating 1</option>
+        <option value="2">Travel rating 2</option>
+        <option value="3">Travel rating 3</option>
+        <option value="4">Travel rating 4</option>
+      </select>
       <div class="country-list" id="leftList"></div>
     </div>
     
@@ -691,6 +708,7 @@
     let visitedCountries = JSON.parse(localStorage.getItem('visitedCountries')) || {};
     let selectedCountryCode = null;
     let leftSearchTerm = "";
+    let leftTravelFilter = "all";
     let rightSearchTerm = "";
     let leftFocusedIndex = -1;
     let rightFocusedIndex = -1;
@@ -698,6 +716,7 @@
     const leftList = document.getElementById('leftList');
     const rightList = document.getElementById('rightList');
     const leftSearch = document.getElementById('leftSearch');
+    const leftTravelFilterSelect = document.getElementById('leftTravelFilter');
     const rightSearch = document.getElementById('rightSearch');
     const centerContent = document.getElementById('centerContent');
     const statsBar = document.getElementById('statsBar');
@@ -749,10 +768,12 @@
     }
 
     function renderLeftList() {
-      const filtered = COUNTRIES.filter(c => 
-        c.name.toLowerCase().includes(leftSearchTerm.toLowerCase()) ||
-        c.code.toLowerCase().includes(leftSearchTerm.toLowerCase())
-      );
+      const filtered = COUNTRIES.filter(c => {
+        const searchMatches = c.name.toLowerCase().includes(leftSearchTerm.toLowerCase()) ||
+          c.code.toLowerCase().includes(leftSearchTerm.toLowerCase());
+        const ratingMatches = leftTravelFilter === 'all' || String(c.travelAdvisory) === leftTravelFilter;
+        return searchMatches && ratingMatches;
+      });
 
       leftList.innerHTML = filtered.map((c, index) => `
         <div class="country-item ${c.code === selectedCountryCode ? 'selected' : ''} ${index === leftFocusedIndex ? 'focused' : ''}" 
@@ -898,6 +919,12 @@
       renderLeftList();
     });
 
+    leftTravelFilterSelect.addEventListener('change', (e) => {
+      leftTravelFilter = e.target.value;
+      leftFocusedIndex = -1;
+      renderLeftList();
+    });
+
     rightSearch.addEventListener('input', (e) => {
       rightSearchTerm = e.target.value;
       rightFocusedIndex = -1;
@@ -914,8 +941,10 @@
         shortcutsOverlay.classList.remove('visible');
         leftSearch.value = "";
         rightSearch.value = "";
+        leftTravelFilterSelect.value = 'all';
         leftSearchTerm = "";
         rightSearchTerm = "";
+        leftTravelFilter = 'all';
         renderLeftList();
         renderRightList();
         leftSearch.blur();
