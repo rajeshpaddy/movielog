@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Country Learner</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+      background: #1a1a2e; 
+      color: #eee; 
+      min-height: 100vh; 
+      overflow-x: hidden;
+    }
+    .app-container { 
+      display: flex; 
+      height: 100vh; 
+      gap: 12px; 
+      padding: 12px; 
+    }
+    .pane { 
+      background: #16213e; 
+      border-radius: 20px; 
+      padding: 20px; 
+      display: flex; 
+      flex-direction: column;
+    }
+    .left-pane, .right-pane { 
+      width: 320px; 
+      flex-shrink: 0;
+    }
+    .center-pane { 
+      flex: 1; 
+      min-width: 350px;
+    }
+    .pane-title {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #10b981;
+      text-align: center;
+    }
+    .search-box {
+      width: 100%;
+      background: #0f3460;
+      border: 2px solid #10b981;
+      color: #fff;
+      padding: 14px 20px;
+      border-radius: 30px;
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+    .search-box::placeholder { color: #888; }
+    .search-box:focus { outline: none; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+    .country-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .country-item {
+      background: #0f3460;
+      padding: 14px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .country-item:hover { 
+      background: #1a4a7a; 
+      transform: translateX(5px);
+    }
+    .country-item.selected {
+      background: #10b981;
+      color: #1a1a2e;
+    }
+    .country-item.focused {
+      outline: 3px solid #10b981;
+      outline-offset: -3px;
+    }
+    .country-item .flag {
+      font-size: 28px;
+    }
+    .country-item .name {
+      font-weight: 600;
+      font-size: 16px;
+      text-transform: capitalize;
+    }
+    .country-item .continent {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+    
+    .center-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+    }
+    .select-btn {
+      background: #10b981;
+      color: #1a1a2e;
+      border: none;
+      padding: 16px 40px;
+      border-radius: 30px;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+      align-self: center;
+    }
+    .select-btn:hover { 
+      transform: scale(1.08); 
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
+    }
+    .select-btn.unselect {
+      background: #ef4444;
+    }
+    .showcase {
+      background: #0f3460;
+      border-radius: 20px;
+      padding: 30px;
+      text-align: center;
+    }
+    .showcase-flag {
+      font-size: 80px;
+      margin-bottom: 10px;
+    }
+    .showcase-name {
+      font-size: 36px;
+      font-weight: bold;
+      text-transform: capitalize;
+      margin: 10px 0;
+    }
+    .showcase-native {
+      font-size: 18px;
+      color: #aaa;
+      margin-bottom: 10px;
+    }
+    .showcase-region {
+      display: inline-block;
+      padding: 8px 24px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+    .region-asia { background: #ef4444; color: #fff; }
+    .region-europe { background: #3b82f6; color: #fff; }
+    .region-africa { background: #f59e0b; color: #fff; }
+    .region-north-america { background: #10b981; color: #fff; }
+    .region-south-america { background: #8b5cf6; color: #fff; }
+    .region-oceania { background: #06b6d4; color: #fff; }
+    
+    .map-container {
+      position: relative;
+      background: #0f3460;
+      border-radius: 20px;
+      padding: 20px;
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+    }
+    .map-image {
+      width: 100%;
+      max-height: 350px;
+      object-fit: contain;
+      border-radius: 12px;
+    }
+    .travel-advisory {
+      background: #0f3460;
+      border-radius: 20px;
+      padding: 20px;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+    .advisory-badge {
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+    .advisory-level-1 { background: #10b981; color: #fff; }
+    .advisory-level-2 { background: #f59e0b; color: #1a1a2e; }
+    .advisory-level-3 { background: #f97316; color: #fff; }
+    .advisory-level-4 { background: #ef4444; color: #fff; }
+    .advisory-unknown { background: #6b7280; color: #fff; }
+    .advisory-text {
+      flex: 1;
+    }
+    .advisory-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #fbbf24;
+      margin-bottom: 8px;
+    }
+    .advisory-description {
+      font-size: 15px;
+      color: #ddd;
+      line-height: 1.5;
+    }
+    
+    .info-section {
+      background: #0f3460;
+      border-radius: 20px;
+      padding: 20px;
+    }
+    .section-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #10b981;
+      margin-bottom: 10px;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #1a4a7a;
+    }
+    .info-row:last-child {
+      border-bottom: none;
+    }
+    .info-label {
+      color: #888;
+      font-size: 15px;
+    }
+    .info-value {
+      color: #eee;
+      font-size: 15px;
+      font-weight: 500;
+    }
+    
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #888;
+      font-size: 22px;
+    }
+    .empty-state {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #888;
+      font-size: 20px;
+      text-align: center;
+      padding: 30px;
+    }
+    
+    .country-list::-webkit-scrollbar {
+      width: 10px;
+    }
+    .country-list::-webkit-scrollbar-track {
+      background: #0f3460;
+      border-radius: 5px;
+    }
+    .country-list::-webkit-scrollbar-thumb {
+      background: #10b981;
+      border-radius: 5px;
+    }
+
+    .stats-bar {
+      display: flex;
+      gap: 12px;
+      padding: 16px 24px;
+      background: #16213e;
+      border-radius: 20px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .stats-bar .stat-item {
+      background: #0f3460;
+      padding: 12px 20px;
+      border-radius: 14px;
+      text-align: center;
+      min-width: 100px;
+    }
+    .stats-bar .stat-item .stat-label {
+      font-size: 13px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .stats-bar .stat-item .stat-number {
+      font-size: 24px;
+      font-weight: bold;
+      color: #10b981;
+    }
+    .stats-bar .stat-item.highlight .stat-number {
+      color: #fbbf24;
+    }
+
+    .continent-legend {
+      display: flex;
+      gap: 10px;
+      padding: 14px 24px;
+      background: #16213e;
+      border-radius: 20px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .continent-stat {
+      background: #0f3460;
+      padding: 10px 18px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .continent-stat .continent-name {
+      font-size: 14px;
+      color: #bbb;
+      text-transform: capitalize;
+    }
+    .continent-stat .continent-count {
+      font-size: 18px;
+      font-weight: bold;
+      color: #10b981;
+    }
+    .continent-stat .continent-total {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .shortcuts-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: transparent;
+      z-index: 1000;
+      padding: 40px;
+    }
+    .shortcuts-overlay.visible {
+      display: block;
+    }
+    .shortcuts-panel {
+      background: rgba(22, 33, 62, 0.95);
+      border: 2px solid #10b981;
+      border-radius: 20px;
+      padding: 24px 36px;
+      max-width: 450px;
+      margin: 0 auto;
+    }
+    .shortcuts-panel h2 {
+      color: #10b981;
+      margin-bottom: 18px;
+      font-size: 26px;
+    }
+    .shortcut-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #2d2d3a;
+    }
+    .shortcut-item:last-child {
+      border-bottom: none;
+    }
+    .shortcut-key {
+      background: #0f3460;
+      padding: 5px 14px;
+      border-radius: 8px;
+      font-family: monospace;
+      color: #10b981;
+      font-size: 18px;
+    }
+    .shortcut-desc {
+      color: #bbb;
+      font-size: 18px;
+    }
+
+    @media (max-width: 900px) {
+      .app-container {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+        padding: 10px;
+      }
+      .pane {
+        width: 100% !important;
+        min-width: unset !important;
+        max-height: 45vh;
+      }
+      .left-pane { order: 1; }
+      .center-pane { order: 2; }
+      .right-pane { order: 3; }
+      .stats-bar {
+        gap: 8px;
+        padding: 12px;
+      }
+      .continent-legend {
+        gap: 6px;
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shortcuts-overlay" id="shortcutsOverlay">
+    <div class="shortcuts-panel">
+      <h2>Keyboard Shortcuts</h2>
+      <div class="shortcut-item"><span class="shortcut-desc">Toggle shortcuts</span><span class="shortcut-key">Ctrl + /</span></div>
+      <div class="shortcut-item"><span class="shortcut-desc">Focus search</span><span class="shortcut-key">/</span></div>
+      <div class="shortcut-item"><span class="shortcut-desc">Visit/Unvisit Country</span><span class="shortcut-key">L</span></div>
+      <div class="shortcut-item"><span class="shortcut-desc">Select/Unselect</span><span class="shortcut-key">Space</span></div>
+      <div class="shortcut-item"><span class="shortcut-desc">Navigate up/down</span><span class="shortcut-key">↑ / ↓</span></div>
+      <div class="shortcut-item"><span class="shortcut-desc">Next element</span><span class="shortcut-key">Tab</span></div>
+      <div class="shortcut-item"><span class="shortcut-desc">Close/Clear</span><span class="shortcut-key">Escape</span></div>
+    </div>
+  </div>
+  <div class="stats-bar" id="statsBar"></div>
+  <div class="continent-legend" id="continentLegend"></div>
+  <div class="app-container">
+    <div class="pane left-pane">
+      <div class="pane-title">All Countries</div>
+      <input type="text" class="search-box" id="leftSearch" placeholder="Search countries...">
+      <div class="country-list" id="leftList"></div>
+    </div>
+    
+    <div class="pane center-pane">
+      <div class="center-content" id="centerContent">
+        <div class="empty-state">Click a country to learn about it!</div>
+      </div>
+    </div>
+    
+    <div class="pane right-pane">
+      <div class="pane-title">Visited Countries</div>
+      <input type="text" class="search-box" id="rightSearch" placeholder="Search visited...">
+      <div class="country-list" id="rightList"></div>
+    </div>
+  </div>
+
+  <script>
+    const COUNTRIES = [
+      { code: "AF", name: "Afghanistan", nativeName: "افغانستان", flag: "🇦🇫", continent: "asia", capital: "Kabul", population: 40028462, currency: "Afghan afghani (AFN)", language: "Pashto, Dari", travelAdvisory: 4, travelNote: "Do not travel due to terrorism, kidnapping, and armed conflict." },
+      { code: "AL", name: "Albania", nativeName: "Shqipëria", flag: "🇦🇱", continent: "europe", capital: "Tirana", population: 2842321, currency: "Albanian lek (ALL)", language: "Albanian", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "DZ", name: "Algeria", nativeName: "الجزائر", flag: "🇩🇿", continent: "africa", capital: "Algiers", population: 44616624, currency: "Algerian dinar (DZD)", language: "Arabic, Berber", travelAdvisory: 2, travelNote: "Exercise increased caution due to terrorism." },
+      { code: "AD", name: "Andorra", nativeName: "Andorra", flag: "🇦🇩", continent: "europe", capital: "Andorra la Vella", population: 79824, currency: "Euro (EUR)", language: "Catalan", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "AO", name: "Angola", nativeName: "Angola", flag: "🇦🇴", continent: "africa", capital: "Luanda", population: 33933610, currency: "Angolan kwanza (AOA)", language: "Portuguese", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and civil unrest." },
+      { code: "AG", name: "Antigua and Barbuda", nativeName: "Antigua and Barbuda", flag: "🇦🇬", continent: "north-america", capital: "Saint John's", population: 100772, currency: "East Caribbean dollar (XCD)", language: "English", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "AR", name: "Argentina", nativeName: "Argentina", flag: "🇦🇷", continent: "south-america", capital: "Buenos Aires", population: 45808747, currency: "Argentine peso (ARS)", language: "Spanish", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "AM", name: "Armenia", nativeName: "Հայաստան", flag: "🇦🇲", continent: "asia", capital: "Yerevan", population: 2963234, currency: "Armenian dram (AMD)", language: "Armenian", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and terrorism." },
+      { code: "AU", name: "Australia", nativeName: "Australia", flag: "🇦🇺", continent: "oceania", capital: "Canberra", population: 26091800, currency: "Australian dollar (AUD)", language: "English", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "AT", name: "Austria", nativeName: "Österreich", flag: "🇦🇹", continent: "europe", capital: "Vienna", population: 9027999, currency: "Euro (EUR)", language: "German", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "AZ", name: "Azerbaijan", nativeName: "Azərbaycan", flag: "🇦🇿", continent: "asia", capital: "Baku", population: 10145120, currency: "Azerbaijani manat (AZN)", language: "Azerbaijani", travelAdvisory: 2, travelNote: "Exercise increased caution due to terrorism." },
+      { code: "BS", name: "Bahamas", nativeName: "The Bahamas", flag: "🇧🇸", continent: "north-america", capital: "Nassau", population: 409984, currency: "Bahamian dollar (BSD)", language: "English", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "BH", name: "Bahrain", nativeName: "البحرين", flag: "🇧🇭", continent: "asia", capital: "Manama", population: 1501635, currency: "Bahraini dinar (BHD)", language: "Arabic", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "BD", name: "Bangladesh", nativeName: "বাংলাদেশ", flag: "🇧🇩", continent: "asia", capital: "Dhaka", population: 169356251, currency: "Bangladeshi taka (BDT)", language: "Bengali", travelAdvisory: 2, travelNote: "Exercise increased caution due to terrorism." },
+      { code: "BB", name: "Barbados", nativeName: "Barbados", flag: "🇧🇧", continent: "north-america", capital: "Bridgetown", population: 288023, currency: "Barbadian dollar (BBD)", language: "English", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "BY", name: "Belarus", nativeName: "Беларусь", flag: "🇧🇾", continent: "europe", capital: "Minsk", population: 9534954, currency: "Belarusian ruble (BYN)", language: "Belarusian, Russian", travelAdvisory: 3, travelNote: "Reconsider travel due to arbitrary enforcement of local laws." },
+      { code: "BE", name: "Belgium", nativeName: "België", flag: "🇧🇪", continent: "europe", capital: "Brussels", population: 11697557, currency: "Euro (EUR)", language: "Dutch, French, German", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "BZ", name: "Belize", nativeName: "Belize", flag: "🇧🇿", continent: "north-america", capital: "Belmopan", population: 412387, currency: "Belize dollar (BZD)", language: "English", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "BJ", name: "Benin", nativeName: "Bénin", flag: "🇧🇯", continent: "africa", capital: "Porto-Novo", population: 12976861, currency: "West African CFA franc (XOF)", language: "French", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "BT", name: "Bhutan", nativeName: "भूटान", flag: "🇧🇹", continent: "asia", capital: "Thimphu", population: 777486, currency: "Bhutanese ngultrum (BTN)", language: "Dzongkha", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "BO", name: "Bolivia", nativeName: "Bolivia", flag: "🇧🇴", continent: "south-america", capital: "Sucre", population: 12079472, currency: "Bolivian boliviano (BOB)", language: "Spanish, Quechua", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and civil unrest." },
+      { code: "BA", name: "Bosnia and Herzegovina", nativeName: "Bosna i Hercegovina", flag: "🇧🇦", continent: "europe", capital: "Sarajevo", population: 3270943, currency: "Convertible mark (BAM)", language: "Bosnian, Croatian, Serbian", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "BW", name: "Botswana", nativeName: "Botswana", flag: "🇧🇼", continent: "africa", capital: "Gaborone", population: 2351627, currency: "Botswana pula (BWP)", language: "English, Tswana", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "BR", name: "Brazil", nativeName: "Brasil", flag: "🇧🇷", continent: "south-america", capital: "Brasília", population: 214326223, currency: "Brazilian real (BRL)", language: "Portuguese", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime." },
+      { code: "BN", name: "Brunei", nativeName: "Brunei", flag: "🇧🇳", continent: "asia", capital: "Bandar Seri Begawan", population: 445431, currency: "Brunei dollar (BND)", language: "Malay", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "BG", name: "Bulgaria", nativeName: "България", flag: "🇧🇬", continent: "europe", capital: "Sofia", population: 6878216, currency: "Bulgarian lev (BGN)", language: "Bulgarian", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "KH", name: "Cambodia", nativeName: "កម្ពុជា", flag: "🇰🇭", continent: "asia", capital: "Phnom Penh", population: 16767842, currency: "Cambodian riel (KHR)", language: "Khmer", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and remote areas landmines." },
+      { code: "CM", name: "Cameroon", nativeName: "Cameroun", flag: "🇨🇲", continent: "africa", capital: "Yaoundé", population: 27224265, currency: "Central African CFA franc (XAF)", language: "French, English", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and terrorism." },
+      { code: "CA", name: "Canada", nativeName: "Canada", flag: "🇨🇦", continent: "north-america", capital: "Ottawa", population: 38781092, currency: "Canadian dollar (CAD)", language: "English, French", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "CL", name: "Chile", nativeName: "Chile", flag: "🇨🇱", continent: "south-america", capital: "Santiago", population: 19603733, currency: "Chilean peso (CLP)", language: "Spanish", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "CN", name: "China", nativeName: "中国", flag: "🇨🇳", continent: "asia", capital: "Beijing", population: 1425671352, currency: "Chinese yuan (CNY)", language: "Mandarin", travelAdvisory: 2, travelNote: "Exercise increased caution due to arbitrary enforcement of local laws." },
+      { code: "CO", name: "Colombia", nativeName: "Colombia", flag: "🇨🇴", continent: "south-america", capital: "Bogotá", population: 51874024, currency: "Colombian peso (COP)", language: "Spanish", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and terrorism." },
+      { code: "CR", name: "Costa Rica", nativeName: "Costa Rica", flag: "🇨🇷", continent: "north-america", capital: "San José", population: 5180829, currency: "Costa Rican colón (CRC)", language: "Spanish", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "HR", name: "Croatia", nativeName: "Hrvatska", flag: "🇭🇷", continent: "europe", capital: "Zagreb", population: 4008617, currency: "Euro (EUR)", language: "Croatian", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "CU", name: "Cuba", nativeName: "Cuba", flag: "🇨🇺", continent: "north-america", capital: "Havana", population: 11212191, currency: "Cuban peso (CUP)", language: "Spanish", travelAdvisory: 3, travelNote: "Reconsider travel due to arbitrary detention and unsafe conditions." },
+      { code: "CY", name: "Cyprus", nativeName: "Κύπρος", flag: "🇨🇾", continent: "europe", capital: "Nicosia", population: 1251488, currency: "Euro (EUR)", language: "Greek, Turkish", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "CZ", name: "Czech Republic", nativeName: "Česko", flag: "🇨🇿", continent: "europe", capital: "Prague", population: 10526073, currency: "Czech koruna (CZK)", language: "Czech", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "DK", name: "Denmark", nativeName: "Danmark", flag: "🇩🇰", continent: "europe", capital: "Copenhagen", population: 5910913, currency: "Danish krone (DKK)", language: "Danish", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "DO", name: "Dominican Republic", nativeName: "República Dominicana", flag: "🇩🇴", continent: "north-america", capital: "Santo Domingo", population: 11228821, currency: "Dominican peso (DOP)", language: "Spanish", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime." },
+      { code: "EC", name: "Ecuador", nativeName: "Ecuador", flag: "🇪🇨", continent: "south-america", capital: "Quito", population: 18001000, currency: "US dollar (USD)", language: "Spanish", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and civil unrest." },
+      { code: "EG", name: "Egypt", nativeName: "مصر", flag: "🇪🇬", continent: "africa", capital: "Cairo", population: 110990147, currency: "Egyptian pound (EGP)", language: "Arabic", travelAdvisory: 2, travelNote: "Exercise increased caution due to terrorism." },
+      { code: "SV", name: "El Salvador", nativeName: "El Salvador", flag: "🇸🇻", continent: "north-america", capital: "San Salvador", population: 6336392, currency: "US dollar (USD)", language: "Spanish", travelAdvisory: 3, travelNote: "Reconsider travel due to crime." },
+      { code: "EE", name: "Estonia", nativeName: "Eesti", flag: "🇪🇪", continent: "europe", capital: "Tallinn", population: 1365884, currency: "Euro (EUR)", language: "Estonian", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "ET", name: "Ethiopia", nativeName: "ኢትዮጵያ", flag: "🇪🇹", continent: "africa", capital: "Addis Ababa", population: 120283026, currency: "Ethiopian birr (ETB)", language: "Amharic", travelAdvisory: 2, travelNote: "Exercise increased caution due to civil unrest and crime." },
+      { code: "FJ", name: "Fiji", nativeName: "Fiji", flag: "🇫🇯", continent: "oceania", capital: "Suva", population: 929766, currency: "Fijian dollar (FJD)", language: "English, Fijian", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "FI", name: "Finland", nativeName: "Suomi", flag: "🇫🇮", continent: "europe", capital: "Helsinki", population: 5554971, currency: "Euro (EUR)", language: "Finnish, Swedish", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "FR", name: "France", nativeName: "France", flag: "🇫🇷", continent: "europe", capital: "Paris", population: 67971000, currency: "Euro (EUR)", language: "French", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "GE", name: "Georgia", nativeName: "საქართველო", flag: "🇬🇪", continent: "asia", capital: "Tbilisi", population: 3688647, currency: "Georgian lari (GEL)", language: "Georgian", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and territorial disputes." },
+      { code: "DE", name: "Germany", nativeName: "Deutschland", flag: "🇩🇪", continent: "europe", capital: "Berlin", population: 84358845, currency: "Euro (EUR)", language: "German", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "GH", name: "Ghana", nativeName: "Ghana", flag: "🇬🇭", continent: "africa", capital: "Accra", population: 32833019, currency: "Ghanaian cedi (GHS)", language: "English", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "GR", name: "Greece", nativeName: "Ελλάδα", flag: "🇬🇷", continent: "europe", capital: "Athens", population: 10316637, currency: "Euro (EUR)", language: "Greek", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "GT", name: "Guatemala", nativeName: "Guatemala", flag: "🇬🇹", continent: "north-america", capital: "Guatemala City", population: 17608483, currency: "Guatemalan quetzal (GTQ)", language: "Spanish", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime." },
+      { code: "HN", name: "Honduras", nativeName: "Honduras", flag: "🇭🇳", continent: "north-america", capital: "Tegucigalpa", population: 10433688, currency: "Honduran lempira (HNL)", language: "Spanish", travelAdvisory: 3, travelNote: "Reconsider travel due to crime." },
+      { code: "HU", name: "Hungary", nativeName: "Magyarország", flag: "🇭🇺", continent: "europe", capital: "Budapest", population: 9634164, currency: "Hungarian forint (HUF)", language: "Hungarian", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "IS", name: "Iceland", nativeName: "Ísland", flag: "🇮🇸", continent: "europe", capital: "Reykjavik", population: 382523, currency: "Icelandic króna (ISK)", language: "Icelandic", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "IN", name: "India", nativeName: "भारत", flag: "🇮🇳", continent: "asia", capital: "New Delhi", population: 1417173173, currency: "Indian rupee (INR)", language: "Hindi, English", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and terrorism." },
+      { code: "ID", name: "Indonesia", nativeName: "Indonesia", flag: "🇮🇩", continent: "asia", capital: "Jakarta", population: 277534122, currency: "Indonesian rupiah (IDR)", language: "Indonesian", travelAdvisory: 2, travelNote: "Exercise increased caution due to natural disasters and terrorism." },
+      { code: "IR", name: "Iran", nativeName: "ایران", flag: "🇮🇷", continent: "asia", capital: "Tehran", population: 87923432, currency: "Iranian rial (IRR)", language: "Persian", travelAdvisory: 4, travelNote: "Do not travel due to kidnapping, terrorism, and armed conflict." },
+      { code: "IQ", name: "Iraq", nativeName: "العراق", flag: "🇮🇶", continent: "asia", capital: "Baghdad", population: 43533592, currency: "Iraqi dinar (IQD)", language: "Arabic, Kurdish", travelAdvisory: 4, travelNote: "Do not travel due to terrorism and armed conflict." },
+      { code: "IE", name: "Ireland", nativeName: "Éire", flag: "🇮🇪", continent: "europe", capital: "Dublin", population: 5056935, currency: "Euro (EUR)", language: "English, Irish", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "IL", name: "Israel", nativeName: "ישראל", flag: "🇮🇱", continent: "asia", capital: "Jerusalem", population: 9038309, currency: "Israeli new shekel (ILS)", language: "Hebrew, Arabic", travelAdvisory: 3, travelNote: "Reconsider travel due to terrorism and civil unrest." },
+      { code: "IT", name: "Italy", nativeName: "Italia", flag: "🇮🇹", continent: "europe", capital: "Rome", population: 59037474, currency: "Euro (EUR)", language: "Italian", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "JM", name: "Jamaica", nativeName: "Jamaica", flag: "🇯🇲", continent: "north-america", capital: "Kingston", population: 2827695, currency: "Jamaican dollar (JMD)", language: "English", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "JP", name: "Japan", nativeName: "日本", flag: "🇯🇵", continent: "asia", capital: "Tokyo", population: 125124989, currency: "Japanese yen (JPY)", language: "Japanese", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "JO", name: "Jordan", nativeName: "الأردن", flag: "🇯🇴", continent: "asia", capital: "Amman", population: 11285869, currency: "Jordanian dinar (JOD)", language: "Arabic", travelAdvisory: 2, travelNote: "Exercise increased caution due to terrorism." },
+      { code: "KZ", name: "Kazakhstan", nativeName: "Қазақстан", flag: "🇰🇿", continent: "asia", capital: "Astana", population: 19397998, currency: "Kazakhstani tenge (KZT)", language: "Kazakh, Russian", travelAdvisory: 2, travelNote: "Exercise increased caution due to terrorism and crime." },
+      { code: "KE", name: "Kenya", nativeName: "Kenya", flag: "🇰🇪", continent: "africa", capital: "Nairobi", population: 54027487, currency: "Kenyan shilling (KES)", language: "Swahili, English", travelAdvisory: 2, travelNote: "Exercise increased caution due to terrorism and crime." },
+      { code: "KR", name: "South Korea", nativeName: "대한민국", flag: "🇰🇷", continent: "asia", capital: "Seoul", population: 51844834, currency: "South Korean won (KRW)", language: "Korean", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "KW", name: "Kuwait", nativeName: "الكويت", flag: "🇰🇼", continent: "asia", capital: "Kuwait City", population: 4310108, currency: "Kuwaiti dinar (KWD)", language: "Arabic", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "LA", name: "Laos", nativeName: "ລາວ", flag: "🇱🇦", continent: "asia", capital: "Vientiane", population: 7425057, currency: "Lao kip (LAK)", language: "Lao", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "LV", name: "Latvia", nativeName: "Latvija", flag: "🇱🇻", continent: "europe", capital: "Riga", population: 1883008, currency: "Euro (EUR)", language: "Latvian", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "LB", name: "Lebanon", nativeName: "لبنان", flag: "🇱🇧", continent: "asia", capital: "Beirut", population: 5592631, currency: "Lebanese pound (LBP)", language: "Arabic", travelAdvisory: 3, travelNote: "Reconsider travel due to crime, terrorism, and armed conflict." },
+      { code: "LT", name: "Lithuania", nativeName: "Lietuva", flag: "🇱🇹", continent: "europe", capital: "Vilnius", population: 2820267, currency: "Euro (EUR)", language: "Lithuanian", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "LU", name: "Luxembourg", nativeName: "Luxembourg", flag: "🇱🇺", continent: "europe", capital: "Luxembourg City", population: 660809, currency: "Euro (EUR)", language: "French, German, Luxembourgish", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "MY", name: "Malaysia", nativeName: "Malaysia", flag: "🇲🇾", continent: "asia", capital: "Kuala Lumpur", population: 33938221, currency: "Malaysian ringgit (MYR)", language: "Malay", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "MV", name: "Maldives", nativeName: " Maldives", flag: "🇲🇻", continent: "asia", capital: "Malé", population: 521021, currency: "Maldivian rufiyaa (MVR)", language: "Dhivehi", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "MT", name: "Malta", nativeName: "Malta", flag: "🇲🇹", continent: "europe", capital: "Valletta", population: 533286, currency: "Euro (EUR)", language: "Maltese, English", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "MX", name: "Mexico", nativeName: "México", flag: "🇲🇽", continent: "north-america", capital: "Mexico City", population: 127504125, currency: "Mexican peso (MXN)", language: "Spanish", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime." },
+      { code: "MD", name: "Moldova", nativeName: "Moldova", flag: "🇲🇩", continent: "europe", capital: "Chișinău", population: 2615199, currency: "Moldovan leu (MDL)", language: "Romanian", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and separatist unrest." },
+      { code: "MC", name: "Monaco", nativeName: "Monaco", flag: "🇲🇨", continent: "europe", capital: "Monaco", population: 36297, currency: "Euro (EUR)", language: "French", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "MN", name: "Mongolia", nativeName: "Монгол", flag: "🇲🇳", continent: "asia", capital: "Ulaanbaatar", population: 3398366, currency: "Mongolian tugrik (MNT)", language: "Mongolian", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "ME", name: "Montenegro", nativeName: "Crna Gora", flag: "🇲🇪", continent: "europe", capital: "Podgorica", population: 627987, currency: "Euro (EUR)", language: "Montenegrin", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "MA", name: "Morocco", nativeName: "المغرب", flag: "🇲🇦", continent: "africa", capital: "Rabat", population: 37344795, currency: "Moroccan dirham (MAD)", language: "Arabic, Berber", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "NP", name: "Nepal", nativeName: "नेपाल", flag: "🇳🇵", continent: "asia", capital: "Kathmandu", population: 30547580, currency: "Nepalese rupee (NPR)", language: "Nepali", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "NL", name: "Netherlands", nativeName: "Nederland", flag: "🇳🇱", continent: "europe", capital: "Amsterdam", population: 17703090, currency: "Euro (EUR)", language: "Dutch", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "NZ", name: "New Zealand", nativeName: "New Zealand", flag: "🇳🇿", continent: "oceania", capital: "Wellington", population: 5185288, currency: "New Zealand dollar (NZD)", language: "English, Māori", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "NI", name: "Nicaragua", nativeName: "Nicaragua", flag: "🇳🇮", continent: "north-america", capital: "Managua", population: 6948392, currency: "Córdoba oro (NIO)", language: "Spanish", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and civil unrest." },
+      { code: "NG", name: "Nigeria", nativeName: "Nigeria", flag: "🇳🇬", continent: "africa", capital: "Abuja", population: 218541212, currency: "Nigerian naira (NGN)", language: "English", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and terrorism." },
+      { code: "NO", name: "Norway", nativeName: "Norge", flag: "🇳🇴", continent: "europe", capital: "Oslo", population: 5470295, currency: "Norwegian krone (NOK)", language: "Norwegian", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "OM", name: "Oman", nativeName: "عُمان", flag: "🇴🇲", continent: "asia", capital: "Muscat", population: 4576298, currency: "Omani rial (OMR)", language: "Arabic", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "PK", name: "Pakistan", nativeName: "پاکستان", flag: "🇵🇰", continent: "asia", capital: "Islamabad", population: 231402117, currency: "Pakistani rupee (PKR)", language: "Urdu, English", travelAdvisory: 3, travelNote: "Reconsider travel due to terrorism and kidnapping." },
+      { code: "PA", name: "Panama", nativeName: "Panamá", flag: "🇵🇦", continent: "north-america", capital: "Panama City", population: 4408581, currency: "Balboa (PAB)", language: "Spanish", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "PY", name: "Paraguay", nativeName: "Paraguay", flag: "🇵🇾", continent: "south-america", capital: "Asunción", population: 6780744, currency: "Guarani (PYG)", language: "Spanish, Guarani", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "PE", name: "Peru", nativeName: "Perú", flag: "🇵🇪", continent: "south-america", capital: "Lima", population: 34049588, currency: "Sol (PEN)", language: "Spanish", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime." },
+      { code: "PH", name: "Philippines", nativeName: "Pilipinas", flag: "🇵🇭", continent: "asia", capital: "Manila", population: 115559009, currency: "Philippine peso (PHP)", language: "Filipino, English", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and terrorism." },
+      { code: "PL", name: "Poland", nativeName: "Polska", flag: "🇵🇱", continent: "europe", capital: "Warsaw", population: 37654247, currency: "Polish złoty (PLN)", language: "Polish", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "PT", name: "Portugal", nativeName: "Portugal", flag: "🇵🇹", continent: "europe", capital: "Lisbon", population: 10344802, currency: "Euro (EUR)", language: "Portuguese", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "QA", name: "Qatar", nativeName: "قطر", flag: "🇶🇦", continent: "asia", capital: "Doha", population: 2695122, currency: "Qatari riyal (QAR)", language: "Arabic", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "RO", name: "Romania", nativeName: "România", flag: "🇷🇴", continent: "europe", capital: "Bucharest", population: 19031335, currency: "Romanian leu (RON)", language: "Romanian", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "RU", name: "Russia", nativeName: "Россия", flag: "🇷🇺", continent: "europe", capital: "Moscow", population: 144444359, currency: "Russian ruble (RUB)", language: "Russian", travelAdvisory: 3, travelNote: "Reconsider travel due to terrorism, kidnapping, and armed conflict." },
+      { code: "SA", name: "Saudi Arabia", nativeName: "المملكة العربية السعودية", flag: "🇸🇦", continent: "asia", capital: "Riyadh", population: 36408820, currency: "Saudi riyal (SAR)", language: "Arabic", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "RS", name: "Serbia", nativeName: "Србија", flag: "🇷🇸", continent: "europe", capital: "Belgrade", population: 6834326, currency: "Serbian dinar (RSD)", language: "Serbian", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and civil unrest." },
+      { code: "SG", name: "Singapore", nativeName: "Singapore", flag: "🇸🇬", continent: "asia", capital: "Singapore", population: 5943546, currency: "Singapore dollar (SGD)", language: "English, Malay, Mandarin, Tamil", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "SK", name: "Slovakia", nativeName: "Slovensko", flag: "🇸🇰", continent: "europe", capital: "Bratislava", population: 5426252, currency: "Euro (EUR)", language: "Slovak", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "SI", name: "Slovenia", nativeName: "Slovenija", flag: "🇸🇮", continent: "europe", capital: "Ljubljana", population: 2119675, currency: "Euro (EUR)", language: "Slovenian", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "ZA", name: "South Africa", nativeName: "South Africa", flag: "🇿🇦", continent: "africa", capital: "Pretoria", population: 60414495, currency: "South African rand (ZAR)", language: "Zulu, Xhosa, Afrikaans, English", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and civil unrest." },
+      { code: "ES", name: "Spain", nativeName: "España", flag: "🇪🇸", continent: "europe", capital: "Madrid", population: 47558630, currency: "Euro (EUR)", language: "Spanish", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "LK", name: "Sri Lanka", nativeName: "śrī laṃkā", flag: "🇱🇰", continent: "asia", capital: "Sri Jayawardenepura Kotte", population: 21919000, currency: "Sri Lankan rupee (LKR)", language: "Sinhala, Tamil", travelAdvisory: 2, travelNote: "Exercise increased caution due to terrorism." },
+      { code: "SE", name: "Sweden", nativeName: "Sverige", flag: "🇸🇪", continent: "europe", capital: "Stockholm", population: 10549347, currency: "Swedish krona (SEK)", language: "Swedish", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "CH", name: "Switzerland", nativeName: "Schweiz", flag: "🇨🇭", continent: "europe", capital: "Bern", population: 8740472, currency: "Swiss franc (CHF)", language: "German, French, Italian, Romansh", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "TW", name: "Taiwan", nativeName: "台灣", flag: "🇹🇼", continent: "asia", capital: "Taipei", population: 23893394, currency: "New Taiwan dollar (TWD)", language: "Mandarin", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "TH", name: "Thailand", nativeName: "ประเทศไทย", flag: "🇹🇭", continent: "asia", capital: "Bangkok", population: 71601103, currency: "Thai baht (THB)", language: "Thai", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "TR", name: "Turkey", nativeName: "Türkiye", flag: "🇹🇷", continent: "asia", capital: "Ankara", population: 85341241, currency: "Turkish lira (TRY)", language: "Turkish", travelAdvisory: 2, travelNote: "Exercise increased caution due to terrorism." },
+      { code: "UA", name: "Ukraine", nativeName: "Україна", flag: "🇺🇦", continent: "europe", capital: "Kyiv", population: 39701739, currency: "Ukrainian hryvnia (UAH)", language: "Ukrainian", travelAdvisory: 4, travelNote: "Do not travel due to armed conflict." },
+      { code: "AE", name: "United Arab Emirates", nativeName: "دولة الإمارات العربية المتحدة", flag: "🇦🇪", continent: "asia", capital: "Abu Dhabi", population: 9991089, currency: "UAE dirham (AED)", language: "Arabic", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "GB", name: "United Kingdom", nativeName: "United Kingdom", flag: "🇬🇧", continent: "europe", capital: "London", population: 67802657, currency: "British pound (GBP)", language: "English", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "US", name: "United States", nativeName: "United States", flag: "🇺🇸", continent: "north-america", capital: "Washington, D.C.", population: 338289857, currency: "US dollar (USD)", language: "English", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "UY", name: "Uruguay", nativeName: "Uruguay", flag: "🇺🇾", continent: "south-america", capital: "Montevideo", population: 3426260, currency: "Uruguayan peso (UYU)", language: "Spanish", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "UZ", name: "Uzbekistan", nativeName: "O'zbekiston", flag: "🇺🇿", continent: "asia", capital: "Tashkent", population: 34627652, currency: "Uzbekistani som (UZS)", language: "Uzbek", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "VE", name: "Venezuela", nativeName: "Venezuela", flag: "🇻🇪", continent: "south-america", capital: "Caracas", population: 28301696, currency: "Venezuelan bolívar (VES)", language: "Spanish", travelAdvisory: 4, travelNote: "Do not travel due to crime, civil unrest, and armed conflict." },
+      { code: "VN", name: "Vietnam", nativeName: "Việt Nam", flag: "🇻🇳", continent: "asia", capital: "Hanoi", population: 98186856, currency: "Vietnamese đồng (VND)", language: "Vietnamese", travelAdvisory: 1, travelNote: "Exercise normal precautions." }
+    ];
+    
+    let allCountries = [...COUNTRIES];
+    let visitedCountries = {};
+    let failedCountries = new Set();
+    let selectedCountry = null;
+    let selectedFromRight = false;
+    let leftFocusedIndex = -1;
+    let rightFocusedIndex = -1;
+    
+    const leftSearch = document.getElementById('leftSearch');
+    const rightSearch = document.getElementById('rightSearch');
+    const leftList = document.getElementById('leftList');
+    const rightList = document.getElementById('rightList');
+    const centerContent = document.getElementById('centerContent');
+    const statsBar = document.getElementById('statsBar');
+    const continentLegend = document.getElementById('continentLegend');
+    const shortcutsOverlay = document.getElementById('shortcutsOverlay');
+    
+    function loadVisitedCountries() {
+      const saved = localStorage.getItem('visitedCountries');
+      if (saved) {
+        visitedCountries = JSON.parse(saved);
+      }
+    }
+    
+    function saveVisitedCountries() {
+      localStorage.setItem('visitedCountries', JSON.stringify(visitedCountries));
+    }
+    
+    function calculateStats() {
+      const now = Date.now();
+      const day = 24 * 60 * 60 * 1000;
+      
+      const visited = Object.keys(visitedCountries).map(code => COUNTRIES.find(c => c.code === code)).filter(Boolean);
+      
+      const last24h = visited.filter(c => now - visitedCountries[c.code] < day).length;
+      const last7d = visited.filter(c => now - visitedCountries[c.code] < 7 * day).length;
+      const last30d = visited.filter(c => now - visitedCountries[c.code] < 30 * day).length;
+      
+      statsBar.innerHTML = `
+        <div class="stat-item highlight">
+          <div class="stat-label">Total Countries</div>
+          <div class="stat-number">${COUNTRIES.length}</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Visited</div>
+          <div class="stat-number">${visited.length}</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Last 24h</div>
+          <div class="stat-number">${last24h}</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Last 7d</div>
+          <div class="stat-number">${last7d}</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Last 30d</div>
+          <div class="stat-number">${last30d}</div>
+        </div>
+      `;
+    }
+    
+    function calculateContinentStats() {
+      const continents = {};
+      const visited = Object.keys(visitedCountries).map(code => COUNTRIES.find(c => c.code === code)).filter(Boolean);
+      
+      COUNTRIES.forEach(c => {
+        if (!continents[c.continent]) {
+          continents[c.continent] = { total: 0, visited: 0 };
+        }
+        continents[c.continent].total++;
+        if (visitedCountries[c.code]) {
+          continents[c.continent].visited++;
+        }
+      });
+      
+      const continentNames = {
+        'asia': 'Asia',
+        'europe': 'Europe',
+        'africa': 'Africa',
+        'north-america': 'N. America',
+        'south-america': 'S. America',
+        'oceania': 'Oceania'
+      };
+      
+      continentLegend.innerHTML = Object.entries(continents).map(([continent, stats]) => `
+        <div class="continent-stat">
+          <span class="continent-name">${continentNames[continent]}</span>
+          <span class="continent-count">${stats.visited}</span>
+          <span class="continent-total">/ ${stats.total}</span>
+        </div>
+      `).join('');
+    }
+    
+    function getRegionClass(continent) {
+      return 'region-' + continent;
+    }
+    
+    function formatContinent(continent) {
+      return continent.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    }
+    
+    function getTravelAdvisoryClass(level) {
+      return 'advisory-level-' + level;
+    }
+    
+    function getTravelAdvisoryText(level) {
+      const texts = {
+        1: 'Exercise Normal Precautions',
+        2: 'Exercise Increased Caution',
+        3: 'Reconsider Travel',
+        4: 'Do Not Travel'
+      };
+      return texts[level] || 'Unknown';
+    }
+    
+    function formatPopulation(num) {
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+    
+    function renderLeftList() {
+      const query = leftSearch.value.toLowerCase();
+      const unvisited = allCountries.filter(c => !visitedCountries[c.code] && !failedCountries.has(c.code) && (c.name.toLowerCase().includes(query) || c.flag.includes(query)));
+      
+      leftList.innerHTML = unvisited.map((c, i) => `
+        <div class="country-item ${selectedCountry?.code === c.code && !selectedFromRight ? 'selected' : ''} ${i === leftFocusedIndex ? 'focused' : ''}" data-code="${c.code}" data-index="${i}" tabindex="0">
+          <div class="flag">${c.flag}</div>
+          <div class="info">
+            <div class="name">${c.name}</div>
+            <div class="continent">${c.continent}</div>
+          </div>
+        </div>
+      `).join('');
+      
+      leftList.querySelectorAll('.country-item').forEach(item => {
+        item.addEventListener('click', () => selectCountry(item.dataset.code, false));
+      });
+    }
+    
+    function renderRightList() {
+      const query = rightSearch.value.toLowerCase();
+      const visited = allCountries.filter(c => visitedCountries[c.code] && (c.name.toLowerCase().includes(query) || c.flag.includes(query)));
+      
+      rightList.innerHTML = visited.map((c, i) => `
+        <div class="country-item ${selectedCountry?.code === c.code && selectedFromRight ? 'selected' : ''} ${i === rightFocusedIndex ? 'focused' : ''}" data-code="${c.code}" data-index="${i}" tabindex="0">
+          <div class="flag">${c.flag}</div>
+          <div class="info">
+            <div class="name">${c.name}</div>
+            <div class="continent">${c.continent}</div>
+          </div>
+        </div>
+      `).join('');
+      
+      rightList.querySelectorAll('.country-item').forEach(item => {
+        item.addEventListener('click', () => selectCountry(item.dataset.code, true));
+      });
+    }
+    
+    function selectCountry(code, fromRight) {
+      selectedCountry = allCountries.find(c => c.code === code);
+      selectedFromRight = fromRight;
+      localStorage.setItem('lastSelectedCountry', code);
+      renderLeftList();
+      renderRightList();
+      showCountryDetails(selectedCountry);
+    }
+    
+    function showCountryDetails(country) {
+      centerContent.innerHTML = '<div class="loading">Loading...</div>';
+      
+      try {
+        centerContent.innerHTML = `
+          <button class="select-btn ${selectedFromRight ? 'unselect' : ''}" id="selectBtn">
+            ${selectedFromRight ? 'Unvisit' : 'Visit'}
+          </button>
+          
+          <div class="showcase">
+            <div class="showcase-flag">${country.flag}</div>
+            <div class="showcase-name">${country.name}</div>
+            <div class="showcase-native">${country.nativeName}</div>
+            <span class="showcase-region ${getRegionClass(country.continent)}">${formatContinent(country.continent)}</span>
+          </div>
+          
+          <div class="travel-advisory">
+            <div class="advisory-badge ${getTravelAdvisoryClass(country.travelAdvisory)}">${country.travelAdvisory}</div>
+            <div class="advisory-text">
+              <div class="advisory-title">${getTravelAdvisoryText(country.travelAdvisory)}</div>
+              <div class="advisory-description">${country.travelNote}</div>
+            </div>
+          </div>
+          
+          <div class="info-section">
+            <div class="section-title">Country Details</div>
+            <div class="info-row">
+              <span class="info-label">Capital</span>
+              <span class="info-value">${country.capital}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Population</span>
+              <span class="info-value">${formatPopulation(country.population)}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Currency</span>
+              <span class="info-value">${country.currency}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Language</span>
+              <span class="info-value">${country.language}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Country Code</span>
+              <span class="info-value">${country.code}</span>
+            </div>
+          </div>
+          
+          <div class="map-container">
+            <img class="map-image" src="https://raw.githubusercontent.com/djaiss/mapsicon/master/all/${country.code.toLowerCase()}/vector.svg" alt="${country.name} map" onerror="this.onerror=null; this.style.display='none'">
+          </div>
+        `;
+        
+        document.getElementById('selectBtn').addEventListener('click', toggleCountry);
+        
+      } catch (error) {
+        failedCountries.add(country.code);
+        renderLeftList();
+        centerContent.innerHTML = '<div class="empty-state">Error loading country details</div>';
+        console.error(error);
+      }
+    }
+    
+    function toggleCountry() {
+      if (!selectedCountry) return;
+      
+      if (selectedFromRight) {
+        delete visitedCountries[selectedCountry.code];
+      } else {
+        visitedCountries[selectedCountry.code] = Date.now();
+      }
+      
+      saveVisitedCountries();
+      selectedFromRight = !selectedFromRight;
+      calculateStats();
+      calculateContinentStats();
+      renderLeftList();
+      renderRightList();
+      showCountryDetails(selectedCountry);
+    }
+    
+    let tabFocus = 'leftSearch';
+    
+    leftSearch.addEventListener('input', renderLeftList);
+    rightSearch.addEventListener('input', renderRightList);
+    
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key === '/') {
+        e.preventDefault();
+        shortcutsOverlay.classList.toggle('visible');
+        return;
+      }
+      
+      if (shortcutsOverlay.classList.contains('visible')) {
+        if (e.key === 'Escape') {
+          shortcutsOverlay.classList.remove('visible');
+        }
+        return;
+      }
+      
+      if (e.target === document.body || e.target === document.documentElement) {
+        if (e.key === 'l' || e.key === 'L') {
+          if (selectedCountry) {
+            toggleCountry();
+          }
+        } else if (e.key === '/') {
+          e.preventDefault();
+          leftSearch.focus();
+        } else if (e.key === 'Escape') {
+          leftSearch.value = '';
+          rightSearch.value = '';
+          renderLeftList();
+          renderRightList();
+          leftSearch.focus();
+        }
+      }
+    });
+    
+    leftSearch.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (shortcutsOverlay.classList.contains('visible')) {
+          shortcutsOverlay.classList.remove('visible');
+        } else {
+          leftSearch.value = '';
+          leftSearch.blur();
+          renderLeftList();
+        }
+      }
+    });
+    
+    rightSearch.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (shortcutsOverlay.classList.contains('visible')) {
+          shortcutsOverlay.classList.remove('visible');
+        } else {
+          rightSearch.value = '';
+          rightSearch.blur();
+          renderRightList();
+        }
+      }
+    });
+    
+    leftSearch.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        if (tabFocus === 'leftSearch') {
+          tabFocus = 'leftList';
+          leftFocusedIndex = 0;
+          renderLeftList();
+          const firstItem = leftList.querySelector('.country-item');
+          if (firstItem) {
+            const code = firstItem.dataset.code;
+            selectCountry(code, false);
+          }
+        } else if (tabFocus === 'rightList') {
+          tabFocus = 'leftSearch';
+          leftSearch.focus();
+        }
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        const btn = document.getElementById('selectBtn');
+        if (btn) btn.click();
+      }
+    });
+    
+    rightSearch.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        if (tabFocus === 'leftList') {
+          tabFocus = 'rightSearch';
+          rightSearch.focus();
+        } else if (tabFocus === 'rightSearch') {
+          tabFocus = 'rightList';
+          rightFocusedIndex = 0;
+          renderRightList();
+          const firstItem = rightList.querySelector('.country-item');
+          if (firstItem) {
+            const code = firstItem.dataset.code;
+            selectCountry(code, true);
+          }
+        }
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        const btn = document.getElementById('selectBtn');
+        if (btn) btn.click();
+      }
+    });
+    
+    function handleListKeydown(isLeft) {
+      return (e) => {
+        const list = isLeft ? leftList : rightList;
+        
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          if (isLeft && tabFocus === 'leftList') {
+            tabFocus = 'rightSearch';
+            rightSearch.focus();
+          } else if (!isLeft && tabFocus === 'rightList') {
+            tabFocus = 'leftSearch';
+            leftSearch.focus();
+          }
+        } else if (e.key === ' ') {
+          e.preventDefault();
+          const btn = document.getElementById('selectBtn');
+          if (btn) btn.click();
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          const items = list.querySelectorAll('.country-item');
+          if (isLeft) {
+            leftFocusedIndex = Math.min(leftFocusedIndex + 1, items.length - 1);
+          } else {
+            rightFocusedIndex = Math.min(rightFocusedIndex + 1, items.length - 1);
+          }
+          renderLeftList();
+          renderRightList();
+          const focused = list.querySelector('.country-item.focused');
+          if (focused) {
+            focused.scrollIntoView({ block: 'nearest' });
+            const code = focused.dataset.code;
+            selectCountry(code, !isLeft);
+          }
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          const items = list.querySelectorAll('.country-item');
+          if (isLeft) {
+            leftFocusedIndex = Math.max(leftFocusedIndex - 1, 0);
+          } else {
+            rightFocusedIndex = Math.max(rightFocusedIndex - 1, 0);
+          }
+          renderLeftList();
+          renderRightList();
+          const focused = list.querySelector('.country-item.focused');
+          if (focused) {
+            focused.scrollIntoView({ block: 'nearest' });
+            const code = focused.dataset.code;
+            selectCountry(code, !isLeft);
+          }
+        }
+      };
+    }
+    
+    leftList.addEventListener('keydown', handleListKeydown(true));
+    rightList.addEventListener('keydown', handleListKeydown(false));
+    
+    document.addEventListener('keydown', (e) => {
+      if (shortcutsOverlay.classList.contains('visible')) return;
+      
+      if (e.target.tagName === 'INPUT') return;
+      
+      const isLeft = tabFocus === 'leftList';
+      const list = isLeft ? leftList : rightList;
+      const items = list.querySelectorAll('.country-item');
+      if (items.length === 0) return;
+      
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (isLeft) {
+          leftFocusedIndex = Math.min(leftFocusedIndex + 1, items.length - 1);
+        } else {
+          rightFocusedIndex = Math.min(rightFocusedIndex + 1, items.length - 1);
+        }
+        renderLeftList();
+        renderRightList();
+        const focused = list.querySelector('.country-item.focused');
+        if (focused) {
+          focused.scrollIntoView({ block: 'nearest' });
+          const code = focused.dataset.code;
+          selectCountry(code, !isLeft);
+        }
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (isLeft) {
+          leftFocusedIndex = Math.max(leftFocusedIndex - 1, 0);
+        } else {
+          rightFocusedIndex = Math.max(rightFocusedIndex - 1, 0);
+        }
+        renderLeftList();
+        renderRightList();
+        const focused = list.querySelector('.country-item.focused');
+        if (focused) {
+          focused.scrollIntoView({ block: 'nearest' });
+          const code = focused.dataset.code;
+          selectCountry(code, !isLeft);
+        }
+      }
+    });
+    
+    loadVisitedCountries();
+    calculateStats();
+    calculateContinentStats();
+    renderLeftList();
+    renderRightList();
+    
+    const lastSelected = localStorage.getItem('lastSelectedCountry');
+    if (lastSelected) {
+      const fromRight = !!visitedCountries[lastSelected];
+      selectCountry(lastSelected, fromRight);
+    }
+  </script>
+</body>
+</html>
