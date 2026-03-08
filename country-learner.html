@@ -167,6 +167,37 @@
       display: flex;
       flex-direction: column;
     }
+    .world-map {
+      width: 100%;
+      height: 180px;
+      position: relative;
+      background: linear-gradient(180deg, #1a4a7a 0%, #0f3460 100%);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+    .world-map-image {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      opacity: 0.6;
+    }
+    .country-dot {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: #ef4444;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444; }
+      50% { box-shadow: 0 0 20px #ef4444, 0 0 30px #ef4444; }
+      100% { box-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444; }
+    }
     .map-image {
       width: 100%;
       max-height: 350px;
@@ -446,35 +477,35 @@
 
   <script>
     const COUNTRIES = [
-      { code: "AF", name: "Afghanistan", nativeName: "افغانستان", flag: "🇦🇫", continent: "asia", capital: "Kabul", population: 40028462, currency: "Afghan afghani (AFN)", language: "Pashto, Dari", travelAdvisory: 4, travelNote: "Do not travel due to terrorism, kidnapping, and armed conflict." },
-      { code: "AL", name: "Albania", nativeName: "Shqipëria", flag: "🇦🇱", continent: "europe", capital: "Tirana", population: 2842321, currency: "Albanian lek (ALL)", language: "Albanian", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
-      { code: "DZ", name: "Algeria", nativeName: "الجزائر", flag: "🇩🇿", continent: "africa", capital: "Algiers", population: 44616624, currency: "Algerian dinar (DZD)", language: "Arabic, Berber", travelAdvisory: 2, travelNote: "Exercise increased caution due to terrorism." },
-      { code: "AD", name: "Andorra", nativeName: "Andorra", flag: "🇦🇩", continent: "europe", capital: "Andorra la Vella", population: 79824, currency: "Euro (EUR)", language: "Catalan", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
-      { code: "AO", name: "Angola", nativeName: "Angola", flag: "🇦🇴", continent: "africa", capital: "Luanda", population: 33933610, currency: "Angolan kwanza (AOA)", language: "Portuguese", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and civil unrest." },
-      { code: "AG", name: "Antigua and Barbuda", nativeName: "Antigua and Barbuda", flag: "🇦🇬", continent: "north-america", capital: "Saint John's", population: 100772, currency: "East Caribbean dollar (XCD)", language: "English", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
-      { code: "AR", name: "Argentina", nativeName: "Argentina", flag: "🇦🇷", continent: "south-america", capital: "Buenos Aires", population: 45808747, currency: "Argentine peso (ARS)", language: "Spanish", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
-      { code: "AM", name: "Armenia", nativeName: "Հայաստան", flag: "🇦🇲", continent: "asia", capital: "Yerevan", population: 2963234, currency: "Armenian dram (AMD)", language: "Armenian", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and terrorism." },
-      { code: "AU", name: "Australia", nativeName: "Australia", flag: "🇦🇺", continent: "oceania", capital: "Canberra", population: 26091800, currency: "Australian dollar (AUD)", language: "English", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
-      { code: "AT", name: "Austria", nativeName: "Österreich", flag: "🇦🇹", continent: "europe", capital: "Vienna", population: 9027999, currency: "Euro (EUR)", language: "German", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
-      { code: "AZ", name: "Azerbaijan", nativeName: "Azərbaycan", flag: "🇦🇿", continent: "asia", capital: "Baku", population: 10145120, currency: "Azerbaijani manat (AZN)", language: "Azerbaijani", travelAdvisory: 2, travelNote: "Exercise increased caution due to terrorism." },
-      { code: "BS", name: "Bahamas", nativeName: "The Bahamas", flag: "🇧🇸", continent: "north-america", capital: "Nassau", population: 409984, currency: "Bahamian dollar (BSD)", language: "English", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
-      { code: "BH", name: "Bahrain", nativeName: "البحرين", flag: "🇧🇭", continent: "asia", capital: "Manama", population: 1501635, currency: "Bahraini dinar (BHD)", language: "Arabic", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
-      { code: "BD", name: "Bangladesh", nativeName: "বাংলাদেশ", flag: "🇧🇩", continent: "asia", capital: "Dhaka", population: 169356251, currency: "Bangladeshi taka (BDT)", language: "Bengali", travelAdvisory: 2, travelNote: "Exercise increased caution due to terrorism." },
-      { code: "BB", name: "Barbados", nativeName: "Barbados", flag: "🇧🇧", continent: "north-america", capital: "Bridgetown", population: 288023, currency: "Barbadian dollar (BBD)", language: "English", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
-      { code: "BY", name: "Belarus", nativeName: "Беларусь", flag: "🇧🇾", continent: "europe", capital: "Minsk", population: 9534954, currency: "Belarusian ruble (BYN)", language: "Belarusian, Russian", travelAdvisory: 3, travelNote: "Reconsider travel due to arbitrary enforcement of local laws." },
-      { code: "BE", name: "Belgium", nativeName: "België", flag: "🇧🇪", continent: "europe", capital: "Brussels", population: 11697557, currency: "Euro (EUR)", language: "Dutch, French, German", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
-      { code: "BZ", name: "Belize", nativeName: "Belize", flag: "🇧🇿", continent: "north-america", capital: "Belmopan", population: 412387, currency: "Belize dollar (BZD)", language: "English", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
-      { code: "BJ", name: "Benin", nativeName: "Bénin", flag: "🇧🇯", continent: "africa", capital: "Porto-Novo", population: 12976861, currency: "West African CFA franc (XOF)", language: "French", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
-      { code: "BT", name: "Bhutan", nativeName: "भूटान", flag: "🇧🇹", continent: "asia", capital: "Thimphu", population: 777486, currency: "Bhutanese ngultrum (BTN)", language: "Dzongkha", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
-      { code: "BO", name: "Bolivia", nativeName: "Bolivia", flag: "🇧🇴", continent: "south-america", capital: "Sucre", population: 12079472, currency: "Bolivian boliviano (BOB)", language: "Spanish, Quechua", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and civil unrest." },
-      { code: "BA", name: "Bosnia and Herzegovina", nativeName: "Bosna i Hercegovina", flag: "🇧🇦", continent: "europe", capital: "Sarajevo", population: 3270943, currency: "Convertible mark (BAM)", language: "Bosnian, Croatian, Serbian", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
-      { code: "BW", name: "Botswana", nativeName: "Botswana", flag: "🇧🇼", continent: "africa", capital: "Gaborone", population: 2351627, currency: "Botswana pula (BWP)", language: "English, Tswana", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
-      { code: "BR", name: "Brazil", nativeName: "Brasil", flag: "🇧🇷", continent: "south-america", capital: "Brasília", population: 214326223, currency: "Brazilian real (BRL)", language: "Portuguese", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime." },
-      { code: "BN", name: "Brunei", nativeName: "Brunei", flag: "🇧🇳", continent: "asia", capital: "Bandar Seri Begawan", population: 445431, currency: "Brunei dollar (BND)", language: "Malay", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
-      { code: "BG", name: "Bulgaria", nativeName: "България", flag: "🇧🇬", continent: "europe", capital: "Sofia", population: 6878216, currency: "Bulgarian lev (BGN)", language: "Bulgarian", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
-      { code: "KH", name: "Cambodia", nativeName: "កម្ពុជា", flag: "🇰🇭", continent: "asia", capital: "Phnom Penh", population: 16767842, currency: "Cambodian riel (KHR)", language: "Khmer", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and remote areas landmines." },
-      { code: "CM", name: "Cameroon", nativeName: "Cameroun", flag: "🇨🇲", continent: "africa", capital: "Yaoundé", population: 27224265, currency: "Central African CFA franc (XAF)", language: "French, English", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and terrorism." },
-      { code: "CA", name: "Canada", nativeName: "Canada", flag: "🇨🇦", continent: "north-america", capital: "Ottawa", population: 38781092, currency: "Canadian dollar (CAD)", language: "English, French", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
+      { code: "AF", name: "Afghanistan", nativeName: "افغانستان", flag: "🇦🇫", continent: "asia", capital: "Kabul", population: 40028462, currency: "Afghan afghani (AFN)", language: "Pashto, Dari", travelAdvisory: 4, travelNote: "Do not travel due to terrorism, kidnapping, and armed conflict.", lat: 33.9391, lng: 67.7100 },
+      { code: "AL", name: "Albania", nativeName: "Shqipëria", flag: "🇦🇱", continent: "europe", capital: "Tirana", population: 2842321, currency: "Albanian lek (ALL)", language: "Albanian", travelAdvisory: 1, travelNote: "Exercise normal precautions.", lat: 41.1533, lng: 20.1683 },
+      { code: "DZ", name: "Algeria", nativeName: "الجزائر", flag: "🇩🇿", continent: "africa", capital: "Algiers", population: 44616624, currency: "Algerian dinar (DZD)", language: "Arabic, Berber", travelAdvisory: 2, travelNote: "Exercise increased caution due to terrorism.", lat: 28.0339, lng: 1.6596 },
+      { code: "AD", name: "Andorra", nativeName: "Andorra", flag: "🇦🇩", continent: "europe", capital: "Andorra la Vella", population: 79824, currency: "Euro (EUR)", language: "Catalan", travelAdvisory: 1, travelNote: "Exercise normal precautions.", lat: 42.5063, lng: 1.5218 },
+      { code: "AO", name: "Angola", nativeName: "Angola", flag: "🇦🇴", continent: "africa", capital: "Luanda", population: 33933610, currency: "Angolan kwanza (AOA)", language: "Portuguese", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and civil unrest.", lat: -11.2027, lng: 17.8739 },
+      { code: "AG", name: "Antigua and Barbuda", nativeName: "Antigua and Barbuda", flag: "🇦🇬", continent: "north-america", capital: "Saint John's", population: 100772, currency: "East Caribbean dollar (XCD)", language: "English", travelAdvisory: 1, travelNote: "Exercise normal precautions.", lat: 17.0608, lng: -61.7964 },
+      { code: "AR", name: "Argentina", nativeName: "Argentina", flag: "🇦🇷", continent: "south-america", capital: "Buenos Aires", population: 45808747, currency: "Argentine peso (ARS)", language: "Spanish", travelAdvisory: 1, travelNote: "Exercise normal precautions.", lat: -38.4161, lng: -63.6167 },
+      { code: "AM", name: "Armenia", nativeName: "Հայաստան", flag: "🇦🇲", continent: "asia", capital: "Yerevan", population: 2963234, currency: "Armenian dram (AMD)", language: "Armenian", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and terrorism.", lat: 40.0691, lng: 45.0382 },
+      { code: "AU", name: "Australia", nativeName: "Australia", flag: "🇦🇺", continent: "oceania", capital: "Canberra", population: 26091800, currency: "Australian dollar (AUD)", language: "English", travelAdvisory: 1, travelNote: "Exercise normal precautions.", lat: -25.2744, lng: 133.7751 },
+      { code: "AT", name: "Austria", nativeName: "Österreich", flag: "🇦🇹", continent: "europe", capital: "Vienna", population: 9027999, currency: "Euro (EUR)", language: "German", travelAdvisory: 1, travelNote: "Exercise normal precautions.", lat: 47.5162, lng: 14.5501 },
+      { code: "AZ", name: "Azerbaijan", nativeName: "Azərbaycan", flag: "🇦🇿", continent: "asia", capital: "Baku", population: 10145120, currency: "Azerbaijani manat (AZN)", language: "Azerbaijani", travelAdvisory: 2, travelNote: "Exercise increased caution due to terrorism.", lat: 40.1431, lng: 47.5769 },
+      { code: "BS", name: "Bahamas", nativeName: "The Bahamas", flag: "🇧🇸", continent: "north-america", capital: "Nassau", population: 409984, currency: "Bahamian dollar (BSD)", language: "English", travelAdvisory: 1, travelNote: "Exercise normal precautions.", lat: 25.0343, lng: -77.3963 },
+      { code: "BH", name: "Bahrain", nativeName: "البحرين", flag: "🇧🇭", continent: "asia", capital: "Manama", population: 1501635, currency: "Bahraini dinar (BHD)", language: "Arabic", travelAdvisory: 1, travelNote: "Exercise normal precautions.", lat: 26.0667, lng: 50.5577 },
+      { code: "BD", name: "Bangladesh", nativeName: "বাংলাদেশ", flag: "🇧🇩", continent: "asia", capital: "Dhaka", population: 169356251, currency: "Bangladeshi taka (BDT)", language: "Bengali", travelAdvisory: 2, travelNote: "Exercise increased caution due to terrorism.", lat: 23.6850, lng: 90.3563 },
+      { code: "BB", name: "Barbados", nativeName: "Barbados", flag: "🇧🇧", continent: "north-america", capital: "Bridgetown", population: 288023, currency: "Barbadian dollar (BBD)", language: "English", travelAdvisory: 1, travelNote: "Exercise normal precautions.", lat: 13.1939, lng: -59.5432 },
+      { code: "BY", name: "Belarus", nativeName: "Беларусь", flag: "🇧🇾", continent: "europe", capital: "Minsk", population: 9534954, currency: "Belarusian ruble (BYN)", language: "Belarusian, Russian", travelAdvisory: 3, travelNote: "Reconsider travel due to arbitrary enforcement of local laws.", lat: 53.7098, lng: 27.9534 },
+      { code: "BE", name: "Belgium", nativeName: "België", flag: "🇧🇪", continent: "europe", capital: "Brussels", population: 11697557, currency: "Euro (EUR)", language: "Dutch, French, German", travelAdvisory: 1, travelNote: "Exercise normal precautions.", lat: 50.5039, lng: 4.4699 },
+      { code: "BZ", name: "Belize", nativeName: "Belize", flag: "🇧🇿", continent: "north-america", capital: "Belmopan", population: 412387, currency: "Belize dollar (BZD)", language: "English", travelAdvisory: 1, travelNote: "Exercise normal precautions.", lat: 17.1899, lng: -88.4976 },
+      { code: "BJ", name: "Benin", nativeName: "Bénin", flag: "🇧🇯", continent: "africa", capital: "Porto-Novo", population: 12976861, currency: "West African CFA franc (XOF)", language: "French", travelAdvisory: 1, travelNote: "Exercise normal precautions.", lat: 9.3077, lng: 2.3158 },
+      { code: "BT", name: "Bhutan", nativeName: "भूटान", flag: "🇧🇹", continent: "asia", capital: "Thimphu", population: 777486, currency: "Bhutanese ngultrum (BTN)", language: "Dzongkha", travelAdvisory: 1, travelNote: "Exercise normal precautions.", lat: 27.5142, lng: 90.4336 },
+      { code: "BO", name: "Bolivia", nativeName: "Bolivia", flag: "🇧🇴", continent: "south-america", capital: "Sucre", population: 12079472, currency: "Bolivian boliviano (BOB)", language: "Spanish, Quechua", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and civil unrest.", lat: -16.2902, lng: -63.5887 },
+      { code: "BA", name: "Bosnia and Herzegovina", nativeName: "Bosna i Hercegovina", flag: "🇧🇦", continent: "europe", capital: "Sarajevo", population: 3270943, currency: "Convertible mark (BAM)", language: "Bosnian, Croatian, Serbian", travelAdvisory: 1, travelNote: "Exercise normal precautions.", lat: 43.9159, lng: 17.6791 },
+      { code: "BW", name: "Botswana", nativeName: "Botswana", flag: "🇧🇼", continent: "africa", capital: "Gaborone", population: 2351627, currency: "Botswana pula (BWP)", language: "English, Tswana", travelAdvisory: 1, travelNote: "Exercise normal precautions.", lat: -22.3285, lng: 24.6849 },
+      { code: "BR", name: "Brazil", nativeName: "Brasil", flag: "🇧🇷", continent: "south-america", capital: "Brasília", population: 214326223, currency: "Brazilian real (BRL)", language: "Portuguese", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime.", lat: -14.2350, lng: -51.9253 },
+      { code: "BN", name: "Brunei", nativeName: "Brunei", flag: "🇧🇳", continent: "asia", capital: "Bandar Seri Begawan", population: 445431, currency: "Brunei dollar (BND)", language: "Malay", travelAdvisory: 1, travelNote: "Exercise normal precautions.", lat: 4.5353, lng: 114.7277 },
+      { code: "BG", name: "Bulgaria", nativeName: "България", flag: "🇧🇬", continent: "europe", capital: "Sofia", population: 6878216, currency: "Bulgarian lev (BGN)", language: "Bulgarian", travelAdvisory: 1, travelNote: "Exercise normal precautions.", lat: 42.7339, lng: 25.4858 },
+      { code: "KH", name: "Cambodia", nativeName: "កម្ពុជា", flag: "🇰🇭", continent: "asia", capital: "Phnom Penh", population: 16767842, currency: "Cambodian riel (KHR)", language: "Khmer", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and remote areas landmines.", lat: 12.5657, lng: 104.9910 },
+      { code: "CM", name: "Cameroon", nativeName: "Cameroun", flag: "🇨🇲", continent: "africa", capital: "Yaoundé", population: 27224265, currency: "Central African CFA franc (XAF)", language: "French, English", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and terrorism.", lat: 7.3697, lng: 12.3547 },
+      { code: "CA", name: "Canada", nativeName: "Canada", flag: "🇨🇦", continent: "north-america", capital: "Ottawa", population: 38781092, currency: "Canadian dollar (CAD)", language: "English, French", travelAdvisory: 1, travelNote: "Exercise normal precautions.", lat: 56.1304, lng: -106.3468 },
       { code: "CL", name: "Chile", nativeName: "Chile", flag: "🇨🇱", continent: "south-america", capital: "Santiago", population: 19603733, currency: "Chilean peso (CLP)", language: "Spanish", travelAdvisory: 1, travelNote: "Exercise normal precautions." },
       { code: "CN", name: "China", nativeName: "中国", flag: "🇨🇳", continent: "asia", capital: "Beijing", population: 1425671352, currency: "Chinese yuan (CNY)", language: "Mandarin", travelAdvisory: 2, travelNote: "Exercise increased caution due to arbitrary enforcement of local laws." },
       { code: "CO", name: "Colombia", nativeName: "Colombia", flag: "🇨🇴", continent: "south-america", capital: "Bogotá", population: 51874024, currency: "Colombian peso (COP)", language: "Spanish", travelAdvisory: 2, travelNote: "Exercise increased caution due to crime and terrorism." },
@@ -568,6 +599,57 @@
       { code: "VE", name: "Venezuela", nativeName: "Venezuela", flag: "🇻🇪", continent: "south-america", capital: "Caracas", population: 28301696, currency: "Venezuelan bolívar (VES)", language: "Spanish", travelAdvisory: 4, travelNote: "Do not travel due to crime, civil unrest, and armed conflict." },
       { code: "VN", name: "Vietnam", nativeName: "Việt Nam", flag: "🇻🇳", continent: "asia", capital: "Hanoi", population: 98186856, currency: "Vietnamese đồng (VND)", language: "Vietnamese", travelAdvisory: 1, travelNote: "Exercise normal precautions." }
     ];
+    
+    const COUNTRY_COORDS = {
+      "AF": { lat: 33.9391, lng: 67.7100 }, "AL": { lat: 41.1533, lng: 20.1683 }, "DZ": { lat: 28.0339, lng: 1.6596 },
+      "AD": { lat: 42.5063, lng: 1.5218 }, "AO": { lat: -11.2027, lng: 17.8739 }, "AG": { lat: 17.0608, lng: -61.7964 },
+      "AR": { lat: -38.4161, lng: -63.6167 }, "AM": { lat: 40.0691, lng: 45.0382 }, "AU": { lat: -25.2744, lng: 133.7751 },
+      "AT": { lat: 47.5162, lng: 14.5501 }, "AZ": { lat: 40.1431, lng: 47.5769 }, "BS": { lat: 25.0343, lng: -77.3963 },
+      "BH": { lat: 26.0667, lng: 50.5577 }, "BD": { lat: 23.6850, lng: 90.3563 }, "BB": { lat: 13.1939, lng: -59.5432 },
+      "BY": { lat: 53.7098, lng: 27.9534 }, "BE": { lat: 50.5039, lng: 4.4699 }, "BZ": { lat: 17.1899, lng: -88.4976 },
+      "BJ": { lat: 9.3077, lng: 2.3158 }, "BT": { lat: 27.5142, lng: 90.4336 }, "BO": { lat: -16.2902, lng: -63.5887 },
+      "BA": { lat: 43.9159, lng: 17.6791 }, "BW": { lat: -22.3285, lng: 24.6849 }, "BR": { lat: -14.2350, lng: -51.9253 },
+      "BN": { lat: 4.5353, lng: 114.7277 }, "BG": { lat: 42.7339, lng: 25.4858 }, "KH": { lat: 12.5657, lng: 104.9910 },
+      "CM": { lat: 7.3697, lng: 12.3547 }, "CA": { lat: 56.1304, lng: -106.3468 }, "CL": { lat: -35.6751, lng: -71.5430 },
+      "CN": { lat: 35.8617, lng: 104.1954 }, "CO": { lat: 4.5709, lng: -74.2973 }, "CR": { lat: 9.7489, lng: -83.7534 },
+      "HR": { lat: 45.1000, lng: 15.2000 }, "CU": { lat: 21.5218, lng: -77.7812 }, "CY": { lat: 35.1264, lng: 33.4299 },
+      "CZ": { lat: 49.8175, lng: 15.4730 }, "DK": { lat: 56.2639, lng: 9.5018 }, "DO": { lat: 18.7357, lng: -70.1627 },
+      "EC": { lat: -1.8312, lng: -78.1834 }, "EG": { lat: 26.8206, lng: 30.8025 }, "SV": { lat: 13.7942, lng: -88.8965 },
+      "EE": { lat: 58.5953, lng: 25.0136 }, "ET": { lat: 9.1450, lng: 40.4897 }, "FJ": { lat: -17.7134, lng: 178.0650 },
+      "FI": { lat: 61.9241, lng: 25.7482 }, "FR": { lat: 46.2276, lng: 2.2137 }, "GE": { lat: 42.3154, lng: 43.3569 },
+      "DE": { lat: 51.1657, lng: 10.4515 }, "GH": { lat: 7.9465, lng: -1.0232 }, "GR": { lat: 39.0742, lng: 21.8243 },
+      "GT": { lat: 15.7835, lng: -90.2308 }, "HN": { lat: 15.2000, lng: -86.2419 }, "HU": { lat: 47.1625, lng: 19.5033 },
+      "IS": { lat: 64.9631, lng: -19.0208 }, "IN": { lat: 20.5937, lng: 78.9629 }, "ID": { lat: -0.7893, lng: 113.9213 },
+      "IR": { lat: 32.4279, lng: 53.6880 }, "IQ": { lat: 33.3152, lng: 44.3661 }, "IE": { lat: 53.1424, lng: -7.6921 },
+      "IL": { lat: 31.0461, lng: 34.8516 }, "IT": { lat: 41.8719, lng: 12.5674 }, "JM": { lat: 18.1096, lng: -77.2975 },
+      "JP": { lat: 36.2048, lng: 138.2529 }, "JO": { lat: 30.5852, lng: 36.2384 }, "KZ": { lat: 48.0196, lng: 66.9237 },
+      "KE": { lat: -0.0236, lng: 37.9062 }, "KR": { lat: 35.9078, lng: 127.7669 }, "KW": { lat: 29.3117, lng: 47.4818 },
+      "LA": { lat: 19.8563, lng: 102.4955 }, "LV": { lat: 56.8796, lng: 24.6032 }, "LB": { lat: 33.8547, lng: 35.8623 },
+      "LT": { lat: 55.1694, lng: 23.8813 }, "LU": { lat: 49.8153, lng: 6.1296 }, "MY": { lat: 4.2105, lng: 101.9758 },
+      "MV": { lat: 3.2028, lng: 73.2207 }, "MT": { lat: 35.9375, lng: 14.3754 }, "MX": { lat: 23.6345, lng: -102.5528 },
+      "MD": { lat: 47.4116, lng: 28.3699 }, "MC": { lat: 43.7384, lng: 7.4246 }, "MN": { lat: 46.8625, lng: 103.8467 },
+      "ME": { lat: 42.7087, lng: 19.3744 }, "MA": { lat: 31.7917, lng: -7.0926 }, "NP": { lat: 28.3949, lng: 84.1240 },
+      "NL": { lat: 52.1326, lng: 5.2913 }, "NZ": { lat: -40.9006, lng: 174.8860 }, "NI": { lat: 12.8654, lng: -85.2072 },
+      "NG": { lat: 9.0820, lng: 8.6753 }, "NO": { lat: 60.4720, lng: 8.4689 }, "OM": { lat: 21.4735, lng: 55.9754 },
+      "PK": { lat: 30.3753, lng: 69.3451 }, "PA": { lat: 8.5380, lng: -80.7821 }, "PY": { lat: -23.4425, lng: -58.4438 },
+      "PE": { lat: -9.1900, lng: -75.0152 }, "PH": { lat: 12.8797, lng: 121.7740 }, "PL": { lat: 51.9194, lng: 19.1451 },
+      "PT": { lat: 39.3999, lng: -8.2245 }, "QA": { lat: 25.3548, lng: 51.1839 }, "RO": { lat: 45.9432, lng: 24.9668 },
+      "RU": { lat: 61.5240, lng: 105.3188 }, "SA": { lat: 23.8859, lng: 45.0792 }, "RS": { lat: 44.0165, lng: 21.0059 },
+      "SG": { lat: 1.3521, lng: 103.8198 }, "SK": { lat: 48.6690, lng: 19.6990 }, "SI": { lat: 46.1512, lng: 14.9955 },
+      "ZA": { lat: -30.5595, lng: 22.9375 }, "ES": { lat: 40.4637, lng: -3.7492 }, "LK": { lat: 7.8731, lng: 80.7718 },
+      "SE": { lat: 60.1282, lng: 18.6435 }, "CH": { lat: 46.8182, lng: 8.2275 }, "TW": { lat: 23.6978, lng: 120.9605 },
+      "TH": { lat: 15.8700, lng: 100.9925 }, "TR": { lat: 38.9637, lng: 35.2433 }, "UA": { lat: 48.3794, lng: 31.1656 },
+      "AE": { lat: 23.4241, lng: 53.8478 }, "GB": { lat: 55.3781, lng: -3.4360 }, "US": { lat: 37.0902, lng: -95.7129 },
+      "UY": { lat: -32.5228, lng: -55.7658 }, "UZ": { lat: 41.3775, lng: 64.5853 }, "VE": { lat: 6.4238, lng: -66.5897 },
+      "VN": { lat: 14.0583, lng: 108.2772 }
+    };
+    
+    COUNTRIES.forEach(c => {
+      if (COUNTRY_COORDS[c.code]) {
+        c.lat = COUNTRY_COORDS[c.code].lat;
+        c.lng = COUNTRY_COORDS[c.code].lng;
+      }
+    });
     
     let allCountries = [...COUNTRIES];
     let visitedCountries = {};
@@ -760,6 +842,23 @@
             </div>
           </div>
           
+          <div class="world-map" id="worldMap">
+            <svg viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;position:absolute;top:0;left:0;">
+              <rect x="0" y="0" width="1000" height="500" fill="#1a4a7a"/>
+              <ellipse cx="500" cy="250" rx="480" ry="230" fill="none" stroke="#0f3460" stroke-width="2"/>
+              <ellipse cx="500" cy="250" rx="350" ry="170" fill="none" stroke="#0f3460" stroke-width="1"/>
+              <ellipse cx="500" cy="250" rx="220" ry="110" fill="none" stroke="#0f3460" stroke-width="1"/>
+              <line x1="500" y1="20" x2="500" y2="480" stroke="#0f3460" stroke-width="1"/>
+              <line x1="20" y1="250" x2="980" y2="250" stroke="#0f3460" stroke-width="1"/>
+              <text x="500" y="40" text-anchor="middle" fill="#666" font-size="14">90°N</text>
+              <text x="500" y="260" text-anchor="middle" fill="#666" font-size="14">0°</text>
+              <text x="500" y="470" text-anchor="middle" fill="#666" font-size="14">90°S</text>
+              <text x="40" y="255" text-anchor="middle" fill="#666" font-size="14">180°W</text>
+              <text x="960" y="255" text-anchor="middle" fill="#666" font-size="14">180°E</text>
+            </svg>
+            <div class="country-dot" id="countryDot" style="display:none;"></div>
+          </div>
+          
           <div class="info-section">
             <div class="section-title">Country Details</div>
             <div class="info-row">
@@ -790,6 +889,17 @@
         `;
         
         document.getElementById('selectBtn').addEventListener('click', toggleCountry);
+        
+        const dot = document.getElementById('countryDot');
+        if (dot && country.lat && country.lng) {
+          const mapWidth = 1000;
+          const mapHeight = 500;
+          const left = ((country.lng + 180) / 360) * mapWidth;
+          const top = ((90 - country.lat) / 180) * mapHeight;
+          dot.style.left = (left / mapWidth * 100) + '%';
+          dot.style.top = (top / mapHeight * 100) + '%';
+          dot.style.display = 'block';
+        }
         
       } catch (error) {
         failedCountries.add(country.code);
