@@ -115,18 +115,57 @@
       border-radius: 12px;
       margin: 20px auto;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       border: 4px solid #fbbf24;
       box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-      background: #fff;
+      background: linear-gradient(180deg, #2d3a4f 0%, #1a1a2e 100%);
       position: relative;
       overflow: hidden;
     }
-    .president-portrait img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+    .president-portrait::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23fbbf24' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      opacity: 0.5;
+    }
+    .portrait-avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      font-weight: bold;
+      color: #1a1a2e;
+      border: 4px solid #fff;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      position: relative;
+      z-index: 1;
+    }
+    .portrait-name {
+      font-size: 16px;
+      font-weight: bold;
+      color: #fbbf24;
+      margin-top: 15px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      text-transform: capitalize;
+    }
+    .portrait-number {
+      font-size: 14px;
+      color: #888;
+      margin-top: 5px;
+      position: relative;
+      z-index: 1;
     }
     .key-events {
       background: #0f3460;
@@ -556,6 +595,12 @@
       return party.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     }
     
+    function getOrdinal(n) {
+      const s = ['th', 'st', 'nd', 'rd'];
+      const v = n % 100;
+      return s[(v - 20) % 10] || s[v] || s[0];
+    }
+    
     function renderLeftList() {
       const query = leftSearch.value.toLowerCase();
       const unstudied = allPresidents.filter(p => !studiedPresidents[p.number] && !failedPresidents.has(p.number) && (p.name.toLowerCase().includes(query) || p.nickname.toLowerCase().includes(query)));
@@ -619,7 +664,9 @@
               <div class="showcase-years">${president.years} (${president.tenureYears} years)</div>
             </div>
             <div class="president-portrait">
-              <img src="${president.image}" alt="${president.name}" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(president.name.split(' ').map(n=>n.charAt(0)).join(''))}&background=1a4a7a&color=fbbf24&size=180&font-size=0.5&length=2&bold=true'">
+              <div class="portrait-avatar">${president.name.split(' ').map(n => n.charAt(0)).join('').replace(/[^A-Z]/g, '')}</div>
+              <div class="portrait-name">${president.name.split(' ')[0]} ${president.name.split(' ')[president.name.split(' ').length - 1]}</div>
+              <div class="portrait-number">${president.number}${getOrdinal(president.number)} President</div>
             </div>
             <span class="showcase-party ${getPartyClass(president.party)}">${formatParty(president.party)}</span>
           </div>
