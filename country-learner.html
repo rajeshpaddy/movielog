@@ -446,7 +446,9 @@
     }
     .world-map {
       width: 100%;
-      height: 320px;
+      height: auto;
+      aspect-ratio: 2 / 1;
+      min-height: 280px;
       background: #06182a;
       border-radius: 14px;
       position: relative;
@@ -457,7 +459,9 @@
       inset: 0;
       width: 100%;
       height: 100%;
-      object-fit: contain;
+      object-fit: cover;
+      object-position: center center;
+      transform: none;
       background: #06182a;
       opacity: 0.92;
       z-index: 1;
@@ -469,8 +473,8 @@
     }
     .world-dot {
       position: absolute;
-      width: 10px;
-      height: 10px;
+      width: 12px;
+      height: 12px;
       border-radius: 50%;
       transform: translate(-50%, -50%);
       border: 2px solid #fff;
@@ -480,8 +484,8 @@
       box-shadow: 0 0 8px rgba(16, 185, 129, 0.9);
     }
     .world-dot.selected {
-      width: 12px;
-      height: 12px;
+      width: 14px;
+      height: 14px;
       background: #a855f7;
       box-shadow: 0 0 10px rgba(168, 85, 247, 0.95);
       z-index: 3;
@@ -663,7 +667,7 @@
         padding: 10px;
       }
       .world-map {
-        height: 260px;
+        min-height: 220px;
       }
       .showcase {
         display: flex;
@@ -757,7 +761,7 @@
         font-size: 13px;
       }
       .world-map {
-        height: 220px;
+        min-height: 180px;
       }
       .stats-bar .stat-item .stat-number {
         font-size: 20px;
