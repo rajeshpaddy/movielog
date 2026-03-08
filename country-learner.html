@@ -466,6 +466,16 @@
       position: relative;
       overflow: hidden;
     }
+    .world-map.approx .world-map-svg {
+      display: none;
+    }
+    .world-map.accurate .world-map-image,
+    .world-map.accurate .world-map-markers {
+      display: none;
+    }
+    .world-map.accurate .world-map-svg {
+      display: block;
+    }
     .center-pane .world-map {
       flex: 1;
       height: 100%;
@@ -488,10 +498,98 @@
       inset: 0;
       z-index: 2;
     }
+    .world-map-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      background: #06182a;
+    }
+    .country-region {
+      fill: #123252;
+      stroke: #2f4f73;
+      stroke-width: 0.6;
+      vector-effect: non-scaling-stroke;
+      transition: fill 0.15s ease-out, stroke 0.15s ease-out;
+    }
+    .country-region.visited {
+      fill: #16a34a;
+      stroke: #34d399;
+    }
+    .country-region.selected {
+      fill: #22c55e;
+      stroke: #a7f3d0;
+      stroke-width: 1;
+    }
+    .world-shade {
+      position: absolute;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .world-shade.visited {
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.6) 0%, rgba(16, 185, 129, 0.3) 45%, rgba(16, 185, 129, 0) 75%);
+      filter: blur(1px);
+      box-shadow: 0 0 18px rgba(16, 185, 129, 0.75);
+    }
+    .world-shade.selected {
+      width: 40px;
+      height: 40px;
+      background: radial-gradient(circle, rgba(34, 197, 94, 0.75) 0%, rgba(34, 197, 94, 0.35) 45%, rgba(34, 197, 94, 0) 78%);
+      box-shadow: 0 0 22px rgba(34, 197, 94, 0.9);
+      z-index: 3;
+    }
     .map-actions {
       display: flex;
       justify-content: center;
       margin-bottom: 8px;
+    }
+    .map-mode-control {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin: 0 auto 10px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: #0f3460;
+      border: 1px solid #295b8d;
+      color: #cfe8ff;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    .map-mode-switch {
+      position: relative;
+      width: 46px;
+      height: 24px;
+      appearance: none;
+      border-radius: 999px;
+      background: #1d4d7d;
+      border: 1px solid #2a679f;
+      cursor: pointer;
+      transition: background 0.2s ease-out;
+    }
+    .map-mode-switch::after {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      top: 2px;
+      left: 2px;
+      border-radius: 50%;
+      background: #dbeafe;
+      transition: transform 0.2s ease-out;
+    }
+    .map-mode-switch:checked {
+      background: #16a34a;
+      border-color: #34d399;
+    }
+    .map-mode-switch:checked::after {
+      transform: translateX(22px);
     }
     .map-actions .select-btn {
       max-width: 240px;
@@ -504,25 +602,6 @@
     }
     .map-actions .select-btn.unselect {
       background: rgba(239, 68, 68, 0.95);
-    }
-    .world-dot {
-      position: absolute;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      border: 2px solid #fff;
-    }
-    .world-dot.visited {
-      background: #10b981;
-      box-shadow: 0 0 8px rgba(16, 185, 129, 0.9);
-    }
-    .world-dot.selected {
-      width: 14px;
-      height: 14px;
-      background: #a855f7;
-      box-shadow: 0 0 10px rgba(168, 85, 247, 0.95);
-      z-index: 3;
     }
     .stats-section {
       width: min(100%, 980px);
@@ -861,12 +940,18 @@
       <div class="stats-section">
         <div class="stats-bar" id="statsBar"></div>
         <div class="continent-legend" id="continentLegend"></div>
+        <label class="map-mode-control" for="mapModeSwitch">
+          <span>Approx</span>
+          <input type="checkbox" id="mapModeSwitch" class="map-mode-switch" aria-label="Switch between approximate and accurate map">
+          <span>Accurate</span>
+        </label>
         <div class="map-actions" id="mapActions"></div>
       </div>
       <div class="world-map-wrap">
         <div class="world-map" id="worldMap">
           <img class="world-map-image" id="worldMapImage" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/World_map_-_low_resolution.svg/2000px-World_map_-_low_resolution.svg.png" alt="World map">
           <div class="world-map-markers" id="worldMapMarkers"></div>
+          <svg class="world-map-svg" id="worldMapSvg" viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid slice" aria-label="Political world map"></svg>
         </div>
       </div>
       <div class="center-content" id="centerContent">
@@ -1110,6 +1195,21 @@
     let rightTravelFilterValue = "all";
     let leftFocusedIndex = -1;
     let rightFocusedIndex = -1;
+    let mapMode = localStorage.getItem('mapMode') || 'approx';
+    let mapRenderRafId = 0;
+    let lastMapMarkersHtml = '';
+    let d3LoadPromise = null;
+    let politicalMapLoadPromise = null;
+    let politicalMapReady = false;
+    let lastStyledSelectedCode = null;
+    let lastStyledVisitedCodes = new Set();
+    const POLITICAL_MAP_URL = 'https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson';
+    const countriesByCode = Object.fromEntries(COUNTRIES.map(country => [country.code, country]));
+    const regionElementsByCode = new Map();
+    const normalizedCountryNameToCode = new Map();
+    COUNTRIES.forEach(country => {
+      normalizedCountryNameToCode.set(normalizeCountryName(country.name), country.code);
+    });
 
     const leftList = document.getElementById('leftList');
     const rightList = document.getElementById('rightList');
@@ -1128,8 +1228,192 @@
     const worldMap = document.getElementById('worldMap');
     const worldMapImage = document.getElementById('worldMapImage');
     const worldMapMarkers = document.getElementById('worldMapMarkers');
+    const worldMapSvg = document.getElementById('worldMapSvg');
+    const mapModeSwitch = document.getElementById('mapModeSwitch');
     const mapActions = document.getElementById('mapActions');
     const shortcutsOverlay = document.getElementById('shortcutsOverlay');
+
+    function normalizeCountryName(value) {
+      return (value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim();
+    }
+
+    function getCountryCodeFromFeature(properties) {
+      const candidateCode = (properties?.ISO_A2 || properties?.iso_a2 || properties?.ISO2 || '').toUpperCase();
+      if (candidateCode && candidateCode.length === 2 && candidateCode !== '-9' && candidateCode !== '--' && countriesByCode[candidateCode]) {
+        return candidateCode;
+      }
+
+      const nameCandidates = [
+        properties?.ADMIN,
+        properties?.name,
+        properties?.NAME,
+        properties?.name_long,
+        properties?.NAME_LONG,
+        properties?.NAME_EN
+      ];
+      const fallbackAliases = {
+        'united states of america': 'US',
+        'russian federation': 'RU',
+        'republic of the congo': 'CG',
+        'democratic republic of the congo': 'CD',
+        'czechia': 'CZ',
+        'swaziland': 'SZ',
+        'ivory coast': 'CI',
+        'palestine': 'PS',
+        'taiwan': 'TW',
+        'korea republic of': 'KR',
+        'korea democratic peoples republic of': 'KP',
+        'viet nam': 'VN',
+        'moldova republic of': 'MD',
+        'lao peoples democratic republic': 'LA'
+      };
+      for (const name of nameCandidates) {
+        const normalized = normalizeCountryName(name);
+        if (!normalized) continue;
+        if (normalizedCountryNameToCode.has(normalized)) {
+          return normalizedCountryNameToCode.get(normalized);
+        }
+        if (fallbackAliases[normalized]) {
+          return fallbackAliases[normalized];
+        }
+      }
+      return null;
+    }
+
+    function applyMapModeUi() {
+      if (worldMap) {
+        worldMap.classList.toggle('accurate', mapMode === 'accurate');
+        worldMap.classList.toggle('approx', mapMode !== 'accurate');
+      }
+      if (mapModeSwitch) {
+        mapModeSwitch.checked = mapMode === 'accurate';
+      }
+      if (mapMode === 'accurate') {
+        worldMapMarkers.innerHTML = '';
+        lastMapMarkersHtml = '';
+      }
+    }
+
+    function setMapMode(nextMode) {
+      mapMode = nextMode === 'accurate' ? 'accurate' : 'approx';
+      localStorage.setItem('mapMode', mapMode);
+      applyMapModeUi();
+      scheduleWorldMapRender();
+    }
+
+    async function ensureD3Loaded() {
+      if (window.d3) return true;
+      if (d3LoadPromise) return d3LoadPromise;
+
+      d3LoadPromise = new Promise((resolve) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/d3@7';
+        script.async = true;
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.head.appendChild(script);
+      });
+
+      return d3LoadPromise;
+    }
+
+    async function ensurePoliticalMapReady() {
+      if (politicalMapReady) return true;
+      if (!worldMapSvg) return false;
+      const d3Loaded = await ensureD3Loaded();
+      if (!d3Loaded || !window.d3) return false;
+      if (politicalMapLoadPromise) return politicalMapLoadPromise;
+
+      politicalMapLoadPromise = fetch(POLITICAL_MAP_URL)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to load political map');
+          }
+          return response.json();
+        })
+        .then(geoJson => {
+          const projection = d3.geoNaturalEarth1().fitExtent([[5, 5], [995, 495]], geoJson);
+          const path = d3.geoPath(projection);
+
+          worldMapSvg.innerHTML = '';
+          regionElementsByCode.clear();
+
+          geoJson.features.forEach(feature => {
+            const code = getCountryCodeFromFeature(feature.properties || {});
+            if (!code) return;
+
+            const pathData = path(feature);
+            if (!pathData) return;
+
+            const region = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            region.setAttribute('d', pathData);
+            region.classList.add('country-region');
+            region.dataset.code = code;
+            worldMapSvg.appendChild(region);
+
+            const existing = regionElementsByCode.get(code) || [];
+            existing.push(region);
+            regionElementsByCode.set(code, existing);
+          });
+
+          politicalMapReady = true;
+          updatePoliticalRegionStyles();
+          return true;
+        })
+        .catch(() => {
+          politicalMapReady = false;
+          return false;
+        });
+
+      return politicalMapLoadPromise;
+    }
+
+    function updatePoliticalRegionStyles() {
+      if (!politicalMapReady) return;
+
+      const currentVisitedCodes = new Set(Object.keys(visitedCountries));
+      const changedCodes = new Set([...lastStyledVisitedCodes, ...currentVisitedCodes]);
+      if (lastStyledSelectedCode) changedCodes.add(lastStyledSelectedCode);
+      if (selectedCountryCode) changedCodes.add(selectedCountryCode);
+
+      changedCodes.forEach(code => {
+        const regions = regionElementsByCode.get(code);
+        if (!regions) return;
+        const isVisited = currentVisitedCodes.has(code);
+        const isSelected = code === selectedCountryCode;
+        regions.forEach(region => {
+          region.classList.toggle('visited', isVisited);
+          region.classList.toggle('selected', isSelected);
+        });
+      });
+
+      lastStyledVisitedCodes = currentVisitedCodes;
+      lastStyledSelectedCode = selectedCountryCode;
+    }
+
+    function scheduleWorldMapRender() {
+      if (mapRenderRafId) return;
+      mapRenderRafId = window.requestAnimationFrame(() => {
+        mapRenderRafId = 0;
+        if (mapMode === 'accurate') {
+          ensurePoliticalMapReady().then((ready) => {
+            if (!ready) {
+              setMapMode('approx');
+              return;
+            }
+            if (mapMode !== 'accurate') return;
+            updatePoliticalRegionStyles();
+          });
+          return;
+        }
+        renderWorldMapMarkers();
+      });
+    }
 
     function saveVisitedCountries() {
       localStorage.setItem('visitedCountries', JSON.stringify(visitedCountries));
@@ -1225,7 +1509,7 @@
     function selectCountry(code, fromRight = false) {
       selectedCountryCode = code;
       localStorage.setItem('lastSelectedCountry', code);
-      const country = COUNTRIES.find(c => c.code === code);
+      const country = countriesByCode[code];
       
       if (fromRight) {
         rightFocusedIndex = Array.from(rightList.querySelectorAll('.country-item')).findIndex(el => el.dataset.code === code);
@@ -1238,7 +1522,7 @@
       renderLeftList();
       renderRightList();
       renderCenter(country);
-      renderWorldMapMarkers();
+      scheduleWorldMapRender();
     }
 
     function toggleVisited(code) {
@@ -1252,13 +1536,13 @@
       calculateContinentStats();
       renderLeftList();
       renderRightList();
-      renderWorldMapMarkers();
+      scheduleWorldMapRender();
 
-      const country = COUNTRIES.find(c => c.code === code);
+      const country = countriesByCode[code];
       renderCenter(country);
     }
 
-    function projectToWorldMap(lat, lng) {
+    function getMapProjectionConfig() {
       if (!worldMap || !worldMapImage) return null;
 
       const width = worldMap.clientWidth;
@@ -1294,33 +1578,67 @@
 
       const offsetX = (width - renderedWidth) / 2;
       const offsetY = (height - renderedHeight) / 2;
-      const x = offsetX + ((lng + 180) / 360) * renderedWidth;
-      const y = offsetY + ((90 - lat) / 180) * renderedHeight;
+
+      const lngMin = -169;
+      const lngMax = 191;
+      const latTop = 84;
+      const latBottom = -58;
+
+      return {
+        offsetX,
+        offsetY,
+        renderedWidth,
+        renderedHeight,
+        lngMin,
+        lngMax,
+        latTop,
+        latBottom
+      };
+    }
+
+    function projectToWorldMap(lat, lng, projectionConfig) {
+      if (!projectionConfig) return null;
+
+      const xNorm = (lng - projectionConfig.lngMin) / (projectionConfig.lngMax - projectionConfig.lngMin);
+      const yNorm = (projectionConfig.latTop - lat) / (projectionConfig.latTop - projectionConfig.latBottom);
+      const clampedX = Math.min(1, Math.max(0, xNorm));
+      const clampedY = Math.min(1, Math.max(0, yNorm));
+
+      const x = projectionConfig.offsetX + clampedX * projectionConfig.renderedWidth;
+      const y = projectionConfig.offsetY + clampedY * projectionConfig.renderedHeight;
       return { x, y };
     }
 
     function renderWorldMapMarkers() {
+      if (mapMode !== 'approx') return;
       if (!worldMapMarkers || !worldMap) return;
+      const projectionConfig = getMapProjectionConfig();
+      if (!projectionConfig) return;
 
       const markers = [];
-      COUNTRIES.forEach(country => {
+      Object.keys(visitedCountries).forEach(code => {
+        const country = countriesByCode[code];
+        if (!country) return;
         if (!visitedCountries[country.code]) return;
         if (typeof country.lat !== 'number' || typeof country.lng !== 'number') return;
 
-        const point = projectToWorldMap(country.lat, country.lng);
+        const point = projectToWorldMap(country.lat, country.lng, projectionConfig);
         if (!point) return;
-        markers.push('<div class="world-dot visited" style="left:' + point.x + 'px; top:' + point.y + 'px;" title="' + country.name + '"></div>');
+        markers.push('<div class="world-shade visited" style="left:' + point.x + 'px; top:' + point.y + 'px;" title="' + country.name + '"></div>');
       });
 
-      const selectedCountry = COUNTRIES.find(c => c.code === selectedCountryCode);
+      const selectedCountry = countriesByCode[selectedCountryCode];
       if (selectedCountry && typeof selectedCountry.lat === 'number' && typeof selectedCountry.lng === 'number') {
-        const selectedPoint = projectToWorldMap(selectedCountry.lat, selectedCountry.lng);
+        const selectedPoint = projectToWorldMap(selectedCountry.lat, selectedCountry.lng, projectionConfig);
         if (selectedPoint) {
-          markers.push('<div class="world-dot selected" style="left:' + selectedPoint.x + 'px; top:' + selectedPoint.y + 'px;" title="' + selectedCountry.name + '"></div>');
+          markers.push('<div class="world-shade selected" style="left:' + selectedPoint.x + 'px; top:' + selectedPoint.y + 'px;" title="' + selectedCountry.name + '"></div>');
         }
       }
 
-      worldMapMarkers.innerHTML = markers.join('');
+      const markersHtml = markers.join('');
+      if (markersHtml === lastMapMarkersHtml) return;
+      worldMapMarkers.innerHTML = markersHtml;
+      lastMapMarkersHtml = markersHtml;
     }
 
     function renderCenter(country) {
@@ -1400,6 +1718,12 @@
       rightFocusedIndex = -1;
       renderRightList();
     });
+
+    if (mapModeSwitch) {
+      mapModeSwitch.addEventListener('change', (e) => {
+        setMapMode(e.target.checked ? 'accurate' : 'approx');
+      });
+    }
 
     window.addEventListener('keydown', (e) => {
       if (e.ctrlKey && e.key === '/') {
@@ -1485,23 +1809,20 @@
       }
     });
 
-    window.addEventListener('resize', () => {
-      renderWorldMapMarkers();
-    });
-
+    window.addEventListener('resize', scheduleWorldMapRender);
     if (worldMapImage) {
-      worldMapImage.addEventListener('load', () => {
-        renderWorldMapMarkers();
-      });
+      worldMapImage.addEventListener('load', scheduleWorldMapRender);
     }
+
 
     // Fix: Wait for DOM before initializing
     document.addEventListener('DOMContentLoaded', () => {
+      applyMapModeUi();
       calculateStats();
       calculateContinentStats();
       renderLeftList();
       renderRightList();
-      renderWorldMapMarkers();
+      scheduleWorldMapRender();
 
       const lastSelected = localStorage.getItem('lastSelectedCountry');
       if (lastSelected) {
