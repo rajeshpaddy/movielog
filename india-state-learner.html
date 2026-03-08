@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>India States & UT Learner</title>
+  <style>
+    :root { --status-h: 78px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #111827;
+      color: #e5e7eb;
+      min-height: 100vh;
+      padding-bottom: calc(var(--status-h) + 10px);
+    }
+    .app {
+      display: flex;
+      gap: 12px;
+      padding: 12px;
+      height: calc(100dvh - var(--status-h) - 10px);
+      overflow: hidden;
+    }
+    .pane {
+      background: #1f2937;
+      border-radius: 16px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .side { width: 300px; flex-shrink: 0; }
+    .center { flex: 1; min-width: 360px; }
+    .title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #f59e0b;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .search, .region-filter {
+      width: 100%;
+      border: 1px solid #f59e0b;
+      background: #0f172a;
+      color: #e5e7eb;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    .transfer-row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .transfer-btn {
+      flex: 1;
+      border: 1px solid #f59e0b;
+      border-radius: 10px;
+      background: #0f172a;
+      color: #fde68a;
+      font-size: 18px;
+      font-weight: 700;
+      min-height: 34px;
+      cursor: pointer;
+    }
+    .transfer-status { min-height: 16px; font-size: 11px; color: #fde68a; margin-bottom: 6px; text-align: center; }
+    .transfer-status.error { color: #fca5a5; }
+    .list {
+      flex: 1;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .item {
+      background: #0f172a;
+      border: 1px solid #4b5563;
+      border-radius: 10px;
+      padding: 10px;
+      cursor: pointer;
+    }
+    .item.selected {
+      background: #f59e0b;
+      color: #1f2937;
+      border-color: #fcd34d;
+    }
+    .item-name { font-size: 14px; font-weight: 700; }
+    .item-sub { font-size: 12px; opacity: 0.85; }
+
+    .stats {
+      background: #0f172a;
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .stat {
+      background: #1f2937;
+      border: 1px solid #4b5563;
+      border-radius: 10px;
+      min-width: 90px;
+      padding: 8px;
+      text-align: center;
+    }
+    .stat-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; }
+    .stat-value { font-size: 18px; font-weight: 700; color: #f59e0b; }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .mode-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #0f172a;
+      border: 1px solid #4b5563;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+    .mode-switch {
+      appearance: none;
+      width: 42px;
+      height: 22px;
+      border-radius: 999px;
+      background: #334155;
+      position: relative;
+      cursor: pointer;
+    }
+    .mode-switch::after {
+      content: '';
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      transition: transform 0.2s;
+    }
+    .mode-switch:checked { background: #d97706; }
+    .mode-switch:checked::after { transform: translateX(20px); }
+    .visit-btn {
+      border: none;
+      border-radius: 8px;
+      background: #10b981;
+      color: #052e2b;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .visit-btn.remove { background: #ef4444; color: #fff; }
+
+    .map-wrap {
+      flex: 1;
+      min-height: 280px;
+      background: #0b1220;
+      border-radius: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+    .map-img, .map-svg, .map-markers {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      transform-origin: center center;
+      transition: transform 0.15s ease-out;
+    }
+    .map-img { object-fit: cover; opacity: 0.95; }
+    .map-markers { z-index: 2; }
+    .map-svg { z-index: 3; display: none; background: #0b1220; }
+    .map-wrap.accurate .map-svg { display: block; }
+    .map-wrap.accurate .map-img,
+    .map-wrap.accurate .map-markers { display: none; }
+
+    .shade {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .shade.visited {
+      background: radial-gradient(circle, rgba(16,185,129,0.6) 0%, rgba(16,185,129,0.2) 60%, rgba(16,185,129,0) 80%);
+      box-shadow: 0 0 12px rgba(16,185,129,0.8);
+    }
+    .shade.selected {
+      width: 30px;
+      height: 30px;
+      background: radial-gradient(circle, rgba(139,92,246,0.8) 0%, rgba(139,92,246,0.2) 60%, rgba(139,92,246,0) 82%);
+      box-shadow: 0 0 14px rgba(139,92,246,0.9);
+    }
+
+    .region-shape {
+      fill: #1d4d80;
+      stroke: #2b6aa8;
+      stroke-width: 0.5;
+      vector-effect: non-scaling-stroke;
+    }
+    .region-shape.visited { fill: #16a34a; stroke: #4ade80; }
+    .region-shape.selected { fill: #8b5cf6; stroke: #c4b5fd; }
+
+    .status {
+      position: fixed;
+      left: 10px;
+      right: 10px;
+      bottom: 10px;
+      min-height: var(--status-h);
+      border-radius: 12px;
+      background: linear-gradient(135deg, #f59e0b 0%, #10b981 100%);
+      border: 1px solid #fcd34d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      z-index: 50;
+    }
+    .status-track {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .status-item {
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 12px;
+      color: #fff;
+    }
+
+    @media (max-width: 1000px) {
+      .app { flex-direction: column; height: auto; min-height: calc(100dvh - var(--status-h) - 10px); }
+      .side, .center { width: 100%; min-width: 0; }
+      .map-wrap { min-height: 320px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="pane side">
+      <div class="title">All States & UTs</div>
+      <select id="leftRegion" class="region-filter"></select>
+      <input id="leftSearch" class="search" placeholder="Search..." />
+      <div id="leftList" class="list"></div>
+    </div>
+
+    <div class="pane center">
+      <div id="stats" class="stats"></div>
+      <div class="controls">
+        <label class="mode-wrap" for="mapModeSwitch">
+          <span>Approx</span>
+          <input id="mapModeSwitch" class="mode-switch" type="checkbox" />
+          <span>Accurate</span>
+        </label>
+        <button id="visitBtn" class="visit-btn">MARK VISITED</button>
+      </div>
+      <div id="mapWrap" class="map-wrap">
+        <img id="mapImg" class="map-img" src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/India_location_map.svg/1200px-India_location_map.svg.png" alt="India map" />
+        <div id="mapMarkers" class="map-markers"></div>
+        <svg id="mapSvg" class="map-svg" viewBox="0 0 1000 900" preserveAspectRatio="xMidYMid meet" aria-label="India political map"></svg>
+      </div>
+    </div>
+
+    <div class="pane side">
+      <div class="title">Visited</div>
+      <div class="transfer-row">
+        <button id="exportBtn" class="transfer-btn" aria-label="Export visited states" title="Export visited states">⤓</button>
+        <button id="importBtn" class="transfer-btn" aria-label="Import visited states" title="Import visited states">⤒</button>
+        <input id="importFile" type="file" accept="application/json" hidden>
+      </div>
+      <div id="transferStatus" class="transfer-status" aria-live="polite"></div>
+      <select id="rightRegion" class="region-filter"></select>
+      <input id="rightSearch" class="search" placeholder="Search visited..." />
+      <div id="rightList" class="list"></div>
+    </div>
+  </div>
+
+  <div class="status" id="statusBar"><div class="status-track"><div class="status-item">Select a state or union territory</div></div></div>
+
+  <script>
+    const DATA = [
+      { code: 'AP', name: 'Andhra Pradesh', region: 'south', capital: 'Amaravati', lat: 15.9129, lng: 79.7400 },
+      { code: 'AR', name: 'Arunachal Pradesh', region: 'northeast', capital: 'Itanagar', lat: 28.2180, lng: 94.7278 },
+      { code: 'AS', name: 'Assam', region: 'northeast', capital: 'Dispur', lat: 26.2006, lng: 92.9376 },
+      { code: 'BR', name: 'Bihar', region: 'east', capital: 'Patna', lat: 25.0961, lng: 85.3131 },
+      { code: 'CT', name: 'Chhattisgarh', region: 'central', capital: 'Raipur', lat: 21.2787, lng: 81.8661 },
+      { code: 'GA', name: 'Goa', region: 'west', capital: 'Panaji', lat: 15.2993, lng: 74.1240 },
+      { code: 'GJ', name: 'Gujarat', region: 'west', capital: 'Gandhinagar', lat: 22.2587, lng: 71.1924 },
+      { code: 'HR', name: 'Haryana', region: 'north', capital: 'Chandigarh', lat: 29.0588, lng: 76.0856 },
+      { code: 'HP', name: 'Himachal Pradesh', region: 'north', capital: 'Shimla', lat: 31.1048, lng: 77.1734 },
+      { code: 'JH', name: 'Jharkhand', region: 'east', capital: 'Ranchi', lat: 23.6102, lng: 85.2799 },
+      { code: 'KA', name: 'Karnataka', region: 'south', capital: 'Bengaluru', lat: 15.3173, lng: 75.7139 },
+      { code: 'KL', name: 'Kerala', region: 'south', capital: 'Thiruvananthapuram', lat: 10.8505, lng: 76.2711 },
+      { code: 'MP', name: 'Madhya Pradesh', region: 'central', capital: 'Bhopal', lat: 22.9734, lng: 78.6569 },
+      { code: 'MH', name: 'Maharashtra', region: 'west', capital: 'Mumbai', lat: 19.7515, lng: 75.7139 },
+      { code: 'MN', name: 'Manipur', region: 'northeast', capital: 'Imphal', lat: 24.6637, lng: 93.9063 },
+      { code: 'ML', name: 'Meghalaya', region: 'northeast', capital: 'Shillong', lat: 25.4670, lng: 91.3662 },
+      { code: 'MZ', name: 'Mizoram', region: 'northeast', capital: 'Aizawl', lat: 23.1645, lng: 92.9376 },
+      { code: 'NL', name: 'Nagaland', region: 'northeast', capital: 'Kohima', lat: 26.1584, lng: 94.5624 },
+      { code: 'OD', name: 'Odisha', region: 'east', capital: 'Bhubaneswar', lat: 20.9517, lng: 85.0985 },
+      { code: 'PB', name: 'Punjab', region: 'north', capital: 'Chandigarh', lat: 31.1471, lng: 75.3412 },
+      { code: 'RJ', name: 'Rajasthan', region: 'north', capital: 'Jaipur', lat: 27.0238, lng: 74.2179 },
+      { code: 'SK', name: 'Sikkim', region: 'northeast', capital: 'Gangtok', lat: 27.5330, lng: 88.5122 },
+      { code: 'TN', name: 'Tamil Nadu', region: 'south', capital: 'Chennai', lat: 11.1271, lng: 78.6569 },
+      { code: 'TG', name: 'Telangana', region: 'south', capital: 'Hyderabad', lat: 18.1124, lng: 79.0193 },
+      { code: 'TR', name: 'Tripura', region: 'northeast', capital: 'Agartala', lat: 23.9408, lng: 91.9882 },
+      { code: 'UP', name: 'Uttar Pradesh', region: 'north', capital: 'Lucknow', lat: 26.8467, lng: 80.9462 },
+      { code: 'UK', name: 'Uttarakhand', region: 'north', capital: 'Dehradun', lat: 30.0668, lng: 79.0193 },
+      { code: 'WB', name: 'West Bengal', region: 'east', capital: 'Kolkata', lat: 22.9868, lng: 87.8550 },
+      { code: 'AN', name: 'Andaman and Nicobar Islands', region: 'union-territory', capital: 'Port Blair', lat: 11.7401, lng: 92.6586, mapX: 0.88, mapY: 0.84 },
+      { code: 'CH', name: 'Chandigarh', region: 'union-territory', capital: 'Chandigarh', lat: 30.7333, lng: 76.7794 },
+      { code: 'DH', name: 'Dadra and Nagar Haveli and Daman and Diu', region: 'union-territory', capital: 'Daman', lat: 20.1809, lng: 73.0169 },
+      { code: 'DL', name: 'Delhi', region: 'union-territory', capital: 'New Delhi', lat: 28.7041, lng: 77.1025 },
+      { code: 'JK', name: 'Jammu and Kashmir', region: 'union-territory', capital: 'Srinagar / Jammu', lat: 33.7782, lng: 76.5762 },
+      { code: 'LA', name: 'Ladakh', region: 'union-territory', capital: 'Leh', lat: 34.1526, lng: 77.5770 },
+      { code: 'LD', name: 'Lakshadweep', region: 'union-territory', capital: 'Kavaratti', lat: 10.5667, lng: 72.6417, mapX: 0.17, mapY: 0.86 },
+      { code: 'PY', name: 'Puducherry', region: 'union-territory', capital: 'Puducherry', lat: 11.9416, lng: 79.8083 }
+    ];
+
+    const STORE_KEY = 'visitedIndiaStates';
+    const MODE_KEY = 'indiaMapMode';
+
+    let visited = JSON.parse(localStorage.getItem(STORE_KEY) || '{}');
+    let selectedCode = null;
+    let leftQuery = '';
+    let rightQuery = '';
+    let leftRegion = 'all';
+    let rightRegion = 'all';
+    let mapMode = localStorage.getItem(MODE_KEY) || 'approx';
+
+    let d3Ready = null;
+    let accurateReady = false;
+    const regionsByCode = new Map();
+    const codeToItem = Object.fromEntries(DATA.map(d => [d.code, d]));
+
+    const NAME_ALIASES = {
+      'odisha': 'OD',
+      'orissa': 'OD',
+      'uttarakhand': 'UK',
+      'uttaranchal': 'UK',
+      'nct of delhi': 'DL',
+      'delhi': 'DL',
+      'jammu kashmir': 'JK',
+      'jammu and kashmir': 'JK',
+      'ladakh': 'LA',
+      'dadra and nagar haveli and daman and diu': 'DH',
+      'dadra & nagar haveli and daman & diu': 'DH',
+      'andaman and nicobar islands': 'AN',
+      'andaman nicobar': 'AN',
+      'puducherry': 'PY',
+      'pondicherry': 'PY'
+    };
+
+    const leftList = document.getElementById('leftList');
+    const rightList = document.getElementById('rightList');
+    const leftSearch = document.getElementById('leftSearch');
+    const rightSearch = document.getElementById('rightSearch');
+    const leftRegionSel = document.getElementById('leftRegion');
+    const rightRegionSel = document.getElementById('rightRegion');
+    const stats = document.getElementById('stats');
+    const visitBtn = document.getElementById('visitBtn');
+    const statusBar = document.getElementById('statusBar');
+    const mapWrap = document.getElementById('mapWrap');
+    const mapImg = document.getElementById('mapImg');
+    const mapMarkers = document.getElementById('mapMarkers');
+    const mapSvg = document.getElementById('mapSvg');
+    const mapModeSwitch = document.getElementById('mapModeSwitch');
+    const exportBtn = document.getElementById('exportBtn');
+    const importBtn = document.getElementById('importBtn');
+    const importFile = document.getElementById('importFile');
+    const transferStatus = document.getElementById('transferStatus');
+
+    function normalizeName(value) {
+      return String(value || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim();
+    }
+
+    function setTransferStatus(message, isError = false) {
+      transferStatus.textContent = message;
+      transferStatus.classList.toggle('error', !!isError);
+    }
+
+    function saveVisited() {
+      localStorage.setItem(STORE_KEY, JSON.stringify(visited));
+    }
+
+    function getRegions() {
+      return ['all', ...Array.from(new Set(DATA.map(d => d.region)))];
+    }
+
+    function renderRegionFilters() {
+      const options = getRegions().map(r => `<option value="${r}">${r === 'all' ? 'All Regions' : r.replace('-', ' ')}</option>`).join('');
+      leftRegionSel.innerHTML = options;
+      rightRegionSel.innerHTML = options;
+      leftRegionSel.value = leftRegion;
+      rightRegionSel.value = rightRegion;
+    }
+
+    function renderStats() {
+      const total = DATA.length;
+      const done = Object.keys(visited).length;
+      const pct = Math.round((done / total) * 100);
+      stats.innerHTML = `
+        <div class="stat"><div class="stat-label">Visited</div><div class="stat-value">${done}</div></div>
+        <div class="stat"><div class="stat-label">Progress</div><div class="stat-value">${pct}%</div></div>
+        <div class="stat"><div class="stat-label">Total</div><div class="stat-value">${total}</div></div>
+      `;
+    }
+
+    function filterItems(source, query, region, onlyVisited) {
+      return source.filter(item => {
+        if (onlyVisited && !visited[item.code]) return false;
+        if (!onlyVisited && visited[item.code]) return false;
+        if (region !== 'all' && item.region !== region) return false;
+        const q = query.toLowerCase();
+        return item.name.toLowerCase().includes(q) || item.code.toLowerCase().includes(q) || item.capital.toLowerCase().includes(q);
+      });
+    }
+
+    function renderList(target, items) {
+      if (items.length === 0) {
+        target.innerHTML = '<div class="item"><div class="item-sub">No results</div></div>';
+        return;
+      }
+      target.innerHTML = items.map(item => `
+        <div class="item ${item.code === selectedCode ? 'selected' : ''}" data-code="${item.code}">
+          <div class="item-name">${item.name}</div>
+          <div class="item-sub">${item.code} • ${item.capital}</div>
+        </div>
+      `).join('');
+      target.querySelectorAll('.item').forEach(node => {
+        node.addEventListener('click', () => selectItem(node.dataset.code));
+      });
+    }
+
+    function renderLists() {
+      renderList(leftList, filterItems(DATA, leftQuery, leftRegion, false));
+      renderList(rightList, filterItems(DATA, rightQuery, rightRegion, true));
+    }
+
+    function selectItem(code) {
+      selectedCode = code;
+      localStorage.setItem('lastIndiaState', code);
+      renderLists();
+      renderVisitButton();
+      renderStatus();
+      scheduleMapRender();
+    }
+
+    function renderVisitButton() {
+      const selected = codeToItem[selectedCode];
+      if (!selected) {
+        visitBtn.textContent = 'MARK VISITED';
+        visitBtn.classList.remove('remove');
+        visitBtn.disabled = true;
+        return;
+      }
+      const isVisited = !!visited[selectedCode];
+      visitBtn.disabled = false;
+      visitBtn.textContent = isVisited ? 'REMOVE FROM VISITED' : 'MARK VISITED';
+      visitBtn.classList.toggle('remove', isVisited);
+    }
+
+    function renderStatus() {
+      const item = codeToItem[selectedCode];
+      if (!item) {
+        statusBar.innerHTML = '<div class="status-track"><div class="status-item">Select a state or union territory</div></div>';
+        return;
+      }
+      statusBar.innerHTML = `
+        <div class="status-track">
+          <div class="status-item"><strong>${item.name}</strong></div>
+          <div class="status-item">Code: ${item.code}</div>
+          <div class="status-item">Capital: ${item.capital}</div>
+          <div class="status-item">Region: ${item.region}</div>
+          <div class="status-item">Status: ${visited[item.code] ? 'Visited' : 'Not Visited'}</div>
+        </div>
+      `;
+    }
+
+    function toggleVisited() {
+      if (!selectedCode) return;
+      if (visited[selectedCode]) {
+        delete visited[selectedCode];
+      } else {
+        visited[selectedCode] = Date.now();
+      }
+      saveVisited();
+      renderStats();
+      renderLists();
+      renderVisitButton();
+      renderStatus();
+      scheduleMapRender();
+    }
+
+    function projectApprox(item) {
+      const rect = mapWrap.getBoundingClientRect();
+      if (!rect.width || !rect.height) return null;
+      if (typeof item.mapX === 'number' && typeof item.mapY === 'number') {
+        return { x: item.mapX * rect.width, y: item.mapY * rect.height };
+      }
+      const lngMin = 67;
+      const lngMax = 98;
+      const latTop = 37.5;
+      const latBottom = 6;
+      const xNorm = (item.lng - lngMin) / (lngMax - lngMin);
+      const yNorm = (latTop - item.lat) / (latTop - latBottom);
+      return {
+        x: Math.max(0, Math.min(1, xNorm)) * rect.width,
+        y: Math.max(0, Math.min(1, yNorm)) * rect.height
+      };
+    }
+
+    function renderApproxMap() {
+      const html = [];
+      Object.keys(visited).forEach(code => {
+        const item = codeToItem[code];
+        if (!item) return;
+        const p = projectApprox(item);
+        if (!p) return;
+        html.push(`<div class="shade visited" style="left:${p.x}px;top:${p.y}px"></div>`);
+      });
+      if (selectedCode && codeToItem[selectedCode]) {
+        const p = projectApprox(codeToItem[selectedCode]);
+        if (p) html.push(`<div class="shade selected" style="left:${p.x}px;top:${p.y}px"></div>`);
+      }
+      mapMarkers.innerHTML = html.join('');
+    }
+
+    function ensureD3() {
+      return new Promise((resolve, reject) => {
+        const src = 'https://cdn.jsdelivr.net/npm/d3@7';
+        const existing = document.querySelector(`script[src="${src}"]`);
+        if (existing && existing.dataset.loaded === '1') { resolve(); return; }
+        if (existing) {
+          existing.addEventListener('load', () => resolve(), { once: true });
+          existing.addEventListener('error', () => reject(new Error('d3 load failed')), { once: true });
+          return;
+        }
+        const s = document.createElement('script');
+        s.src = src;
+        s.async = true;
+        s.onload = () => { s.dataset.loaded = '1'; resolve(); };
+        s.onerror = () => reject(new Error('d3 load failed'));
+        document.head.appendChild(s);
+      });
+    }
+
+    function resolveCodeFromFeature(properties) {
+      const nameCandidates = [
+        properties?.st_nm,
+        properties?.NAME_1,
+        properties?.name,
+        properties?.STATE,
+        properties?.State
+      ];
+      for (const name of nameCandidates) {
+        const norm = normalizeName(name);
+        if (!norm) continue;
+        if (NAME_ALIASES[norm]) return NAME_ALIASES[norm];
+        const direct = DATA.find(d => normalizeName(d.name) === norm);
+        if (direct) return direct.code;
+      }
+      return null;
+    }
+
+    async function ensureAccurateMap() {
+      if (accurateReady) return true;
+      try {
+        if (!d3Ready) d3Ready = ensureD3();
+        await d3Ready;
+
+        const res = await fetch('https://raw.githubusercontent.com/plotly/datasets/master/india_states.geojson');
+        if (!res.ok) throw new Error('map data failed');
+        const geo = await res.json();
+
+        const projection = d3.geoMercator().fitExtent([[8, 8], [992, 892]], geo);
+        const path = d3.geoPath(projection);
+
+        mapSvg.innerHTML = '';
+        regionsByCode.clear();
+
+        geo.features.forEach(feature => {
+          const code = resolveCodeFromFeature(feature.properties || {});
+          if (!code) return;
+          const d = path(feature);
+          if (!d) return;
+          const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          p.setAttribute('d', d);
+          p.classList.add('region-shape');
+          p.dataset.code = code;
+          mapSvg.appendChild(p);
+          const list = regionsByCode.get(code) || [];
+          list.push(p);
+          regionsByCode.set(code, list);
+        });
+
+        accurateReady = true;
+        return true;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function renderAccurateStyles() {
+      regionsByCode.forEach((nodes, code) => {
+        const isVisited = !!visited[code];
+        const isSelected = code === selectedCode;
+        nodes.forEach(node => {
+          node.classList.toggle('visited', isVisited);
+          node.classList.toggle('selected', isSelected);
+        });
+      });
+    }
+
+    let mapRaf = 0;
+    function scheduleMapRender() {
+      if (mapRaf) return;
+      mapRaf = requestAnimationFrame(async () => {
+        mapRaf = 0;
+        if (mapMode === 'accurate') {
+          const ok = await ensureAccurateMap();
+          if (!ok) {
+            mapMode = 'approx';
+            localStorage.setItem(MODE_KEY, mapMode);
+            applyMapMode();
+            renderApproxMap();
+            return;
+          }
+          renderAccurateStyles();
+        } else {
+          renderApproxMap();
+        }
+      });
+    }
+
+    function applyMapMode() {
+      mapWrap.classList.toggle('accurate', mapMode === 'accurate');
+      mapModeSwitch.checked = mapMode === 'accurate';
+    }
+
+    function exportData() {
+      const payload = {
+        app: 'india-state-learner',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        visited
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `india-states-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setTransferStatus(`Exported ${Object.keys(visited).length} entries`);
+    }
+
+    function importData(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          const source = parsed?.visited ?? parsed;
+          if (!source || typeof source !== 'object' || Array.isArray(source)) throw new Error('Invalid format');
+          const next = {};
+          Object.entries(source).forEach(([k, v]) => {
+            const code = String(k).toUpperCase();
+            if (!codeToItem[code]) return;
+            if (v === false || v == null) return;
+            next[code] = typeof v === 'number' ? v : Date.now();
+          });
+          if (Object.keys(next).length === 0) throw new Error('No valid entries in file');
+          visited = next;
+          saveVisited();
+          renderStats();
+          renderLists();
+          renderVisitButton();
+          renderStatus();
+          scheduleMapRender();
+          setTransferStatus(`Imported ${Object.keys(visited).length} entries`);
+        } catch (error) {
+          setTransferStatus(error.message || 'Import failed', true);
+        }
+        importFile.value = '';
+      };
+      reader.onerror = () => {
+        setTransferStatus('Unable to read file', true);
+        importFile.value = '';
+      };
+      reader.readAsText(file);
+    }
+
+    leftSearch.addEventListener('input', e => { leftQuery = e.target.value; renderLists(); });
+    rightSearch.addEventListener('input', e => { rightQuery = e.target.value; renderLists(); });
+    leftRegionSel.addEventListener('change', e => { leftRegion = e.target.value; renderLists(); });
+    rightRegionSel.addEventListener('change', e => { rightRegion = e.target.value; renderLists(); });
+    visitBtn.addEventListener('click', toggleVisited);
+
+    mapModeSwitch.addEventListener('change', e => {
+      mapMode = e.target.checked ? 'accurate' : 'approx';
+      localStorage.setItem(MODE_KEY, mapMode);
+      applyMapMode();
+      scheduleMapRender();
+    });
+
+    exportBtn.addEventListener('click', exportData);
+    importBtn.addEventListener('click', () => importFile.click());
+    importFile.addEventListener('change', e => {
+      const [file] = e.target.files || [];
+      if (file) importData(file);
+    });
+
+    window.addEventListener('resize', scheduleMapRender);
+    mapImg.addEventListener('load', scheduleMapRender);
+
+    renderRegionFilters();
+    renderStats();
+    renderLists();
+    applyMapMode();
+
+    const last = localStorage.getItem('lastIndiaState');
+    if (last && codeToItem[last]) {
+      selectItem(last);
+    } else {
+      renderVisitButton();
+      renderStatus();
+      scheduleMapRender();
+    }
+  </script>
+</body>
+</html>

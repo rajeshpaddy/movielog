@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>USA State Learner</title>
+  <style>
+    :root { --status-h: 78px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #111827;
+      color: #e5e7eb;
+      min-height: 100vh;
+      padding-bottom: calc(var(--status-h) + 10px);
+    }
+    .app {
+      display: flex;
+      gap: 12px;
+      padding: 12px;
+      height: calc(100dvh - var(--status-h) - 10px);
+      overflow: hidden;
+    }
+    .pane {
+      background: #1f2937;
+      border-radius: 16px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .side { width: 300px; flex-shrink: 0; }
+    .center { flex: 1; min-width: 360px; }
+    .title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #22d3ee;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .search, .region-filter {
+      width: 100%;
+      border: 1px solid #0ea5e9;
+      background: #0f172a;
+      color: #e5e7eb;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    .transfer-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .transfer-btn {
+      flex: 1;
+      border: 1px solid #22d3ee;
+      border-radius: 10px;
+      background: #0f172a;
+      color: #a5f3fc;
+      font-size: 18px;
+      font-weight: 700;
+      min-height: 34px;
+      cursor: pointer;
+    }
+    .transfer-status {
+      min-height: 16px;
+      font-size: 11px;
+      color: #93c5fd;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+    .transfer-status.error { color: #fca5a5; }
+    .list {
+      flex: 1;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .item {
+      background: #0f172a;
+      border: 1px solid #1f3a5f;
+      border-radius: 10px;
+      padding: 10px;
+      cursor: pointer;
+    }
+    .item.selected {
+      background: #06b6d4;
+      color: #082f49;
+      border-color: #67e8f9;
+    }
+    .item-name { font-size: 14px; font-weight: 700; }
+    .item-sub { font-size: 12px; opacity: 0.8; }
+
+    .stats {
+      background: #0f172a;
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .stat {
+      background: #1f2937;
+      border: 1px solid #1f3a5f;
+      border-radius: 10px;
+      min-width: 90px;
+      padding: 8px;
+      text-align: center;
+    }
+    .stat-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; }
+    .stat-value { font-size: 18px; font-weight: 700; color: #22d3ee; }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .mode-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #0f172a;
+      border: 1px solid #1f3a5f;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+    .mode-switch {
+      appearance: none;
+      width: 42px;
+      height: 22px;
+      border-radius: 999px;
+      background: #334155;
+      position: relative;
+      cursor: pointer;
+    }
+    .mode-switch::after {
+      content: '';
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      transition: transform 0.2s;
+    }
+    .mode-switch:checked { background: #0891b2; }
+    .mode-switch:checked::after { transform: translateX(20px); }
+    .visit-btn {
+      border: none;
+      border-radius: 8px;
+      background: #10b981;
+      color: #052e2b;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .visit-btn.remove { background: #ef4444; color: #fff; }
+
+    .map-wrap {
+      flex: 1;
+      min-height: 280px;
+      background: #0b1220;
+      border-radius: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+    .map-img, .map-svg, .map-markers {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      transform-origin: center center;
+      transition: transform 0.15s ease-out;
+    }
+    .map-img { object-fit: cover; opacity: 0.95; }
+    .map-markers { z-index: 2; }
+    .map-svg { z-index: 3; display: none; background: #0b1220; }
+    .map-wrap.accurate .map-svg { display: block; }
+    .map-wrap.accurate .map-img,
+    .map-wrap.accurate .map-markers { display: none; }
+
+    .shade {
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .shade.visited {
+      background: radial-gradient(circle, rgba(16,185,129,0.6) 0%, rgba(16,185,129,0.2) 60%, rgba(16,185,129,0) 80%);
+      box-shadow: 0 0 14px rgba(16,185,129,0.8);
+    }
+    .shade.selected {
+      width: 34px;
+      height: 34px;
+      background: radial-gradient(circle, rgba(139,92,246,0.8) 0%, rgba(139,92,246,0.2) 60%, rgba(139,92,246,0) 82%);
+      box-shadow: 0 0 16px rgba(139,92,246,0.9);
+    }
+
+    .region-shape {
+      fill: #1d4d80;
+      stroke: #2b6aa8;
+      stroke-width: 0.5;
+      vector-effect: non-scaling-stroke;
+    }
+    .region-shape.visited { fill: #16a34a; stroke: #4ade80; }
+    .region-shape.selected { fill: #8b5cf6; stroke: #c4b5fd; }
+
+    .status {
+      position: fixed;
+      left: 10px;
+      right: 10px;
+      bottom: 10px;
+      min-height: var(--status-h);
+      border-radius: 12px;
+      background: linear-gradient(135deg, #0ea5e9 0%, #14b8a6 100%);
+      border: 1px solid #67e8f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      z-index: 50;
+    }
+    .status-track {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .status-item {
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 12px;
+      color: #fff;
+    }
+
+    @media (max-width: 1000px) {
+      .app { flex-direction: column; height: auto; min-height: calc(100dvh - var(--status-h) - 10px); }
+      .side, .center { width: 100%; min-width: 0; }
+      .pane { max-height: none; }
+      .map-wrap { min-height: 320px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="pane side">
+      <div class="title">All US States</div>
+      <select id="leftRegion" class="region-filter"></select>
+      <input id="leftSearch" class="search" placeholder="Search states..." />
+      <div id="leftList" class="list"></div>
+    </div>
+
+    <div class="pane center">
+      <div id="stats" class="stats"></div>
+      <div class="controls">
+        <label class="mode-wrap" for="mapModeSwitch">
+          <span>Approx</span>
+          <input id="mapModeSwitch" class="mode-switch" type="checkbox" />
+          <span>Accurate</span>
+        </label>
+        <button id="visitBtn" class="visit-btn">MARK VISITED</button>
+      </div>
+      <div id="mapWrap" class="map-wrap">
+        <img id="mapImg" class="map-img" src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Map_of_USA_with_state_names.svg/2000px-Map_of_USA_with_state_names.svg.png" alt="USA map" />
+        <div id="mapMarkers" class="map-markers"></div>
+        <svg id="mapSvg" class="map-svg" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid meet" aria-label="USA political map"></svg>
+      </div>
+    </div>
+
+    <div class="pane side">
+      <div class="title">Visited States</div>
+      <div class="transfer-row">
+        <button id="exportBtn" class="transfer-btn" aria-label="Export visited states" title="Export visited states">⤓</button>
+        <button id="importBtn" class="transfer-btn" aria-label="Import visited states" title="Import visited states">⤒</button>
+        <input id="importFile" type="file" accept="application/json" hidden>
+      </div>
+      <div id="transferStatus" class="transfer-status" aria-live="polite"></div>
+      <select id="rightRegion" class="region-filter"></select>
+      <input id="rightSearch" class="search" placeholder="Search visited..." />
+      <div id="rightList" class="list"></div>
+    </div>
+  </div>
+
+  <div class="status" id="statusBar"><div class="status-track"><div class="status-item">Select a state</div></div></div>
+
+  <script>
+    const DATA = [
+      { code: 'AL', name: 'Alabama', region: 'south', capital: 'Montgomery', lat: 32.8067, lng: -86.7911 },
+      { code: 'AK', name: 'Alaska', region: 'west', capital: 'Juneau', lat: 61.3707, lng: -152.4044, mapX: 0.16, mapY: 0.84 },
+      { code: 'AZ', name: 'Arizona', region: 'west', capital: 'Phoenix', lat: 33.7298, lng: -111.4312 },
+      { code: 'AR', name: 'Arkansas', region: 'south', capital: 'Little Rock', lat: 34.9697, lng: -92.3731 },
+      { code: 'CA', name: 'California', region: 'west', capital: 'Sacramento', lat: 36.1162, lng: -119.6816 },
+      { code: 'CO', name: 'Colorado', region: 'west', capital: 'Denver', lat: 39.0598, lng: -105.3111 },
+      { code: 'CT', name: 'Connecticut', region: 'northeast', capital: 'Hartford', lat: 41.5978, lng: -72.7554 },
+      { code: 'DE', name: 'Delaware', region: 'south', capital: 'Dover', lat: 39.3185, lng: -75.5071 },
+      { code: 'FL', name: 'Florida', region: 'south', capital: 'Tallahassee', lat: 27.7663, lng: -81.6868 },
+      { code: 'GA', name: 'Georgia', region: 'south', capital: 'Atlanta', lat: 33.0406, lng: -83.6431 },
+      { code: 'HI', name: 'Hawaii', region: 'west', capital: 'Honolulu', lat: 21.0943, lng: -157.4983, mapX: 0.28, mapY: 0.91 },
+      { code: 'ID', name: 'Idaho', region: 'west', capital: 'Boise', lat: 44.2405, lng: -114.4788 },
+      { code: 'IL', name: 'Illinois', region: 'midwest', capital: 'Springfield', lat: 40.3495, lng: -88.9861 },
+      { code: 'IN', name: 'Indiana', region: 'midwest', capital: 'Indianapolis', lat: 39.8494, lng: -86.2583 },
+      { code: 'IA', name: 'Iowa', region: 'midwest', capital: 'Des Moines', lat: 42.0115, lng: -93.2105 },
+      { code: 'KS', name: 'Kansas', region: 'midwest', capital: 'Topeka', lat: 38.5266, lng: -96.7265 },
+      { code: 'KY', name: 'Kentucky', region: 'south', capital: 'Frankfort', lat: 37.6681, lng: -84.6701 },
+      { code: 'LA', name: 'Louisiana', region: 'south', capital: 'Baton Rouge', lat: 31.1695, lng: -91.8678 },
+      { code: 'ME', name: 'Maine', region: 'northeast', capital: 'Augusta', lat: 44.6940, lng: -69.3819 },
+      { code: 'MD', name: 'Maryland', region: 'south', capital: 'Annapolis', lat: 39.0639, lng: -76.8021 },
+      { code: 'MA', name: 'Massachusetts', region: 'northeast', capital: 'Boston', lat: 42.2302, lng: -71.5301 },
+      { code: 'MI', name: 'Michigan', region: 'midwest', capital: 'Lansing', lat: 43.3266, lng: -84.5361 },
+      { code: 'MN', name: 'Minnesota', region: 'midwest', capital: 'Saint Paul', lat: 45.6945, lng: -93.9002 },
+      { code: 'MS', name: 'Mississippi', region: 'south', capital: 'Jackson', lat: 32.7416, lng: -89.6787 },
+      { code: 'MO', name: 'Missouri', region: 'midwest', capital: 'Jefferson City', lat: 38.4561, lng: -92.2884 },
+      { code: 'MT', name: 'Montana', region: 'west', capital: 'Helena', lat: 46.9219, lng: -110.4544 },
+      { code: 'NE', name: 'Nebraska', region: 'midwest', capital: 'Lincoln', lat: 41.1254, lng: -98.2681 },
+      { code: 'NV', name: 'Nevada', region: 'west', capital: 'Carson City', lat: 38.3135, lng: -117.0554 },
+      { code: 'NH', name: 'New Hampshire', region: 'northeast', capital: 'Concord', lat: 43.4525, lng: -71.5639 },
+      { code: 'NJ', name: 'New Jersey', region: 'northeast', capital: 'Trenton', lat: 40.2989, lng: -74.5210 },
+      { code: 'NM', name: 'New Mexico', region: 'west', capital: 'Santa Fe', lat: 34.8405, lng: -106.2485 },
+      { code: 'NY', name: 'New York', region: 'northeast', capital: 'Albany', lat: 42.1657, lng: -74.9481 },
+      { code: 'NC', name: 'North Carolina', region: 'south', capital: 'Raleigh', lat: 35.6301, lng: -79.8064 },
+      { code: 'ND', name: 'North Dakota', region: 'midwest', capital: 'Bismarck', lat: 47.5289, lng: -99.7840 },
+      { code: 'OH', name: 'Ohio', region: 'midwest', capital: 'Columbus', lat: 40.3888, lng: -82.7649 },
+      { code: 'OK', name: 'Oklahoma', region: 'south', capital: 'Oklahoma City', lat: 35.5653, lng: -96.9289 },
+      { code: 'OR', name: 'Oregon', region: 'west', capital: 'Salem', lat: 44.5720, lng: -122.0709 },
+      { code: 'PA', name: 'Pennsylvania', region: 'northeast', capital: 'Harrisburg', lat: 40.5908, lng: -77.2098 },
+      { code: 'RI', name: 'Rhode Island', region: 'northeast', capital: 'Providence', lat: 41.6809, lng: -71.5118 },
+      { code: 'SC', name: 'South Carolina', region: 'south', capital: 'Columbia', lat: 33.8569, lng: -80.9450 },
+      { code: 'SD', name: 'South Dakota', region: 'midwest', capital: 'Pierre', lat: 44.2998, lng: -99.4388 },
+      { code: 'TN', name: 'Tennessee', region: 'south', capital: 'Nashville', lat: 35.7478, lng: -86.6923 },
+      { code: 'TX', name: 'Texas', region: 'south', capital: 'Austin', lat: 31.0545, lng: -97.5635 },
+      { code: 'UT', name: 'Utah', region: 'west', capital: 'Salt Lake City', lat: 40.1500, lng: -111.8624 },
+      { code: 'VT', name: 'Vermont', region: 'northeast', capital: 'Montpelier', lat: 44.0459, lng: -72.7107 },
+      { code: 'VA', name: 'Virginia', region: 'south', capital: 'Richmond', lat: 37.7693, lng: -78.1700 },
+      { code: 'WA', name: 'Washington', region: 'west', capital: 'Olympia', lat: 47.4009, lng: -121.4905 },
+      { code: 'WV', name: 'West Virginia', region: 'south', capital: 'Charleston', lat: 38.4912, lng: -80.9545 },
+      { code: 'WI', name: 'Wisconsin', region: 'midwest', capital: 'Madison', lat: 44.2685, lng: -89.6165 },
+      { code: 'WY', name: 'Wyoming', region: 'west', capital: 'Cheyenne', lat: 42.7560, lng: -107.3025 }
+    ];
+
+    const FIPS_TO_CODE = {
+      1:'AL',2:'AK',4:'AZ',5:'AR',6:'CA',8:'CO',9:'CT',10:'DE',12:'FL',13:'GA',15:'HI',16:'ID',17:'IL',18:'IN',19:'IA',20:'KS',21:'KY',22:'LA',23:'ME',24:'MD',25:'MA',26:'MI',27:'MN',28:'MS',29:'MO',30:'MT',31:'NE',32:'NV',33:'NH',34:'NJ',35:'NM',36:'NY',37:'NC',38:'ND',39:'OH',40:'OK',41:'OR',42:'PA',44:'RI',45:'SC',46:'SD',47:'TN',48:'TX',49:'UT',50:'VT',51:'VA',53:'WA',54:'WV',55:'WI',56:'WY'
+    };
+
+    const STORE_KEY = 'visitedUSStates';
+    const MODE_KEY = 'usMapMode';
+
+    let visited = JSON.parse(localStorage.getItem(STORE_KEY) || '{}');
+    let selectedCode = null;
+    let leftQuery = '';
+    let rightQuery = '';
+    let leftRegion = 'all';
+    let rightRegion = 'all';
+    let mapMode = localStorage.getItem(MODE_KEY) || 'approx';
+
+    let d3Ready = null;
+    let topoReady = null;
+    let accurateReady = false;
+    const regionsByCode = new Map();
+    const codeToState = Object.fromEntries(DATA.map(d => [d.code, d]));
+
+    const leftList = document.getElementById('leftList');
+    const rightList = document.getElementById('rightList');
+    const leftSearch = document.getElementById('leftSearch');
+    const rightSearch = document.getElementById('rightSearch');
+    const leftRegionSel = document.getElementById('leftRegion');
+    const rightRegionSel = document.getElementById('rightRegion');
+    const stats = document.getElementById('stats');
+    const visitBtn = document.getElementById('visitBtn');
+    const statusBar = document.getElementById('statusBar');
+    const mapWrap = document.getElementById('mapWrap');
+    const mapImg = document.getElementById('mapImg');
+    const mapMarkers = document.getElementById('mapMarkers');
+    const mapSvg = document.getElementById('mapSvg');
+    const mapModeSwitch = document.getElementById('mapModeSwitch');
+    const exportBtn = document.getElementById('exportBtn');
+    const importBtn = document.getElementById('importBtn');
+    const importFile = document.getElementById('importFile');
+    const transferStatus = document.getElementById('transferStatus');
+
+    function setTransferStatus(message, isError = false) {
+      transferStatus.textContent = message;
+      transferStatus.classList.toggle('error', !!isError);
+    }
+
+    function saveVisited() {
+      localStorage.setItem(STORE_KEY, JSON.stringify(visited));
+    }
+
+    function getRegions() {
+      return ['all', ...Array.from(new Set(DATA.map(d => d.region)))];
+    }
+
+    function renderRegionFilters() {
+      const options = getRegions().map(r => `<option value="${r}">${r === 'all' ? 'All Regions' : r.replace('-', ' ')}</option>`).join('');
+      leftRegionSel.innerHTML = options;
+      rightRegionSel.innerHTML = options;
+      leftRegionSel.value = leftRegion;
+      rightRegionSel.value = rightRegion;
+    }
+
+    function renderStats() {
+      const total = DATA.length;
+      const done = Object.keys(visited).length;
+      const pct = Math.round((done / total) * 100);
+      stats.innerHTML = `
+        <div class="stat"><div class="stat-label">Visited</div><div class="stat-value">${done}</div></div>
+        <div class="stat"><div class="stat-label">Progress</div><div class="stat-value">${pct}%</div></div>
+        <div class="stat"><div class="stat-label">Total</div><div class="stat-value">${total}</div></div>
+      `;
+    }
+
+    function filterItems(source, query, region, onlyVisited) {
+      return source.filter(item => {
+        if (onlyVisited && !visited[item.code]) return false;
+        if (!onlyVisited && visited[item.code]) return false;
+        if (region !== 'all' && item.region !== region) return false;
+        const q = query.toLowerCase();
+        return item.name.toLowerCase().includes(q) || item.code.toLowerCase().includes(q) || item.capital.toLowerCase().includes(q);
+      });
+    }
+
+    function renderList(target, items) {
+      if (items.length === 0) {
+        target.innerHTML = '<div class="item"><div class="item-sub">No results</div></div>';
+        return;
+      }
+      target.innerHTML = items.map(item => `
+        <div class="item ${item.code === selectedCode ? 'selected' : ''}" data-code="${item.code}">
+          <div class="item-name">${item.name}</div>
+          <div class="item-sub">${item.code} • ${item.capital}</div>
+        </div>
+      `).join('');
+      target.querySelectorAll('.item').forEach(node => {
+        node.addEventListener('click', () => selectItem(node.dataset.code));
+      });
+    }
+
+    function renderLists() {
+      renderList(leftList, filterItems(DATA, leftQuery, leftRegion, false));
+      renderList(rightList, filterItems(DATA, rightQuery, rightRegion, true));
+    }
+
+    function selectItem(code) {
+      selectedCode = code;
+      localStorage.setItem('lastUSState', code);
+      renderLists();
+      renderVisitButton();
+      renderStatus();
+      scheduleMapRender();
+    }
+
+    function renderVisitButton() {
+      const selected = codeToState[selectedCode];
+      if (!selected) {
+        visitBtn.textContent = 'MARK VISITED';
+        visitBtn.classList.remove('remove');
+        visitBtn.disabled = true;
+        return;
+      }
+      const isVisited = !!visited[selectedCode];
+      visitBtn.disabled = false;
+      visitBtn.textContent = isVisited ? 'REMOVE FROM VISITED' : 'MARK VISITED';
+      visitBtn.classList.toggle('remove', isVisited);
+    }
+
+    function renderStatus() {
+      const item = codeToState[selectedCode];
+      if (!item) {
+        statusBar.innerHTML = '<div class="status-track"><div class="status-item">Select a state</div></div>';
+        return;
+      }
+      statusBar.innerHTML = `
+        <div class="status-track">
+          <div class="status-item"><strong>${item.name}</strong></div>
+          <div class="status-item">Code: ${item.code}</div>
+          <div class="status-item">Capital: ${item.capital}</div>
+          <div class="status-item">Region: ${item.region}</div>
+          <div class="status-item">Status: ${visited[item.code] ? 'Visited' : 'Not Visited'}</div>
+        </div>
+      `;
+    }
+
+    function toggleVisited() {
+      if (!selectedCode) return;
+      if (visited[selectedCode]) {
+        delete visited[selectedCode];
+      } else {
+        visited[selectedCode] = Date.now();
+      }
+      saveVisited();
+      renderStats();
+      renderLists();
+      renderVisitButton();
+      renderStatus();
+      scheduleMapRender();
+    }
+
+    function projectApprox(item) {
+      const rect = mapWrap.getBoundingClientRect();
+      if (!rect.width || !rect.height) return null;
+      if (typeof item.mapX === 'number' && typeof item.mapY === 'number') {
+        return { x: item.mapX * rect.width, y: item.mapY * rect.height };
+      }
+      const lngMin = -125;
+      const lngMax = -66;
+      const latTop = 50;
+      const latBottom = 24;
+      const xNorm = (item.lng - lngMin) / (lngMax - lngMin);
+      const yNorm = (latTop - item.lat) / (latTop - latBottom);
+      return {
+        x: Math.max(0, Math.min(1, xNorm)) * rect.width,
+        y: Math.max(0, Math.min(1, yNorm)) * rect.height
+      };
+    }
+
+    function renderApproxMap() {
+      const html = [];
+      Object.keys(visited).forEach(code => {
+        const item = codeToState[code];
+        if (!item) return;
+        const p = projectApprox(item);
+        if (!p) return;
+        html.push(`<div class="shade visited" style="left:${p.x}px;top:${p.y}px"></div>`);
+      });
+      if (selectedCode && codeToState[selectedCode]) {
+        const p = projectApprox(codeToState[selectedCode]);
+        if (p) html.push(`<div class="shade selected" style="left:${p.x}px;top:${p.y}px"></div>`);
+      }
+      mapMarkers.innerHTML = html.join('');
+    }
+
+    function ensureScript(src) {
+      return new Promise((resolve, reject) => {
+        const existing = document.querySelector(`script[src="${src}"]`);
+        if (existing && existing.dataset.loaded === '1') { resolve(); return; }
+        if (existing) {
+          existing.addEventListener('load', () => resolve(), { once: true });
+          existing.addEventListener('error', () => reject(new Error('Script load failed')), { once: true });
+          return;
+        }
+        const s = document.createElement('script');
+        s.src = src;
+        s.async = true;
+        s.onload = () => { s.dataset.loaded = '1'; resolve(); };
+        s.onerror = () => reject(new Error('Script load failed'));
+        document.head.appendChild(s);
+      });
+    }
+
+    async function ensureAccurateMap() {
+      if (accurateReady) return true;
+      try {
+        if (!d3Ready) d3Ready = ensureScript('https://cdn.jsdelivr.net/npm/d3@7');
+        if (!topoReady) topoReady = ensureScript('https://cdn.jsdelivr.net/npm/topojson-client@3');
+        await Promise.all([d3Ready, topoReady]);
+
+        const res = await fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json');
+        if (!res.ok) throw new Error('map data failed');
+        const topo = await res.json();
+        const features = topojson.feature(topo, topo.objects.states).features;
+
+        const projection = d3.geoAlbersUsa().fitExtent([[8, 8], [992, 592]], { type: 'FeatureCollection', features });
+        const path = d3.geoPath(projection);
+
+        mapSvg.innerHTML = '';
+        regionsByCode.clear();
+
+        features.forEach(feature => {
+          const code = FIPS_TO_CODE[Number(feature.id)];
+          if (!code) return;
+          const d = path(feature);
+          if (!d) return;
+          const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          p.setAttribute('d', d);
+          p.classList.add('region-shape');
+          p.dataset.code = code;
+          mapSvg.appendChild(p);
+          const list = regionsByCode.get(code) || [];
+          list.push(p);
+          regionsByCode.set(code, list);
+        });
+
+        accurateReady = true;
+        return true;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function renderAccurateStyles() {
+      regionsByCode.forEach((nodes, code) => {
+        const isVisited = !!visited[code];
+        const isSelected = code === selectedCode;
+        nodes.forEach(node => {
+          node.classList.toggle('visited', isVisited);
+          node.classList.toggle('selected', isSelected);
+        });
+      });
+    }
+
+    let mapRaf = 0;
+    function scheduleMapRender() {
+      if (mapRaf) return;
+      mapRaf = requestAnimationFrame(async () => {
+        mapRaf = 0;
+        if (mapMode === 'accurate') {
+          const ok = await ensureAccurateMap();
+          if (!ok) {
+            mapMode = 'approx';
+            localStorage.setItem(MODE_KEY, mapMode);
+            applyMapMode();
+            renderApproxMap();
+            return;
+          }
+          renderAccurateStyles();
+        } else {
+          renderApproxMap();
+        }
+      });
+    }
+
+    function applyMapMode() {
+      mapWrap.classList.toggle('accurate', mapMode === 'accurate');
+      mapModeSwitch.checked = mapMode === 'accurate';
+    }
+
+    function exportData() {
+      const payload = {
+        app: 'usa-state-learner',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        visited
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `usa-states-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setTransferStatus(`Exported ${Object.keys(visited).length} states`);
+    }
+
+    function importData(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          const source = parsed?.visited ?? parsed;
+          if (!source || typeof source !== 'object' || Array.isArray(source)) throw new Error('Invalid format');
+          const next = {};
+          Object.entries(source).forEach(([k, v]) => {
+            const code = String(k).toUpperCase();
+            if (!codeToState[code]) return;
+            if (v === false || v == null) return;
+            next[code] = typeof v === 'number' ? v : Date.now();
+          });
+          if (Object.keys(next).length === 0) throw new Error('No valid states in file');
+          visited = next;
+          saveVisited();
+          renderStats();
+          renderLists();
+          renderVisitButton();
+          renderStatus();
+          scheduleMapRender();
+          setTransferStatus(`Imported ${Object.keys(visited).length} states`);
+        } catch (error) {
+          setTransferStatus(error.message || 'Import failed', true);
+        }
+        importFile.value = '';
+      };
+      reader.onerror = () => {
+        setTransferStatus('Unable to read file', true);
+        importFile.value = '';
+      };
+      reader.readAsText(file);
+    }
+
+    leftSearch.addEventListener('input', e => { leftQuery = e.target.value; renderLists(); });
+    rightSearch.addEventListener('input', e => { rightQuery = e.target.value; renderLists(); });
+    leftRegionSel.addEventListener('change', e => { leftRegion = e.target.value; renderLists(); });
+    rightRegionSel.addEventListener('change', e => { rightRegion = e.target.value; renderLists(); });
+    visitBtn.addEventListener('click', toggleVisited);
+
+    mapModeSwitch.addEventListener('change', e => {
+      mapMode = e.target.checked ? 'accurate' : 'approx';
+      localStorage.setItem(MODE_KEY, mapMode);
+      applyMapMode();
+      scheduleMapRender();
+    });
+
+    exportBtn.addEventListener('click', exportData);
+    importBtn.addEventListener('click', () => importFile.click());
+    importFile.addEventListener('change', e => {
+      const [file] = e.target.files || [];
+      if (file) importData(file);
+    });
+
+    window.addEventListener('resize', scheduleMapRender);
+    mapImg.addEventListener('load', scheduleMapRender);
+
+    renderRegionFilters();
+    renderStats();
+    renderLists();
+    applyMapMode();
+
+    const last = localStorage.getItem('lastUSState');
+    if (last && codeToState[last]) {
+      selectItem(last);
+    } else {
+      renderVisitButton();
+      renderStatus();
+      scheduleMapRender();
+    }
+  </script>
+</body>
+</html>
