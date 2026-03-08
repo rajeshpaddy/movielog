@@ -171,10 +171,17 @@
       width: 100%;
       height: 180px;
       position: relative;
-      background: linear-gradient(180deg, #1a4a7a 0%, #0f3460 100%);
+      background: #0f3460;
       border-radius: 12px;
       overflow: hidden;
       margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .world-map svg {
+      width: 100%;
+      height: 100%;
     }
     .world-map-image {
       width: 100%;
@@ -184,14 +191,15 @@
     }
     .country-dot {
       position: absolute;
-      width: 12px;
-      height: 12px;
+      width: 14px;
+      height: 14px;
       background: #ef4444;
-      border: 2px solid #fff;
+      border: 3px solid #fff;
       border-radius: 50%;
       transform: translate(-50%, -50%);
-      box-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444;
+      box-shadow: 0 0 15px #ef4444, 0 0 30px #ef4444;
       animation: pulse 2s infinite;
+      z-index: 10;
     }
     @keyframes pulse {
       0% { box-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444; }
@@ -843,18 +851,18 @@
           </div>
           
           <div class="world-map" id="worldMap">
-            <svg viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;position:absolute;top:0;left:0;">
+            <svg viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid meet">
               <rect x="0" y="0" width="1000" height="500" fill="#1a4a7a"/>
-              <ellipse cx="500" cy="250" rx="480" ry="230" fill="none" stroke="#0f3460" stroke-width="2"/>
-              <ellipse cx="500" cy="250" rx="350" ry="170" fill="none" stroke="#0f3460" stroke-width="1"/>
-              <ellipse cx="500" cy="250" rx="220" ry="110" fill="none" stroke="#0f3460" stroke-width="1"/>
-              <line x1="500" y1="20" x2="500" y2="480" stroke="#0f3460" stroke-width="1"/>
-              <line x1="20" y1="250" x2="980" y2="250" stroke="#0f3460" stroke-width="1"/>
-              <text x="500" y="40" text-anchor="middle" fill="#666" font-size="14">90°N</text>
-              <text x="500" y="260" text-anchor="middle" fill="#666" font-size="14">0°</text>
-              <text x="500" y="470" text-anchor="middle" fill="#666" font-size="14">90°S</text>
-              <text x="40" y="255" text-anchor="middle" fill="#666" font-size="14">180°W</text>
-              <text x="960" y="255" text-anchor="middle" fill="#666" font-size="14">180°E</text>
+              <ellipse cx="500" cy="250" rx="480" ry="230" fill="none" stroke="#2d5a8a" stroke-width="2"/>
+              <ellipse cx="500" cy="250" rx="350" ry="170" fill="none" stroke="#2d5a8a" stroke-width="1"/>
+              <ellipse cx="500" cy="250" rx="220" ry="110" fill="none" stroke="#2d5a8a" stroke-width="1"/>
+              <line x1="500" y1="20" x2="500" y2="480" stroke="#2d5a8a" stroke-width="1"/>
+              <line x1="20" y1="250" x2="980" y2="250" stroke="#2d5a8a" stroke-width="1"/>
+              <text x="500" y="40" text-anchor="middle" fill="#4a8ab0" font-size="14">90°N</text>
+              <text x="500" y="260" text-anchor="middle" fill="#4a8ab0" font-size="14">0°</text>
+              <text x="500" y="470" text-anchor="middle" fill="#4a8ab0" font-size="14">90°S</text>
+              <text x="40" y="255" text-anchor="middle" fill="#4a8ab0" font-size="14">180°W</text>
+              <text x="960" y="255" text-anchor="middle" fill="#4a8ab0" font-size="14">180°E</text>
             </svg>
             <div class="country-dot" id="countryDot" style="display:none;"></div>
           </div>
