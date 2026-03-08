@@ -175,14 +175,22 @@
       border-radius: 12px;
       overflow: hidden;
       margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
-    .world-map svg {
+    .map-grid {
       width: 100%;
       height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: 
+        linear-gradient(90deg, transparent 32%, #2d5a8a 32%, #2d5a8a 33%, transparent 33%),
+        linear-gradient(90deg, transparent 65%, #2d5a8a 65%, #2d5a8a 66%, transparent 66%),
+        linear-gradient(90deg, transparent 98%, #2d5a8a 98%, #2d5a8a 99%, transparent 99%),
+        linear-gradient(transparent 32%, #2d5a8a 32%, #2d5a8a 33%, transparent 33%),
+        linear-gradient(transparent 65%, #2d5a8a 65%, #2d5a8a 66%, transparent 66%),
+        linear-gradient(transparent 98%, #2d5a8a 98%, #2d5a8a 99%, transparent 99%);
     }
+    .lat-line, .lng-line { display: none; }
     .world-map-image {
       width: 100%;
       height: 100%;
@@ -851,19 +859,14 @@
           </div>
           
           <div class="world-map" id="worldMap">
-            <svg viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid meet">
-              <rect x="0" y="0" width="1000" height="500" fill="#1a4a7a"/>
-              <ellipse cx="500" cy="250" rx="480" ry="230" fill="none" stroke="#2d5a8a" stroke-width="2"/>
-              <ellipse cx="500" cy="250" rx="350" ry="170" fill="none" stroke="#2d5a8a" stroke-width="1"/>
-              <ellipse cx="500" cy="250" rx="220" ry="110" fill="none" stroke="#2d5a8a" stroke-width="1"/>
-              <line x1="500" y1="20" x2="500" y2="480" stroke="#2d5a8a" stroke-width="1"/>
-              <line x1="20" y1="250" x2="980" y2="250" stroke="#2d5a8a" stroke-width="1"/>
-              <text x="500" y="40" text-anchor="middle" fill="#4a8ab0" font-size="14">90°N</text>
-              <text x="500" y="260" text-anchor="middle" fill="#4a8ab0" font-size="14">0°</text>
-              <text x="500" y="470" text-anchor="middle" fill="#4a8ab0" font-size="14">90°S</text>
-              <text x="40" y="255" text-anchor="middle" fill="#4a8ab0" font-size="14">180°W</text>
-              <text x="960" y="255" text-anchor="middle" fill="#4a8ab0" font-size="14">180°E</text>
-            </svg>
+            <div class="map-grid">
+              <div class="lat-line"></div>
+              <div class="lat-line"></div>
+              <div class="lat-line"></div>
+              <div class="lng-line"></div>
+              <div class="lng-line"></div>
+              <div class="lng-line"></div>
+            </div>
             <div class="country-dot" id="countryDot" style="display:none;"></div>
           </div>
           
