@@ -466,6 +466,46 @@
       position: relative;
       overflow: hidden;
     }
+    .map-zoom-controls {
+      position: absolute;
+      bottom: 12px;
+      right: 10px;
+      z-index: 6;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px;
+      border-radius: 10px;
+      background: rgba(8, 23, 41, 0.72);
+      border: 1px solid rgba(125, 211, 252, 0.4);
+      backdrop-filter: blur(4px);
+    }
+    .zoom-btn {
+      width: 38px;
+      height: 38px;
+      border: 1px solid #3b82f6;
+      border-radius: 8px;
+      background: #0f3460;
+      color: #e0f2fe;
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .zoom-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .zoom-level {
+      min-width: 54px;
+      text-align: center;
+      color: #dbeafe;
+      font-size: 13px;
+      font-weight: 700;
+    }
     .world-map.approx .world-map-svg {
       display: none;
     }
@@ -489,6 +529,9 @@
       object-fit: cover;
       object-position: center center;
       transform: none;
+      transform-origin: center center;
+      transition: transform 0.15s ease-out;
+      will-change: transform;
       background: #06182a;
       opacity: 0.92;
       z-index: 1;
@@ -497,6 +540,9 @@
       position: absolute;
       inset: 0;
       z-index: 2;
+      transform-origin: center center;
+      transition: transform 0.15s ease-out;
+      will-change: transform;
     }
     .world-map-svg {
       position: absolute;
@@ -505,6 +551,9 @@
       height: 100%;
       z-index: 2;
       background: #06182a;
+      transform-origin: center center;
+      transition: transform 0.15s ease-out;
+      will-change: transform;
     }
     .country-region {
       fill: #123252;
@@ -906,8 +955,10 @@
       <h2>Keyboard Shortcuts</h2>
       <div class="shortcut-item"><span class="shortcut-desc">Toggle shortcuts</span><span class="shortcut-key">Ctrl + /</span></div>
       <div class="shortcut-item"><span class="shortcut-desc">Focus search</span><span class="shortcut-key">/</span></div>
-      <div class="shortcut-item"><span class="shortcut-desc">Visit/Unvisit Country</span><span class="shortcut-key">L</span></div>
+      <div class="shortcut-item"><span class="shortcut-desc">Visit/Unvisit Country</span><span class="shortcut-key">V</span></div>
       <div class="shortcut-item"><span class="shortcut-desc">Select/Unselect</span><span class="shortcut-key">Space</span></div>
+      <div class="shortcut-item"><span class="shortcut-desc">Map zoom</span><span class="shortcut-key">+ / -</span></div>
+      <div class="shortcut-item"><span class="shortcut-desc">Map pan</span><span class="shortcut-key">H J K L</span></div>
       <div class="shortcut-item"><span class="shortcut-desc">Navigate up/down</span><span class="shortcut-key">↑ / ↓</span></div>
       <div class="shortcut-item"><span class="shortcut-desc">Next element</span><span class="shortcut-key">Tab</span></div>
       <div class="shortcut-item"><span class="shortcut-desc">Close/Clear</span><span class="shortcut-key">Escape</span></div>
@@ -949,6 +1000,11 @@
       </div>
       <div class="world-map-wrap">
         <div class="world-map" id="worldMap">
+          <div class="map-zoom-controls" aria-label="Map zoom controls">
+            <button type="button" class="zoom-btn" id="zoomOutBtn" aria-label="Zoom out">-</button>
+            <span class="zoom-level" id="zoomLevelLabel">100%</span>
+            <button type="button" class="zoom-btn" id="zoomInBtn" aria-label="Zoom in">+</button>
+          </div>
           <img class="world-map-image" id="worldMapImage" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/World_map_-_low_resolution.svg/2000px-World_map_-_low_resolution.svg.png" alt="World map">
           <div class="world-map-markers" id="worldMapMarkers"></div>
           <svg class="world-map-svg" id="worldMapSvg" viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid slice" aria-label="Political world map"></svg>
@@ -1196,6 +1252,9 @@
     let leftFocusedIndex = -1;
     let rightFocusedIndex = -1;
     let mapMode = localStorage.getItem('mapMode') || 'approx';
+    let mapZoom = Number(localStorage.getItem('mapZoom')) || 1;
+    let mapPanX = Number(localStorage.getItem('mapPanX')) || 0;
+    let mapPanY = Number(localStorage.getItem('mapPanY')) || 0;
     let mapRenderRafId = 0;
     let lastMapMarkersHtml = '';
     let d3LoadPromise = null;
@@ -1229,9 +1288,60 @@
     const worldMapImage = document.getElementById('worldMapImage');
     const worldMapMarkers = document.getElementById('worldMapMarkers');
     const worldMapSvg = document.getElementById('worldMapSvg');
+    const zoomInBtn = document.getElementById('zoomInBtn');
+    const zoomOutBtn = document.getElementById('zoomOutBtn');
+    const zoomLevelLabel = document.getElementById('zoomLevelLabel');
     const mapModeSwitch = document.getElementById('mapModeSwitch');
     const mapActions = document.getElementById('mapActions');
     const shortcutsOverlay = document.getElementById('shortcutsOverlay');
+
+    function clampMapPan() {
+      if (!worldMap) return;
+      const width = worldMap.clientWidth || 0;
+      const height = worldMap.clientHeight || 0;
+      const maxPanX = ((mapZoom - 1) * width) / 2;
+      const maxPanY = ((mapZoom - 1) * height) / 2;
+      mapPanX = Math.max(-maxPanX, Math.min(maxPanX, mapPanX));
+      mapPanY = Math.max(-maxPanY, Math.min(maxPanY, mapPanY));
+    }
+
+    function applyMapTransform() {
+      clampMapPan();
+      const transform = `translate3d(${mapPanX}px, ${mapPanY}px, 0) scale(${mapZoom})`;
+      if (worldMapImage) worldMapImage.style.transform = transform;
+      if (worldMapMarkers) worldMapMarkers.style.transform = transform;
+      if (worldMapSvg) worldMapSvg.style.transform = transform;
+      localStorage.setItem('mapPanX', String(mapPanX));
+      localStorage.setItem('mapPanY', String(mapPanY));
+    }
+
+    function applyMapZoom() {
+      mapZoom = Math.max(1, Math.min(3, Number(mapZoom) || 1));
+      if (mapZoom <= 1) {
+        mapPanX = 0;
+        mapPanY = 0;
+      }
+      applyMapTransform();
+      if (zoomLevelLabel) {
+        zoomLevelLabel.textContent = `${Math.round(mapZoom * 100)}%`;
+      }
+      if (zoomInBtn) zoomInBtn.disabled = mapZoom >= 3;
+      if (zoomOutBtn) zoomOutBtn.disabled = mapZoom <= 1;
+      localStorage.setItem('mapZoom', String(mapZoom));
+    }
+
+    function changeMapZoom(delta) {
+      const nextZoom = Math.round((mapZoom + delta) * 100) / 100;
+      mapZoom = Math.max(1, Math.min(3, nextZoom));
+      applyMapZoom();
+    }
+
+    function panMap(dx, dy) {
+      if (mapZoom <= 1) return;
+      mapPanX += dx;
+      mapPanY += dy;
+      applyMapTransform();
+    }
 
     function normalizeCountryName(value) {
       return (value || '')
@@ -1724,6 +1834,12 @@
         setMapMode(e.target.checked ? 'accurate' : 'approx');
       });
     }
+    if (zoomInBtn) {
+      zoomInBtn.addEventListener('click', () => changeMapZoom(0.25));
+    }
+    if (zoomOutBtn) {
+      zoomOutBtn.addEventListener('click', () => changeMapZoom(-0.25));
+    }
 
     window.addEventListener('keydown', (e) => {
       if (e.ctrlKey && e.key === '/') {
@@ -1768,8 +1884,41 @@
         toggleVisited(selectedCountryCode);
       }
 
-      if (e.key.toLowerCase() === 'l' && selectedCountryCode) {
+      if (e.key.toLowerCase() === 'v' && selectedCountryCode) {
         toggleVisited(selectedCountryCode);
+      }
+
+      if (e.key.toLowerCase() === 'h') {
+        e.preventDefault();
+        panMap(-28, 0);
+        return;
+      }
+      if (e.key.toLowerCase() === 'j') {
+        e.preventDefault();
+        panMap(0, -28);
+        return;
+      }
+      if (e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        panMap(28, 0);
+        return;
+      }
+      if (e.key.toLowerCase() === 'l') {
+        e.preventDefault();
+        panMap(0, 28);
+        return;
+      }
+
+      if (e.key === '+' || e.key === '=' || e.code === 'NumpadAdd') {
+        e.preventDefault();
+        changeMapZoom(0.25);
+        return;
+      }
+
+      if (e.key === '-' || e.key === '_' || e.code === 'NumpadSubtract') {
+        e.preventDefault();
+        changeMapZoom(-0.25);
+        return;
       }
 
       const isLeft = leftFocusedIndex !== -1 || (!rightSearch.matches(':focus') && rightFocusedIndex === -1);
@@ -1810,6 +1959,7 @@
     });
 
     window.addEventListener('resize', scheduleWorldMapRender);
+    window.addEventListener('resize', applyMapTransform);
     if (worldMapImage) {
       worldMapImage.addEventListener('load', scheduleWorldMapRender);
     }
@@ -1818,6 +1968,7 @@
     // Fix: Wait for DOM before initializing
     document.addEventListener('DOMContentLoaded', () => {
       applyMapModeUi();
+      applyMapZoom();
       calculateStats();
       calculateContinentStats();
       renderLeftList();
