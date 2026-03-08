@@ -265,7 +265,7 @@
         <button id="visitBtn" class="visit-btn">MARK VISITED</button>
       </div>
       <div id="mapWrap" class="map-wrap">
-        <img id="mapImg" class="map-img" src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/India_location_map.svg/1200px-India_location_map.svg.png" alt="India map" />
+        <img id="mapImg" class="map-img" src="https://commons.wikimedia.org/wiki/Special:FilePath/India_location_map.svg" alt="India map" />
         <div id="mapMarkers" class="map-markers"></div>
         <svg id="mapSvg" class="map-svg" viewBox="0 0 1000 900" preserveAspectRatio="xMidYMid meet" aria-label="India political map"></svg>
       </div>
@@ -725,6 +725,18 @@
     importFile.addEventListener('change', e => {
       const [file] = e.target.files || [];
       if (file) importData(file);
+    });
+
+    mapImg.addEventListener('error', () => {
+      if (mapImg.dataset.fallback1 !== '1') {
+        mapImg.dataset.fallback1 = '1';
+        mapImg.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/India_location_map.svg/1200px-India_location_map.svg.png';
+        return;
+      }
+      if (mapImg.dataset.fallback2 !== '1') {
+        mapImg.dataset.fallback2 = '1';
+        mapImg.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/India_location_map2.svg/1200px-India_location_map2.svg.png';
+      }
     });
 
     window.addEventListener('resize', scheduleMapRender);
