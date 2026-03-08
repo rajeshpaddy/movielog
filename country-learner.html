@@ -827,7 +827,7 @@
       </div>
       <div class="world-map-wrap">
         <div class="world-map" id="worldMap">
-          <img class="world-map-image" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/World_map_-_low_resolution.svg/2000px-World_map_-_low_resolution.svg.png" alt="World map">
+          <img class="world-map-image" id="worldMapImage" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/World_map_-_low_resolution.svg/2000px-World_map_-_low_resolution.svg.png" alt="World map">
           <div class="world-map-markers" id="worldMapMarkers"></div>
         </div>
       </div>
@@ -1082,6 +1082,7 @@
     const statsBar = document.getElementById('statsBar');
     const continentLegend = document.getElementById('continentLegend');
     const worldMap = document.getElementById('worldMap');
+    const worldMapImage = document.getElementById('worldMapImage');
     const worldMapMarkers = document.getElementById('worldMapMarkers');
     const shortcutsOverlay = document.getElementById('shortcutsOverlay');
 
@@ -1213,12 +1214,43 @@
     }
 
     function projectToWorldMap(lat, lng) {
-      if (!worldMap) return null;
+      if (!worldMap || !worldMapImage) return null;
 
       const width = worldMap.clientWidth;
       const height = worldMap.clientHeight;
-      const x = ((lng + 180) / 360) * width;
-      const y = ((90 - lat) / 180) * height;
+      if (!width || !height) return null;
+
+      const imageWidth = worldMapImage.naturalWidth || 2000;
+      const imageHeight = worldMapImage.naturalHeight || 1000;
+      const imageRatio = imageWidth / imageHeight;
+      const containerRatio = width / height;
+      const objectFit = getComputedStyle(worldMapImage).objectFit;
+
+      let renderedWidth;
+      let renderedHeight;
+
+      if (objectFit === 'cover') {
+        if (containerRatio > imageRatio) {
+          renderedWidth = width;
+          renderedHeight = width / imageRatio;
+        } else {
+          renderedHeight = height;
+          renderedWidth = height * imageRatio;
+        }
+      } else {
+        if (containerRatio > imageRatio) {
+          renderedHeight = height;
+          renderedWidth = height * imageRatio;
+        } else {
+          renderedWidth = width;
+          renderedHeight = width / imageRatio;
+        }
+      }
+
+      const offsetX = (width - renderedWidth) / 2;
+      const offsetY = (height - renderedHeight) / 2;
+      const x = offsetX + ((lng + 180) / 360) * renderedWidth;
+      const y = offsetY + ((90 - lat) / 180) * renderedHeight;
       return { x, y };
     }
 
@@ -1414,6 +1446,12 @@
     window.addEventListener('resize', () => {
       renderWorldMapMarkers();
     });
+
+    if (worldMapImage) {
+      worldMapImage.addEventListener('load', () => {
+        renderWorldMapMarkers();
+      });
+    }
 
     // Fix: Wait for DOM before initializing
     document.addEventListener('DOMContentLoaded', () => {
