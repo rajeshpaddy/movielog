@@ -54,17 +54,29 @@
     }
     .search-box::placeholder { color: #888; }
     .search-box:focus { outline: none; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
-    .filter-select {
-      width: 100%;
-      background: #0f3460;
-      border: 2px solid #10b981;
-      color: #fff;
-      padding: 12px 16px;
-      border-radius: 14px;
-      font-size: 16px;
+    .filter-radios {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
       margin-bottom: 12px;
     }
-    .filter-select:focus { outline: none; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+    .filter-radio {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #0f3460;
+      border: 2px solid #1a4a7a;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 13px;
+      color: #ddd;
+      cursor: pointer;
+      user-select: none;
+    }
+    .filter-radio input {
+      accent-color: #10b981;
+      cursor: pointer;
+    }
     .country-list {
       flex: 1;
       overflow-y: auto;
@@ -484,13 +496,13 @@
     <div class="pane left-pane">
       <div class="pane-title">All Countries</div>
       <input type="text" class="search-box" id="leftSearch" placeholder="Search countries...">
-      <select class="filter-select" id="leftTravelFilter">
-        <option value="all">All travel ratings</option>
-        <option value="1">Travel rating 1</option>
-        <option value="2">Travel rating 2</option>
-        <option value="3">Travel rating 3</option>
-        <option value="4">Travel rating 4</option>
-      </select>
+      <div class="filter-radios" id="leftTravelFilter">
+        <label class="filter-radio"><input type="radio" name="leftTravelRating" value="all" checked>All</label>
+        <label class="filter-radio"><input type="radio" name="leftTravelRating" value="1">Rating 1</label>
+        <label class="filter-radio"><input type="radio" name="leftTravelRating" value="2">Rating 2</label>
+        <label class="filter-radio"><input type="radio" name="leftTravelRating" value="3">Rating 3</label>
+        <label class="filter-radio"><input type="radio" name="leftTravelRating" value="4">Rating 4</label>
+      </div>
       <div class="country-list" id="leftList"></div>
     </div>
     
@@ -708,7 +720,7 @@
     let visitedCountries = JSON.parse(localStorage.getItem('visitedCountries')) || {};
     let selectedCountryCode = null;
     let leftSearchTerm = "";
-    let leftTravelFilter = "all";
+    let leftTravelFilterValue = "all";
     let rightSearchTerm = "";
     let leftFocusedIndex = -1;
     let rightFocusedIndex = -1;
@@ -716,7 +728,8 @@
     const leftList = document.getElementById('leftList');
     const rightList = document.getElementById('rightList');
     const leftSearch = document.getElementById('leftSearch');
-    const leftTravelFilterSelect = document.getElementById('leftTravelFilter');
+    const leftTravelFilterGroup = document.getElementById('leftTravelFilter');
+    const leftTravelFilterRadios = document.querySelectorAll('input[name="leftTravelRating"]');
     const rightSearch = document.getElementById('rightSearch');
     const centerContent = document.getElementById('centerContent');
     const statsBar = document.getElementById('statsBar');
@@ -771,7 +784,7 @@
       const filtered = COUNTRIES.filter(c => {
         const searchMatches = c.name.toLowerCase().includes(leftSearchTerm.toLowerCase()) ||
           c.code.toLowerCase().includes(leftSearchTerm.toLowerCase());
-        const ratingMatches = leftTravelFilter === 'all' || String(c.travelAdvisory) === leftTravelFilter;
+        const ratingMatches = leftTravelFilterValue === 'all' || String(c.travelAdvisory) === leftTravelFilterValue;
         return searchMatches && ratingMatches;
       });
 
@@ -919,8 +932,9 @@
       renderLeftList();
     });
 
-    leftTravelFilterSelect.addEventListener('change', (e) => {
-      leftTravelFilter = e.target.value;
+    leftTravelFilterGroup.addEventListener('change', (e) => {
+      if (e.target.name !== 'leftTravelRating') return;
+      leftTravelFilterValue = e.target.value;
       leftFocusedIndex = -1;
       renderLeftList();
     });
@@ -941,10 +955,12 @@
         shortcutsOverlay.classList.remove('visible');
         leftSearch.value = "";
         rightSearch.value = "";
-        leftTravelFilterSelect.value = 'all';
+        leftTravelFilterRadios.forEach(radio => {
+          radio.checked = radio.value === 'all';
+        });
         leftSearchTerm = "";
         rightSearchTerm = "";
-        leftTravelFilter = 'all';
+        leftTravelFilterValue = 'all';
         renderLeftList();
         renderRightList();
         leftSearch.blur();
