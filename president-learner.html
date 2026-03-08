@@ -118,6 +118,24 @@
       display: block;
       border: 4px solid #fbbf24;
       box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+      background: #0f3460;
+    }
+    .president-image-placeholder {
+      width: 200px;
+      height: 250px;
+      border-radius: 12px;
+      margin: 20px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 4px solid #fbbf24;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+      background: linear-gradient(135deg, #1a4a7a 0%, #0f3460 100%);
+    }
+    .president-initial {
+      font-size: 96px;
+      font-weight: bold;
+      color: #fbbf24;
     }
     .key-events {
       background: #0f3460;
@@ -608,7 +626,10 @@
               <div class="showcase-name">${president.name}</div>
               <div class="showcase-years">${president.years} (${president.tenureYears} years)</div>
             </div>
-            <img class="president-image" src="https://corsproxy.io/?${encodeURIComponent(president.image)}" alt="${president.name}" onerror="this.style.display='none'">
+            <img class="president-image" id="img-${president.number}" src="${president.image}" alt="${president.name}" onerror="this.style.display='none'; document.getElementById('ph-${president.number}').style.display='flex'">
+            <div class="president-image-placeholder" id="ph-${president.number}" style="display:none">
+              <div class="president-initial">${president.name.charAt(0)}</div>
+            </div>
             <span class="showcase-party ${getPartyClass(president.party)}">${formatParty(president.party)}</span>
           </div>
           
