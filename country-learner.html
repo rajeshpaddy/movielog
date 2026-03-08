@@ -1,10 +1,4 @@
-The issue with your application is that the main rendering and data-loading functions are being called before the HTML elements they rely on (like `leftList` and `rightList`) have been created by the browser.
 
-Below is the fixed and complete code for your single-page app. I have wrapped the initialization logic in a `DOMContentLoaded` event listener to ensure everything loads correctly.
-
-You can save the code below as a new `.html` file:
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
