@@ -54,6 +54,38 @@
     }
     .search-box::placeholder { color: #888; }
     .search-box:focus { outline: none; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .filter-label {
+      font-size: 14px;
+      color: #888;
+    }
+    .filter-buttons {
+      display: flex;
+      gap: 4px;
+    }
+    .filter-btn {
+      background: #0f3460;
+      border: 1px solid #10b981;
+      color: #10b981;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-btn:hover {
+      background: #1a4a7a;
+    }
+    .filter-btn.active {
+      background: #10b981;
+      color: #1a1a2e;
+    }
     .country-list {
       flex: 1;
       overflow-y: auto;
@@ -476,6 +508,16 @@
     <div class="pane left-pane">
       <div class="pane-title">All Countries</div>
       <input type="text" class="search-box" id="leftSearch" placeholder="Search countries...">
+      <div class="filter-row">
+        <span class="filter-label">Travel Rating:</span>
+        <div class="filter-buttons">
+          <button class="filter-btn active" data-rating="all">All</button>
+          <button class="filter-btn" data-rating="1">1</button>
+          <button class="filter-btn" data-rating="2">2</button>
+          <button class="filter-btn" data-rating="3">3</button>
+          <button class="filter-btn" data-rating="4">4</button>
+        </div>
+      </div>
       <div class="country-list" id="leftList"></div>
     </div>
     
@@ -675,6 +717,7 @@
     let selectedFromRight = false;
     let leftFocusedIndex = -1;
     let rightFocusedIndex = -1;
+    let travelRatingFilter = 'all';
     
     const leftSearch = document.getElementById('leftSearch');
     const rightSearch = document.getElementById('rightSearch');
@@ -790,7 +833,11 @@
     
     function renderLeftList() {
       const query = leftSearch.value.toLowerCase();
-      const unvisited = allCountries.filter(c => !visitedCountries[c.code] && !failedCountries.has(c.code) && (c.name.toLowerCase().includes(query) || c.flag.includes(query)));
+      let unvisited = allCountries.filter(c => !visitedCountries[c.code] && !failedCountries.has(c.code) && (c.name.toLowerCase().includes(query) || c.flag.includes(query)));
+      
+      if (travelRatingFilter !== 'all') {
+        unvisited = unvisited.filter(c => c.travelAdvisory === parseInt(travelRatingFilter));
+      }
       
       leftList.innerHTML = unvisited.map((c, i) => `
         <div class="country-item ${selectedCountry?.code === c.code && !selectedFromRight ? 'selected' : ''} ${i === leftFocusedIndex ? 'focused' : ''}" data-code="${c.code}" data-index="${i}" tabindex="0">
@@ -939,6 +986,15 @@
     let tabFocus = 'leftSearch';
     
     leftSearch.addEventListener('input', renderLeftList);
+    
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        travelRatingFilter = btn.dataset.rating;
+        renderLeftList();
+      });
+    });
     rightSearch.addEventListener('input', renderRightList);
     
     document.addEventListener('keydown', (e) => {
