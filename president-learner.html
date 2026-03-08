@@ -109,33 +109,31 @@
       color: #fbbf24;
       font-weight: 600;
     }
-    .president-image {
-      width: 200px;
-      height: 250px;
-      object-fit: cover;
-      border-radius: 12px;
-      margin: 20px auto;
-      display: block;
-      border: 4px solid #fbbf24;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-      background: #0f3460;
-    }
-    .president-image-placeholder {
-      width: 200px;
-      height: 250px;
+    .president-portrait {
+      width: 180px;
+      height: 220px;
       border-radius: 12px;
       margin: 20px auto;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       border: 4px solid #fbbf24;
       box-shadow: 0 8px 25px rgba(0,0,0,0.4);
       background: linear-gradient(135deg, #1a4a7a 0%, #0f3460 100%);
+      position: relative;
     }
-    .president-initial {
-      font-size: 96px;
+    .portrait-initial {
+      font-size: 72px;
       font-weight: bold;
       color: #fbbf24;
+      text-transform: uppercase;
+    }
+    .portrait-number {
+      font-size: 24px;
+      font-weight: bold;
+      color: #fff;
+      margin-top: 10px;
     }
     .key-events {
       background: #0f3460;
@@ -606,6 +604,7 @@
     function selectPresident(number, fromRight) {
       selectedPresident = allPresidents.find(p => p.number === number);
       selectedFromRight = fromRight;
+      localStorage.setItem('lastSelectedPresident', number);
       renderLeftList();
       renderRightList();
       showPresidentDetails(selectedPresident);
@@ -626,9 +625,9 @@
               <div class="showcase-name">${president.name}</div>
               <div class="showcase-years">${president.years} (${president.tenureYears} years)</div>
             </div>
-            <img class="president-image" id="img-${president.number}" src="${president.image}" alt="${president.name}" onerror="this.style.display='none'; document.getElementById('ph-${president.number}').style.display='flex'">
-            <div class="president-image-placeholder" id="ph-${president.number}" style="display:none">
-              <div class="president-initial">${president.name.charAt(0)}</div>
+            <div class="president-portrait">
+              <div class="portrait-initial">${president.name.split(' ').map(n => n.charAt(0)).join('')}</div>
+              <div class="portrait-number">${president.number}</div>
             </div>
             <span class="showcase-party ${getPartyClass(president.party)}">${formatParty(president.party)}</span>
           </div>
@@ -910,6 +909,13 @@
     calculateStats();
     renderLeftList();
     renderRightList();
+    
+    const lastSelected = localStorage.getItem('lastSelectedPresident');
+    if (lastSelected) {
+      const num = parseInt(lastSelected);
+      const fromRight = !!studiedPresidents[num];
+      selectPresident(num, fromRight);
+    }
   </script>
 </body>
 </html>
