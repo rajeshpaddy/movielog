@@ -14,11 +14,13 @@
       color: #eee; 
       min-height: 100vh; 
     }
-    .app-container { 
-      display: flex; 
-      height: 100vh; 
-      gap: 12px; 
-      padding: 12px; 
+    .app-container {
+      display: flex;
+      height: 100vh;
+      height: 100dvh;
+      gap: 12px;
+      padding: 12px;
+      overflow: hidden;
     }
     .pane { 
       background: #16213e; 
@@ -54,6 +56,17 @@
     }
     .search-box::placeholder { color: #888; }
     .search-box:focus { outline: none; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+    .continent-select {
+      width: 100%;
+      background: #0f3460;
+      border: 2px solid #10b981;
+      color: #fff;
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-size: 15px;
+      margin-bottom: 12px;
+    }
+    .continent-select:focus { outline: none; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
     .filter-radios {
       display: flex;
       flex-wrap: wrap;
@@ -123,16 +136,16 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 8px;
       overflow-y: auto;
     }
     .select-btn {
       background: #10b981;
       color: #1a1a2e;
       border: none;
-      padding: 16px 40px;
-      border-radius: 30px;
-      font-size: 20px;
+      padding: 10px 22px;
+      border-radius: 14px;
+      font-size: 15px;
       font-weight: bold;
       cursor: pointer;
       transition: all 0.2s;
@@ -146,33 +159,148 @@
       background: #ef4444;
     }
     .showcase {
-      background: #0f3460;
-      border-radius: 20px;
-      padding: 30px;
-      text-align: center;
+      background: linear-gradient(145deg, #10345d 0%, #0d2849 100%);
+      border: 1px solid #1e4f82;
+      border-radius: 16px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: stretch;
+    }
+    .showcase-top {
+      display: grid;
+      grid-template-columns: 82px minmax(0, 1fr);
+      column-gap: 10px;
+      align-items: center;
+    }
+    .showcase-flag-block {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
     }
     .showcase-flag {
-      font-size: 80px;
-      margin-bottom: 10px;
+      font-size: 56px;
+      line-height: 1;
+      margin: 0;
+      align-self: start;
+      justify-self: start;
+      background: #122b4f;
+      border: 2px solid #1a4a7a;
+      border-radius: 12px;
+      width: 78px;
+      height: 78px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .showcase-main {
+      width: 100%;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 4px;
+      align-self: center;
+      padding-top: 0;
+    }
+    .showcase-header {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: flex-start;
+    }
+    .showcase-title-row {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 6px;
+      flex-wrap: wrap;
     }
     .showcase-name {
-      font-size: 36px;
+      font-size: 34px;
       font-weight: bold;
       text-transform: capitalize;
-      margin: 10px 0;
+      margin: 0;
+      line-height: 1;
     }
     .showcase-native {
-      font-size: 18px;
-      color: #aaa;
-      margin-bottom: 10px;
+      font-size: 12px;
+      color: #bdd4ee;
+      margin-top: 0;
+      text-align: center;
+      width: 78px;
+    }
+    .showcase-tags {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      justify-content: flex-start;
     }
     .showcase-region {
       display: inline-block;
-      padding: 8px 24px;
-      border-radius: 25px;
-      font-size: 16px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      margin: 0;
+      text-transform: capitalize;
+    }
+    .showcase .advisory-badge {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+    }
+    .showcase-meta {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+    }
+    .meta-item {
+      background: #122b4f;
+      border-radius: 8px;
+      padding: 6px 8px;
+      border: 1px solid #1a4a7a;
+    }
+    .meta-label {
+      display: block;
+      color: #8fb4d9;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 1px;
+    }
+    .meta-value {
+      color: #eef5ff;
+      font-size: 12px;
       font-weight: 600;
-      margin-bottom: 15px;
+      line-height: 1.15;
+      word-break: break-word;
+    }
+    @media (max-width: 1300px) {
+      .showcase-meta {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+    @media (min-width: 1600px) {
+      .showcase {
+        border-radius: 22px;
+        padding: 20px;
+      }
+      .showcase-top {
+        grid-template-columns: 104px minmax(0, 1fr);
+      }
+      .showcase-name {
+        font-size: 36px;
+      }
+      .meta-value {
+        font-size: 14px;
+      }
     }
     .region-asia { background: #ef4444; color: #fff; }
     .region-europe { background: #3b82f6; color: #fff; }
@@ -199,10 +327,8 @@
     .travel-advisory {
       background: #0f3460;
       border-radius: 20px;
-      padding: 20px;
-      display: flex;
-      gap: 20px;
-      align-items: flex-start;
+      padding: 18px 20px;
+      border-left: 4px solid #fbbf24;
     }
     .advisory-badge {
       padding: 12px 24px;
@@ -230,7 +356,7 @@
       color: #ddd;
       line-height: 1.5;
     }
-    
+
     .info-section {
       background: #0f3460;
       border-radius: 20px;
@@ -240,25 +366,34 @@
       font-size: 18px;
       font-weight: bold;
       color: #10b981;
-      margin-bottom: 10px;
+      margin-bottom: 14px;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
     }
     .info-row {
+      background: #122b4f;
+      border: 1px solid #1a4a7a;
+      border-radius: 12px;
+      padding: 10px 12px;
       display: flex;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid #1a4a7a;
-    }
-    .info-row:last-child {
-      border-bottom: none;
+      flex-direction: column;
+      gap: 4px;
     }
     .info-label {
-      color: #888;
-      font-size: 15px;
+      color: #8fb4d9;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
     .info-value {
-      color: #eee;
-      font-size: 15px;
-      font-weight: 500;
+      color: #eef5ff;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.3;
+      word-break: break-word;
     }
     
     .loading {
@@ -294,41 +429,67 @@
 
     .top-bar {
       display: flex;
+      flex-direction: column;
       gap: 12px;
       margin-bottom: 12px;
-      align-items: flex-start;
+      align-items: center;
     }
-    .mini-map {
-      width: 320px;
-      height: 160px;
-      background: #0f3460;
-      border-radius: 16px;
+    .world-map-wrap {
+      width: min(100%, 980px);
+      background: #16213e;
+      border-radius: 20px;
+      padding: 12px;
+    }
+    .center-pane .world-map-wrap {
+      width: 100%;
+      margin-bottom: 12px;
+    }
+    .world-map {
+      width: 100%;
+      height: 220px;
+      background: #06182a;
+      border-radius: 14px;
       position: relative;
       overflow: hidden;
-      flex-shrink: 0;
     }
-    .mini-map-grid {
-      width: 100%;
-      height: 100%;
-      opacity: 0.5;
-    }
-    .mini-map-grid svg {
-      width: 100%;
-      height: 100%;
-    }
-    .mini-dot {
+    .world-map-image {
       position: absolute;
-      width: 12px;
-      height: 12px;
-      background: #ef4444;
-      border: 2px solid #fff;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      opacity: 0.92;
+      z-index: 1;
+    }
+    .world-map-markers {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+    }
+    .world-dot {
+      position: absolute;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       transform: translate(-50%, -50%);
-      box-shadow: 0 0 10px #ef4444;
-      z-index: 10;
+      border: 2px solid #fff;
+    }
+    .world-dot.visited {
+      background: #10b981;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.9);
+    }
+    .world-dot.selected {
+      width: 12px;
+      height: 12px;
+      background: #a855f7;
+      box-shadow: 0 0 10px rgba(168, 85, 247, 0.95);
+      z-index: 3;
     }
     .stats-section {
-      flex: 1;
+      width: min(100%, 980px);
+    }
+    .center-pane .stats-section {
+      width: 100%;
     }
 
     .stats-bar {
@@ -444,27 +605,176 @@
     }
 
     @media (max-width: 900px) {
+      body {
+        min-height: 100dvh;
+      }
       .app-container {
         flex-direction: column;
         height: auto;
-        min-height: 100vh;
+        min-height: 100dvh;
         padding: 10px;
+        gap: 10px;
+        overflow: visible;
       }
       .pane {
         width: 100% !important;
-        min-width: unset !important;
-        max-height: 45vh;
+        min-width: 0 !important;
+        max-height: none;
+        padding: 14px;
+        border-radius: 16px;
       }
       .left-pane { order: 1; }
       .center-pane { order: 2; }
       .right-pane { order: 3; }
+      .pane-title {
+        font-size: 20px;
+        margin-bottom: 12px;
+      }
+      .search-box,
+      .continent-select {
+        font-size: 16px;
+        padding: 12px 14px;
+      }
+      .filter-radios {
+        gap: 6px;
+      }
+      .filter-radio {
+        padding: 7px 10px;
+        font-size: 12px;
+      }
+      .country-list {
+        min-height: 220px;
+        max-height: 42vh;
+      }
+      .center-content {
+        max-height: none;
+      }
       .stats-bar {
         gap: 8px;
         padding: 12px;
       }
+      .stats-bar .stat-item {
+        min-width: 88px;
+        padding: 10px 12px;
+      }
       .continent-legend {
         gap: 6px;
         padding: 10px;
+      }
+      .world-map {
+        height: 180px;
+      }
+      .showcase {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        padding: 16px;
+      }
+      .showcase-top {
+        grid-template-columns: 82px minmax(0, 1fr);
+      }
+      .showcase-flag {
+        width: 82px;
+        height: 82px;
+        font-size: 56px;
+      }
+      .showcase-name {
+        font-size: 28px;
+      }
+      .showcase-tags {
+        justify-content: flex-start;
+      }
+      .showcase-meta,
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+      .select-btn {
+        width: 100%;
+        align-self: stretch;
+        font-size: 16px;
+        padding: 13px 14px;
+        border-radius: 14px;
+      }
+      .travel-advisory,
+      .info-section {
+        padding: 14px;
+      }
+      .empty-state {
+        min-height: 140px;
+        height: auto;
+        font-size: 18px;
+        padding: 20px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      html {
+        font-size: 15px;
+      }
+      .app-container {
+        padding: 8px;
+        gap: 8px;
+      }
+      .pane {
+        padding: 12px;
+      }
+      .country-item {
+        padding: 11px;
+        gap: 10px;
+      }
+      .country-item .flag {
+        font-size: 24px;
+      }
+      .country-item .name {
+        font-size: 14px;
+      }
+      .country-item .continent {
+        font-size: 11px;
+      }
+      .showcase-name {
+        font-size: 24px;
+      }
+      .showcase-native {
+        font-size: 15px;
+        width: 70px;
+      }
+      .showcase-top {
+        grid-template-columns: 70px minmax(0, 1fr);
+      }
+      .showcase-flag {
+        width: 70px;
+        height: 70px;
+        font-size: 48px;
+      }
+      .meta-item,
+      .info-row {
+        padding: 9px 10px;
+      }
+      .meta-value,
+      .info-value {
+        font-size: 13px;
+      }
+      .world-map {
+        height: 160px;
+      }
+      .stats-bar .stat-item .stat-number {
+        font-size: 20px;
+      }
+      .shortcuts-overlay {
+        padding: 14px;
+      }
+      .shortcuts-panel {
+        padding: 16px;
+      }
+      .shortcut-item {
+        gap: 8px;
+      }
+      .shortcut-desc {
+        font-size: 14px;
+      }
+      .shortcut-key {
+        font-size: 14px;
       }
     }
   </style>
@@ -482,19 +792,18 @@
       <div class="shortcut-item"><span class="shortcut-desc">Close/Clear</span><span class="shortcut-key">Escape</span></div>
     </div>
   </div>
-  <div class="top-bar">
-    <div class="mini-map" id="miniMap">
-      <div class="mini-map-grid"></div>
-      <div class="mini-dot" id="miniDot" style="display:none;"></div>
-    </div>
-    <div class="stats-section">
-      <div class="stats-bar" id="statsBar"></div>
-      <!-- <div class="continent-legend" id="continentLegend"></div> -->
-    </div>
-  </div>
   <div class="app-container">
     <div class="pane left-pane">
       <div class="pane-title">All Countries</div>
+      <select class="continent-select" id="leftContinentFilter">
+        <option value="all">All Continents</option>
+        <option value="africa">Africa</option>
+        <option value="asia">Asia</option>
+        <option value="europe">Europe</option>
+        <option value="north-america">North America</option>
+        <option value="south-america">South America</option>
+        <option value="oceania">Oceania</option>
+      </select>
       <input type="text" class="search-box" id="leftSearch" placeholder="Search countries...">
       <div class="filter-radios" id="leftTravelFilter">
         <label class="filter-radio"><input type="radio" name="leftTravelRating" value="all" checked>All</label>
@@ -507,6 +816,16 @@
     </div>
     
     <div class="pane center-pane">
+      <div class="stats-section">
+        <div class="stats-bar" id="statsBar"></div>
+        <div class="continent-legend" id="continentLegend"></div>
+      </div>
+      <div class="world-map-wrap">
+        <div class="world-map" id="worldMap">
+          <img class="world-map-image" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/World_map_-_low_resolution.svg/2000px-World_map_-_low_resolution.svg.png" alt="World map">
+          <div class="world-map-markers" id="worldMapMarkers"></div>
+        </div>
+      </div>
       <div class="center-content" id="centerContent">
         <div class="empty-state">Click a country to learn about it!</div>
       </div>
@@ -514,7 +833,23 @@
     
     <div class="pane right-pane">
       <div class="pane-title">Visited Countries</div>
+      <select class="continent-select" id="rightContinentFilter">
+        <option value="all">All Continents</option>
+        <option value="africa">Africa</option>
+        <option value="asia">Asia</option>
+        <option value="europe">Europe</option>
+        <option value="north-america">North America</option>
+        <option value="south-america">South America</option>
+        <option value="oceania">Oceania</option>
+      </select>
       <input type="text" class="search-box" id="rightSearch" placeholder="Search visited...">
+      <div class="filter-radios" id="rightTravelFilter">
+        <label class="filter-radio"><input type="radio" name="rightTravelRating" value="all" checked>All</label>
+        <label class="filter-radio"><input type="radio" name="rightTravelRating" value="1">Rating 1</label>
+        <label class="filter-radio"><input type="radio" name="rightTravelRating" value="2">Rating 2</label>
+        <label class="filter-radio"><input type="radio" name="rightTravelRating" value="3">Rating 3</label>
+        <label class="filter-radio"><input type="radio" name="rightTravelRating" value="4">Rating 4</label>
+      </div>
       <div class="country-list" id="rightList"></div>
     </div>
   </div>
@@ -720,22 +1055,29 @@
     let visitedCountries = JSON.parse(localStorage.getItem('visitedCountries')) || {};
     let selectedCountryCode = null;
     let leftSearchTerm = "";
+    let leftContinentFilterValue = "all";
     let leftTravelFilterValue = "all";
     let rightSearchTerm = "";
+    let rightContinentFilterValue = "all";
+    let rightTravelFilterValue = "all";
     let leftFocusedIndex = -1;
     let rightFocusedIndex = -1;
 
     const leftList = document.getElementById('leftList');
     const rightList = document.getElementById('rightList');
+    const leftContinentFilter = document.getElementById('leftContinentFilter');
     const leftSearch = document.getElementById('leftSearch');
     const leftTravelFilterGroup = document.getElementById('leftTravelFilter');
     const leftTravelFilterRadios = document.querySelectorAll('input[name="leftTravelRating"]');
+    const rightContinentFilter = document.getElementById('rightContinentFilter');
     const rightSearch = document.getElementById('rightSearch');
+    const rightTravelFilterGroup = document.getElementById('rightTravelFilter');
+    const rightTravelFilterRadios = document.querySelectorAll('input[name="rightTravelRating"]');
     const centerContent = document.getElementById('centerContent');
     const statsBar = document.getElementById('statsBar');
     const continentLegend = document.getElementById('continentLegend');
-    const miniDot = document.getElementById('miniDot');
-    const miniMap = document.getElementById('miniMap');
+    const worldMap = document.getElementById('worldMap');
+    const worldMapMarkers = document.getElementById('worldMapMarkers');
     const shortcutsOverlay = document.getElementById('shortcutsOverlay');
 
     function saveVisitedCountries() {
@@ -764,6 +1106,8 @@
     }
 
     function calculateContinentStats() {
+      if (!continentLegend) return;
+
       const stats = {};
       COUNTRIES.forEach(c => {
         if (!stats[c.continent]) stats[c.continent] = { visited: 0, total: 0 };
@@ -784,8 +1128,9 @@
       const filtered = COUNTRIES.filter(c => {
         const searchMatches = c.name.toLowerCase().includes(leftSearchTerm.toLowerCase()) ||
           c.code.toLowerCase().includes(leftSearchTerm.toLowerCase());
+        const continentMatches = leftContinentFilterValue === 'all' || c.continent === leftContinentFilterValue;
         const ratingMatches = leftTravelFilterValue === 'all' || String(c.travelAdvisory) === leftTravelFilterValue;
-        return searchMatches && ratingMatches;
+        return searchMatches && continentMatches && ratingMatches;
       });
 
       leftList.innerHTML = filtered.map((c, index) => `
@@ -802,9 +1147,12 @@
 
     function renderRightList() {
       const visitedArray = COUNTRIES.filter(c => visitedCountries[c.code]);
-      const filtered = visitedArray.filter(c => 
-        c.name.toLowerCase().includes(rightSearchTerm.toLowerCase())
-      );
+      const filtered = visitedArray.filter(c => {
+        const searchMatches = c.name.toLowerCase().includes(rightSearchTerm.toLowerCase());
+        const continentMatches = rightContinentFilterValue === 'all' || c.continent === rightContinentFilterValue;
+        const ratingMatches = rightTravelFilterValue === 'all' || String(c.travelAdvisory) === rightTravelFilterValue;
+        return searchMatches && continentMatches && ratingMatches;
+      });
 
       if (filtered.length === 0) {
         rightList.innerHTML = '<div class="empty-state">No visited countries found</div>';
@@ -839,7 +1187,7 @@
       renderLeftList();
       renderRightList();
       renderCenter(country);
-      updateMiniMap(country);
+      renderWorldMapMarkers();
     }
 
     function toggleVisited(code) {
@@ -853,25 +1201,44 @@
       calculateContinentStats();
       renderLeftList();
       renderRightList();
-      
+      renderWorldMapMarkers();
+
       const country = COUNTRIES.find(c => c.code === code);
       renderCenter(country);
     }
 
-    function updateMiniMap(country) {
-      if (!country.lat || !country.lng) {
-        miniDot.style.display = 'none';
-        return;
+    function projectToWorldMap(lat, lng) {
+      if (!worldMap) return null;
+
+      const width = worldMap.clientWidth;
+      const height = worldMap.clientHeight;
+      const x = ((lng + 180) / 360) * width;
+      const y = ((90 - lat) / 180) * height;
+      return { x, y };
+    }
+
+    function renderWorldMapMarkers() {
+      if (!worldMapMarkers || !worldMap) return;
+
+      const markers = [];
+      COUNTRIES.forEach(country => {
+        if (!visitedCountries[country.code]) return;
+        if (typeof country.lat !== 'number' || typeof country.lng !== 'number') return;
+
+        const point = projectToWorldMap(country.lat, country.lng);
+        if (!point) return;
+        markers.push('<div class="world-dot visited" style="left:' + point.x + 'px; top:' + point.y + 'px;" title="' + country.name + '"></div>');
+      });
+
+      const selectedCountry = COUNTRIES.find(c => c.code === selectedCountryCode);
+      if (selectedCountry && typeof selectedCountry.lat === 'number' && typeof selectedCountry.lng === 'number') {
+        const selectedPoint = projectToWorldMap(selectedCountry.lat, selectedCountry.lng);
+        if (selectedPoint) {
+          markers.push('<div class="world-dot selected" style="left:' + selectedPoint.x + 'px; top:' + selectedPoint.y + 'px;" title="' + selectedCountry.name + '"></div>');
+        }
       }
-      
-      const x = (country.lng + 180) * (miniMap.offsetWidth / 360);
-      const latRad = country.lat * Math.PI / 180;
-      const mercN = Math.log(Math.tan((Math.PI / 4) + (latRad / 2)));
-      const y = (miniMap.offsetHeight / 2) - (miniMap.offsetWidth * mercN / (2 * Math.PI));
-      
-      miniDot.style.display = 'block';
-      miniDot.style.left = x + 'px';
-      miniDot.style.top = y + 'px';
+
+      worldMapMarkers.innerHTML = markers.join('');
     }
 
     function renderCenter(country) {
@@ -884,47 +1251,44 @@
       
       centerContent.innerHTML = `
         <div class="showcase">
-          <div class="showcase-flag">${country.flag}</div>
-          <div class="showcase-name">${country.name}</div>
-          <div class="showcase-native">${country.nativeName}</div>
-          <div class="showcase-region region-${country.continent}">${country.continent.replace('-', ' ')}</div>
+          <div class="showcase-top">
+            <div class="showcase-flag-block">
+              <div class="showcase-flag">${country.flag}</div>
+              <div class="showcase-native">${country.nativeName}</div>
+            </div>
+            <div class="showcase-main">
+              <div class="showcase-header">
+                <div class="showcase-title-row">
+                  <div class="showcase-name">${country.name}</div>
+                  <div class="showcase-tags">
+                    <div class="showcase-region region-${country.continent}">${country.continent.replace('-', ' ')}</div>
+                    <div class="advisory-badge advisory-level-${country.travelAdvisory || 'unknown'}">TRAVEL LEVEL ${country.travelAdvisory || '?'}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="showcase-meta">
+            <div class="meta-item"><span class="meta-label">Capital</span><span class="meta-value">${country.capital}</span></div>
+            <div class="meta-item"><span class="meta-label">Population</span><span class="meta-value">${country.population?.toLocaleString() || 'Unknown'}</span></div>
+            <div class="meta-item"><span class="meta-label">Currency</span><span class="meta-value">${country.currency}</span></div>
+            <div class="meta-item"><span class="meta-label">Language</span><span class="meta-value">${country.language}</span></div>
+            <div class="meta-item"><span class="meta-label">Country Code</span><span class="meta-value">${country.code}</span></div>
+            <div class="meta-item"><span class="meta-label">Coordinates</span><span class="meta-value">${country.lat.toFixed(2)}, ${country.lng.toFixed(2)}</span></div>
+          </div>
         </div>
 
         <button class="select-btn ${isVisited ? 'unselect' : ''}" onclick="toggleVisited('${country.code}')">
-          ${isVisited ? 'MARK AS UNVISITED' : 'MARK AS VISITED'}
+          ${isVisited ? 'REMOVE FROM VISITED LIST (CLICK)' : 'MOVE TO VISITED LIST (CLICK)'}
         </button>
-
-        <div class="travel-advisory">
-          <div class="advisory-badge advisory-level-${country.travelAdvisory || 'unknown'}">
-            LEVEL ${country.travelAdvisory || '?'}
-          </div>
-          <div class="advisory-text">
-            <div class="advisory-title">Travel Advisory</div>
-            <div class="advisory-description">${country.travelNote || 'No specific travel information available.'}</div>
-          </div>
-        </div>
-
-        <div class="info-section">
-          <div class="section-title">Key Information</div>
-          <div class="info-row">
-            <span class="info-label">Capital</span>
-            <span class="info-value">${country.capital}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Population</span>
-            <span class="info-value">${country.population?.toLocaleString()}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Currency</span>
-            <span class="info-value">${country.currency}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Languages</span>
-            <span class="info-value">${country.language}</span>
-          </div>
-        </div>
       `;
     }
+
+    leftContinentFilter.addEventListener('change', (e) => {
+      leftContinentFilterValue = e.target.value;
+      leftFocusedIndex = -1;
+      renderLeftList();
+    });
 
     leftSearch.addEventListener('input', (e) => {
       leftSearchTerm = e.target.value;
@@ -939,8 +1303,21 @@
       renderLeftList();
     });
 
+    rightContinentFilter.addEventListener('change', (e) => {
+      rightContinentFilterValue = e.target.value;
+      rightFocusedIndex = -1;
+      renderRightList();
+    });
+
     rightSearch.addEventListener('input', (e) => {
       rightSearchTerm = e.target.value;
+      rightFocusedIndex = -1;
+      renderRightList();
+    });
+
+    rightTravelFilterGroup.addEventListener('change', (e) => {
+      if (e.target.name !== 'rightTravelRating') return;
+      rightTravelFilterValue = e.target.value;
       rightFocusedIndex = -1;
       renderRightList();
     });
@@ -955,12 +1332,20 @@
         shortcutsOverlay.classList.remove('visible');
         leftSearch.value = "";
         rightSearch.value = "";
+        leftContinentFilter.value = 'all';
+        rightContinentFilter.value = 'all';
         leftTravelFilterRadios.forEach(radio => {
+          radio.checked = radio.value === 'all';
+        });
+        rightTravelFilterRadios.forEach(radio => {
           radio.checked = radio.value === 'all';
         });
         leftSearchTerm = "";
         rightSearchTerm = "";
+        leftContinentFilterValue = 'all';
+        rightContinentFilterValue = 'all';
         leftTravelFilterValue = 'all';
+        rightTravelFilterValue = 'all';
         renderLeftList();
         renderRightList();
         leftSearch.blur();
@@ -968,7 +1353,7 @@
         return;
       }
 
-      if (document.activeElement.tagName === 'INPUT') return;
+      if (['INPUT', 'SELECT'].includes(document.activeElement.tagName)) return;
 
       if (e.key === '/') {
         e.preventDefault();
@@ -1021,13 +1406,18 @@
       }
     });
 
+    window.addEventListener('resize', () => {
+      renderWorldMapMarkers();
+    });
+
     // Fix: Wait for DOM before initializing
     document.addEventListener('DOMContentLoaded', () => {
       calculateStats();
       calculateContinentStats();
       renderLeftList();
       renderRightList();
-      
+      renderWorldMapMarkers();
+
       const lastSelected = localStorage.getItem('lastSelectedCountry');
       if (lastSelected) {
         const fromRight = !!visitedCountries[lastSelected];
