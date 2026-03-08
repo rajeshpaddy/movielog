@@ -608,7 +608,7 @@
               <div class="showcase-name">${president.name}</div>
               <div class="showcase-years">${president.years} (${president.tenureYears} years)</div>
             </div>
-            <img class="president-image" src="${president.image}" alt="${president.name}" onerror="this.style.display='none'">
+            <img class="president-image" src="https://corsproxy.io/?${encodeURIComponent(president.image)}" alt="${president.name}" onerror="this.style.display='none'">
             <span class="showcase-party ${getPartyClass(president.party)}">${formatParty(president.party)}</span>
           </div>
           
