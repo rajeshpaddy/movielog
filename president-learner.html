@@ -54,6 +54,38 @@
     }
     .search-box::placeholder { color: #888; }
     .search-box:focus { outline: none; box-shadow: 0 0 15px rgba(251, 191, 36, 0.4); }
+    .transfer-actions {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .transfer-btn {
+      flex: 1;
+      border: 1px solid #fbbf24;
+      background: #0f3460;
+      color: #fde68a;
+      padding: 9px 10px;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .transfer-btn:hover {
+      background: #1a4a7a;
+    }
+    .transfer-status {
+      min-height: 16px;
+      margin-bottom: 10px;
+      color: #fde68a;
+      font-size: 11px;
+      text-align: center;
+    }
+    .transfer-status.error {
+      color: #fecaca;
+    }
     .president-list {
       flex: 1;
       overflow-y: auto;
@@ -470,6 +502,12 @@
     
     <div class="pane right-pane">
       <div class="pane-title">Studied Presidents</div>
+      <div class="transfer-actions">
+        <button type="button" class="transfer-btn" id="exportStudiedBtn" aria-label="Export studied presidents" title="Export studied presidents">⤓</button>
+        <button type="button" class="transfer-btn" id="importStudiedBtn" aria-label="Import studied presidents" title="Import studied presidents">⤒</button>
+        <input type="file" id="importStudiedFile" accept="application/json" hidden>
+      </div>
+      <div class="transfer-status" id="transferStatus" aria-live="polite"></div>
       <input type="text" class="search-box" id="rightSearch" placeholder="Search studied...">
       <div class="president-list" id="rightList"></div>
     </div>
@@ -540,6 +578,10 @@
     const centerContent = document.getElementById('centerContent');
     const statsBar = document.getElementById('statsBar');
     const shortcutsOverlay = document.getElementById('shortcutsOverlay');
+    const exportStudiedBtn = document.getElementById('exportStudiedBtn');
+    const importStudiedBtn = document.getElementById('importStudiedBtn');
+    const importStudiedFile = document.getElementById('importStudiedFile');
+    const transferStatus = document.getElementById('transferStatus');
     
     function loadStudiedPresidents() {
       const saved = localStorage.getItem('studiedPresidents');
@@ -550,6 +592,97 @@
     
     function saveStudiedPresidents() {
       localStorage.setItem('studiedPresidents', JSON.stringify(studiedPresidents));
+    }
+
+    function setTransferStatus(message, isError = false) {
+      if (!transferStatus) return;
+      transferStatus.textContent = message;
+      transferStatus.classList.toggle('error', !!isError);
+    }
+
+    function normalizeImportedStudiedData(parsedData) {
+      const source = parsedData?.studiedPresidents ?? parsedData;
+      if (!source || typeof source !== 'object' || Array.isArray(source)) {
+        throw new Error('Invalid file format');
+      }
+
+      const normalized = {};
+      Object.entries(source).forEach(([numberKey, value]) => {
+        const number = Number(numberKey);
+        if (!Number.isInteger(number) || number < 1 || number > PRESIDENTS.length) return;
+
+        let studiedAt = null;
+        if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+          studiedAt = Math.floor(value);
+        } else if (typeof value === 'string' && value.trim() !== '') {
+          const parsed = Number(value);
+          if (Number.isFinite(parsed) && parsed > 0) {
+            studiedAt = Math.floor(parsed);
+          }
+        } else if (value === true) {
+          studiedAt = Date.now();
+        }
+
+        if (studiedAt) {
+          normalized[number] = studiedAt;
+        }
+      });
+
+      if (Object.keys(normalized).length === 0) {
+        throw new Error('No valid studied presidents found in file');
+      }
+      return normalized;
+    }
+
+    function exportStudiedPresidentsData() {
+      const payload = {
+        app: 'president-learner',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        studiedPresidents
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const datePart = new Date().toISOString().slice(0, 10);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `studied-presidents-${datePart}.json`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+      setTransferStatus(`Exported ${Object.keys(studiedPresidents).length} presidents`);
+    }
+
+    function importStudiedPresidentsData(event) {
+      const [file] = event.target.files || [];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          studiedPresidents = normalizeImportedStudiedData(parsed);
+          saveStudiedPresidents();
+          calculateStats();
+          renderLeftList();
+          renderRightList();
+          if (selectedPresident) {
+            selectedFromRight = !!studiedPresidents[selectedPresident.number];
+            showPresidentDetails(selectedPresident);
+          }
+          setTransferStatus(`Imported ${Object.keys(studiedPresidents).length} presidents`);
+        } catch (error) {
+          setTransferStatus(error.message || 'Import failed', true);
+        } finally {
+          importStudiedFile.value = '';
+        }
+      };
+      reader.onerror = () => {
+        setTransferStatus('Unable to read file', true);
+        importStudiedFile.value = '';
+      };
+      reader.readAsText(file);
     }
     
     function calculateStats() {
@@ -740,6 +873,17 @@
     
     leftSearch.addEventListener('input', renderLeftList);
     rightSearch.addEventListener('input', renderRightList);
+    if (exportStudiedBtn) {
+      exportStudiedBtn.addEventListener('click', exportStudiedPresidentsData);
+    }
+    if (importStudiedBtn) {
+      importStudiedBtn.addEventListener('click', () => {
+        if (importStudiedFile) importStudiedFile.click();
+      });
+    }
+    if (importStudiedFile) {
+      importStudiedFile.addEventListener('change', importStudiedPresidentsData);
+    }
     
     document.addEventListener('keydown', (e) => {
       if (e.ctrlKey && e.key === '/') {

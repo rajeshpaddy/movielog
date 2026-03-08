@@ -60,6 +60,38 @@
     }
     .search-box::placeholder { color: #888; }
     .search-box:focus { outline: none; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+    .transfer-actions {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .transfer-btn {
+      flex: 1;
+      border: 1px solid #10b981;
+      background: #0f3460;
+      color: #d1fae5;
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .transfer-btn:hover {
+      background: #1a4a7a;
+    }
+    .transfer-status {
+      min-height: 16px;
+      margin-bottom: 10px;
+      color: #bbf7d0;
+      font-size: 11px;
+      text-align: center;
+    }
+    .transfer-status.error {
+      color: #fecaca;
+    }
     .continent-select {
       width: 100%;
       background: #0f3460;
@@ -1017,6 +1049,12 @@
     
     <div class="pane right-pane">
       <div class="pane-title">Visited Countries</div>
+      <div class="transfer-actions">
+        <button type="button" class="transfer-btn" id="exportVisitedBtn" aria-label="Export visited countries" title="Export visited countries">⤓</button>
+        <button type="button" class="transfer-btn" id="importVisitedBtn" aria-label="Import visited countries" title="Import visited countries">⤒</button>
+        <input type="file" id="importVisitedFile" accept="application/json" hidden>
+      </div>
+      <div class="transfer-status" id="transferStatus" aria-live="polite"></div>
       <select class="continent-select" id="rightContinentFilter">
         <option value="all">All Continents</option>
         <option value="africa">Africa</option>
@@ -1280,6 +1318,10 @@
     const rightSearch = document.getElementById('rightSearch');
     const rightTravelFilterGroup = document.getElementById('rightTravelFilter');
     const rightTravelFilterRadios = document.querySelectorAll('input[name="rightTravelRating"]');
+    const exportVisitedBtn = document.getElementById('exportVisitedBtn');
+    const importVisitedBtn = document.getElementById('importVisitedBtn');
+    const importVisitedFile = document.getElementById('importVisitedFile');
+    const transferStatus = document.getElementById('transferStatus');
     const centerContent = document.getElementById('centerContent');
     const statusTicker = document.getElementById('statusTicker');
     const statsBar = document.getElementById('statsBar');
@@ -1527,6 +1569,98 @@
 
     function saveVisitedCountries() {
       localStorage.setItem('visitedCountries', JSON.stringify(visitedCountries));
+    }
+
+    function setTransferStatus(message, isError = false) {
+      if (!transferStatus) return;
+      transferStatus.textContent = message;
+      transferStatus.classList.toggle('error', !!isError);
+    }
+
+    function normalizeImportedVisitedData(parsedData) {
+      const source = parsedData?.visitedCountries ?? parsedData;
+      if (!source || typeof source !== 'object' || Array.isArray(source)) {
+        throw new Error('Invalid file format');
+      }
+
+      const normalized = {};
+      Object.entries(source).forEach(([code, value]) => {
+        const upperCode = String(code).toUpperCase();
+        if (!countriesByCode[upperCode]) return;
+        if (value === false || value === null || typeof value === 'undefined') return;
+
+        if (value === true) {
+          normalized[upperCode] = true;
+          return;
+        }
+
+        if (typeof value === 'number' && Number.isFinite(value)) {
+          normalized[upperCode] = value;
+          return;
+        }
+
+        if (typeof value === 'string' && value.trim() !== '') {
+          const parsed = Number(value);
+          normalized[upperCode] = Number.isFinite(parsed) ? parsed : true;
+        }
+      });
+
+      if (Object.keys(normalized).length === 0) {
+        throw new Error('No valid visited countries found in file');
+      }
+      return normalized;
+    }
+
+    function exportVisitedCountriesData() {
+      const payload = {
+        app: 'country-learner',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        visitedCountries
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const datePart = new Date().toISOString().slice(0, 10);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `visited-countries-${datePart}.json`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+      setTransferStatus(`Exported ${Object.keys(visitedCountries).length} countries`);
+    }
+
+    function importVisitedCountriesData(event) {
+      const [file] = event.target.files || [];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          visitedCountries = normalizeImportedVisitedData(parsed);
+          saveVisitedCountries();
+          calculateStats();
+          calculateContinentStats();
+          renderLeftList();
+          renderRightList();
+          if (selectedCountryCode && countriesByCode[selectedCountryCode]) {
+            renderCenter(countriesByCode[selectedCountryCode]);
+          }
+          scheduleWorldMapRender();
+          setTransferStatus(`Imported ${Object.keys(visitedCountries).length} countries`);
+        } catch (error) {
+          setTransferStatus(error.message || 'Import failed', true);
+        } finally {
+          importVisitedFile.value = '';
+        }
+      };
+      reader.onerror = () => {
+        setTransferStatus('Unable to read file', true);
+        importVisitedFile.value = '';
+      };
+      reader.readAsText(file);
     }
 
     function calculateStats() {
@@ -1828,6 +1962,18 @@
       rightFocusedIndex = -1;
       renderRightList();
     });
+
+    if (exportVisitedBtn) {
+      exportVisitedBtn.addEventListener('click', exportVisitedCountriesData);
+    }
+    if (importVisitedBtn) {
+      importVisitedBtn.addEventListener('click', () => {
+        if (importVisitedFile) importVisitedFile.click();
+      });
+    }
+    if (importVisitedFile) {
+      importVisitedFile.addEventListener('change', importVisitedCountriesData);
+    }
 
     if (mapModeSwitch) {
       mapModeSwitch.addEventListener('change', (e) => {

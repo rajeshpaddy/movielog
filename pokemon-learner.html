@@ -54,6 +54,38 @@
     }
     .search-box::placeholder { color: #888; }
     .search-box:focus { outline: none; box-shadow: 0 0 15px rgba(0, 217, 255, 0.4); }
+    .transfer-actions {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .transfer-btn {
+      flex: 1;
+      border: 1px solid #00d9ff;
+      background: #0f3460;
+      color: #d6f8ff;
+      padding: 9px 10px;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .transfer-btn:hover {
+      background: #1a4a7a;
+    }
+    .transfer-status {
+      min-height: 18px;
+      margin-bottom: 10px;
+      color: #93c5fd;
+      font-size: 12px;
+      text-align: center;
+    }
+    .transfer-status.error {
+      color: #fca5a5;
+    }
     .pokemon-list {
       flex: 1;
       overflow-y: auto;
@@ -506,6 +538,12 @@
     
     <div class="pane right-pane">
       <div class="pane-title">Learned Pokemon</div>
+      <div class="transfer-actions">
+        <button type="button" class="transfer-btn" id="exportLearnedBtn" aria-label="Export learned Pokemon" title="Export learned Pokemon">⤓</button>
+        <button type="button" class="transfer-btn" id="importLearnedBtn" aria-label="Import learned Pokemon" title="Import learned Pokemon">⤒</button>
+        <input type="file" id="importLearnedFile" accept="application/json" hidden>
+      </div>
+      <div class="transfer-status" id="transferStatus" aria-live="polite"></div>
       <input type="text" class="search-box" id="rightSearch" placeholder="Search learned...">
       <div class="pokemon-list" id="rightList"></div>
     </div>
@@ -543,6 +581,10 @@
     const statsBar = document.getElementById('statsBar');
     const regionStats = document.getElementById('regionStats');
     const shortcutsOverlay = document.getElementById('shortcutsOverlay');
+    const exportLearnedBtn = document.getElementById('exportLearnedBtn');
+    const importLearnedBtn = document.getElementById('importLearnedBtn');
+    const importLearnedFile = document.getElementById('importLearnedFile');
+    const transferStatus = document.getElementById('transferStatus');
     
     function loadLearnedPokemon() {
       const saved = localStorage.getItem('learnedPokemon');
@@ -553,6 +595,97 @@
     
     function saveLearnedPokemon() {
       localStorage.setItem('learnedPokemon', JSON.stringify(learnedPokemon));
+    }
+
+    function setTransferStatus(message, isError = false) {
+      if (!transferStatus) return;
+      transferStatus.textContent = message;
+      transferStatus.classList.toggle('error', !!isError);
+    }
+
+    function normalizeImportedLearnedData(parsedData) {
+      const source = parsedData?.learnedPokemon ?? parsedData;
+      if (!source || typeof source !== 'object' || Array.isArray(source)) {
+        throw new Error('Invalid file format');
+      }
+
+      const normalized = {};
+      Object.entries(source).forEach(([numberKey, value]) => {
+        const number = Number(numberKey);
+        if (!Number.isInteger(number) || number < 1 || number > TOTAL_POKEMON) return;
+
+        let learnedAt = null;
+        if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+          learnedAt = Math.floor(value);
+        } else if (typeof value === 'string' && value.trim() !== '') {
+          const parsed = Number(value);
+          if (Number.isFinite(parsed) && parsed > 0) {
+            learnedAt = Math.floor(parsed);
+          }
+        } else if (value === true) {
+          learnedAt = Date.now();
+        }
+
+        if (learnedAt) {
+          normalized[number] = learnedAt;
+        }
+      });
+
+      if (Object.keys(normalized).length === 0) {
+        throw new Error('No valid learned Pokemon found in file');
+      }
+      return normalized;
+    }
+
+    function exportLearnedPokemonData() {
+      const payload = {
+        app: 'pokemon-learner',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        learnedPokemon
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const datePart = new Date().toISOString().slice(0, 10);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `learned-pokemon-${datePart}.json`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+      setTransferStatus(`Exported ${Object.keys(learnedPokemon).length} Pokemon`);
+    }
+
+    function importLearnedPokemonData(event) {
+      const [file] = event.target.files || [];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          learnedPokemon = normalizeImportedLearnedData(parsed);
+          saveLearnedPokemon();
+          calculateStats();
+          renderLeftList();
+          renderRightList();
+          if (selectedPokemon) {
+            selectedFromRight = !!learnedPokemon[selectedPokemon.number];
+            showPokemonDetails(selectedPokemon);
+          }
+          setTransferStatus(`Imported ${Object.keys(learnedPokemon).length} Pokemon`);
+        } catch (error) {
+          setTransferStatus(error.message || 'Import failed', true);
+        } finally {
+          importLearnedFile.value = '';
+        }
+      };
+      reader.onerror = () => {
+        setTransferStatus('Unable to read file', true);
+        importLearnedFile.value = '';
+      };
+      reader.readAsText(file);
     }
     
     function getRegion(number) {
@@ -832,6 +965,17 @@
     
     leftSearch.addEventListener('input', renderLeftList);
     rightSearch.addEventListener('input', renderRightList);
+    if (exportLearnedBtn) {
+      exportLearnedBtn.addEventListener('click', exportLearnedPokemonData);
+    }
+    if (importLearnedBtn) {
+      importLearnedBtn.addEventListener('click', () => {
+        if (importLearnedFile) importLearnedFile.click();
+      });
+    }
+    if (importLearnedFile) {
+      importLearnedFile.addEventListener('change', importLearnedPokemonData);
+    }
     
     document.addEventListener('keydown', (e) => {
       if (e.ctrlKey && e.key === '/') {
