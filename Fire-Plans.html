@@ -119,9 +119,9 @@
       padding: 14px 16px;
       color: var(--muted);
       font-size: 1rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px 16px;
     }
 
     .summary strong {
@@ -164,6 +164,33 @@
     }
 
     @media (max-width: 900px) {
+      body {
+        padding: 14px;
+      }
+
+      .app {
+        min-height: calc(100vh - 28px);
+      }
+
+      .top-bar {
+        align-items: stretch;
+      }
+
+      .title {
+        font-size: 1.2rem;
+      }
+
+      .swr-control {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+
+      .swr-control select {
+        width: 100%;
+      }
+
       .main-controls {
         grid-template-columns: 1fr;
       }
@@ -171,6 +198,48 @@
       .control-card select {
         min-height: 56px;
         font-size: 1.2rem;
+      }
+
+      .summary {
+        grid-template-columns: 1fr;
+        font-size: 0.95rem;
+      }
+
+      .year-grid {
+        grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+        gap: 8px;
+      }
+
+      .year-box {
+        min-height: 54px;
+        font-size: 0.85rem;
+      }
+    }
+
+    @media (max-width: 430px) {
+      body {
+        padding: 10px;
+      }
+
+      .app {
+        gap: 12px;
+        min-height: calc(100vh - 20px);
+      }
+
+      .top-bar,
+      .control-card,
+      .summary,
+      .bottom-pane {
+        padding: 12px;
+      }
+
+      .control-card select {
+        min-height: 52px;
+        font-size: 1.05rem;
+      }
+
+      .year-grid {
+        grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
       }
     }
   </style>
