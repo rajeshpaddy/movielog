@@ -262,13 +262,13 @@
       const swr = Number(swrSelect.value) / 100;
 
       const safeAnnualWithdrawal = portfolio * swr;
-
-      // Ratio-based visualization: if spend is above safe withdrawal,
-      // only a proportional part of selected years is shown as funded.
+      // Literal depletion model: how many full years spending can be supported.
+      const moneyLastsYears = Math.floor(portfolio / annualSpend);
       const fundedYears = Math.max(
         0,
-        Math.min(years, Math.floor((safeAnnualWithdrawal / annualSpend) * years))
+        Math.min(years, moneyLastsYears)
       );
+      const spendVsSafe = annualSpend <= safeAnnualWithdrawal ? "Within SWR" : "Above SWR";
 
       summary.innerHTML = `
         <span><strong>Selected Years:</strong> ${years}</span>
@@ -276,6 +276,8 @@
         <span><strong>Annual Spend:</strong> ${formatMoney(annualSpend)}</span>
         <span><strong>SWR:</strong> ${(swr * 100).toFixed(2).replace(/\.00$/, "")}%</span>
         <span><strong>Safe Withdrawal:</strong> ${formatMoney(safeAnnualWithdrawal)}</span>
+        <span><strong>Money Lasts:</strong> ${moneyLastsYears} years</span>
+        <span><strong>SWR Check:</strong> ${spendVsSafe}</span>
         <span><strong>Years Funded:</strong> ${fundedYears} / ${years}</span>
       `;
 
