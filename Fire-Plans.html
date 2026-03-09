@@ -262,8 +262,8 @@
       const swr = Number(swrSelect.value) / 100;
 
       const safeAnnualWithdrawal = portfolio * swr;
-      // Literal depletion model: how many full years spending can be supported.
-      const moneyLastsYears = Math.floor(portfolio / annualSpend);
+      // Proportional scaling model based on SWR coverage ratio.
+      const moneyLastsYears = Math.floor((safeAnnualWithdrawal / annualSpend) * years);
       const fundedYears = Math.max(
         0,
         Math.min(years, moneyLastsYears)
