@@ -262,11 +262,12 @@
       const swr = Number(swrSelect.value) / 100;
 
       const safeAnnualWithdrawal = portfolio * swr;
-      // SWR-based duration model: SWR amount offsets annual spending.
-      const netPortfolioDraw = annualSpend - safeAnnualWithdrawal;
-      const moneyLastsYears = netPortfolioDraw <= 0
+      // Canonical FIRE model: required portfolio to support spend at selected SWR.
+      const fireNumber = annualSpend / swr;
+      const fundingRatio = portfolio / fireNumber;
+      const moneyLastsYears = fundingRatio >= 1
         ? Number.POSITIVE_INFINITY
-        : Math.floor(portfolio / netPortfolioDraw);
+        : Math.floor(fundingRatio * years);
       const fundedYears = Math.max(
         0,
         Math.min(years, Number.isFinite(moneyLastsYears) ? moneyLastsYears : years)
@@ -275,13 +276,19 @@
       const moneyLastsLabel = Number.isFinite(moneyLastsYears)
         ? `${moneyLastsYears} years`
         : "40+ years";
+      const fireGap = fireNumber - portfolio;
+      const fireStatus = fireGap <= 0
+        ? `FIRE Surplus ${formatMoney(Math.abs(fireGap))}`
+        : `FIRE Gap ${formatMoney(fireGap)}`;
 
       summary.innerHTML = `
         <span><strong>Selected Years:</strong> ${years}</span>
         <span><strong>Portfolio:</strong> ${formatMoney(portfolio)}</span>
         <span><strong>Annual Spend:</strong> ${formatMoney(annualSpend)}</span>
         <span><strong>SWR:</strong> ${(swr * 100).toFixed(2).replace(/\.00$/, "")}%</span>
+        <span><strong>FIRE Number:</strong> ${formatMoney(fireNumber)}</span>
         <span><strong>Safe Withdrawal:</strong> ${formatMoney(safeAnnualWithdrawal)}</span>
+        <span><strong>FIRE Status:</strong> ${fireStatus}</span>
         <span><strong>Money Lasts:</strong> ${moneyLastsLabel}</span>
         <span><strong>SWR Check:</strong> ${spendVsSafe}</span>
         <span><strong>Years Funded:</strong> ${fundedYears} / ${years}</span>
