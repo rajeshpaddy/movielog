@@ -262,13 +262,19 @@
       const swr = Number(swrSelect.value) / 100;
 
       const safeAnnualWithdrawal = portfolio * swr;
-      // Proportional scaling model based on SWR coverage ratio.
-      const moneyLastsYears = Math.floor((safeAnnualWithdrawal / annualSpend) * years);
+      // SWR-based duration model: SWR amount offsets annual spending.
+      const netPortfolioDraw = annualSpend - safeAnnualWithdrawal;
+      const moneyLastsYears = netPortfolioDraw <= 0
+        ? Number.POSITIVE_INFINITY
+        : Math.floor(portfolio / netPortfolioDraw);
       const fundedYears = Math.max(
         0,
-        Math.min(years, moneyLastsYears)
+        Math.min(years, Number.isFinite(moneyLastsYears) ? moneyLastsYears : years)
       );
       const spendVsSafe = annualSpend <= safeAnnualWithdrawal ? "Within SWR" : "Above SWR";
+      const moneyLastsLabel = Number.isFinite(moneyLastsYears)
+        ? `${moneyLastsYears} years`
+        : "40+ years";
 
       summary.innerHTML = `
         <span><strong>Selected Years:</strong> ${years}</span>
@@ -276,7 +282,7 @@
         <span><strong>Annual Spend:</strong> ${formatMoney(annualSpend)}</span>
         <span><strong>SWR:</strong> ${(swr * 100).toFixed(2).replace(/\.00$/, "")}%</span>
         <span><strong>Safe Withdrawal:</strong> ${formatMoney(safeAnnualWithdrawal)}</span>
-        <span><strong>Money Lasts:</strong> ${moneyLastsYears} years</span>
+        <span><strong>Money Lasts:</strong> ${moneyLastsLabel}</span>
         <span><strong>SWR Check:</strong> ${spendVsSafe}</span>
         <span><strong>Years Funded:</strong> ${fundedYears} / ${years}</span>
       `;
