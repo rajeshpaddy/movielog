@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FIRE Plans</title>
+  <style>
+    :root {
+      --bg: #0b1722;
+      --panel: #122638;
+      --panel-2: #183247;
+      --text: #e7f3ee;
+      --muted: #a7c0b3;
+      --green: #2ecc71;
+      --green-dark: #1f8f4d;
+      --box-off: #2b3e4b;
+      --border: #2f4a5a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(180deg, #09111a 0%, #102232 100%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .app {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 16px;
+      min-height: calc(100vh - 40px);
+    }
+
+    .top-bar {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .title {
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .swr-control {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    label {
+      font-size: 1rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    select {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 1rem;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+    }
+
+    select:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.2);
+    }
+
+    .main-controls {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      width: 100%;
+    }
+
+    .control-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .control-card select {
+      width: 100%;
+      min-height: 64px;
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+
+    .summary {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      color: var(--muted);
+      font-size: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .summary strong {
+      color: var(--text);
+    }
+
+    .bottom-pane {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .year-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+      gap: 10px;
+    }
+
+    .year-box {
+      border-radius: 10px;
+      min-height: 64px;
+      border: 1px solid #355465;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.95rem;
+      background: var(--box-off);
+      color: #c4d8cd;
+    }
+
+    .year-box.on {
+      background: linear-gradient(180deg, var(--green) 0%, var(--green-dark) 100%);
+      border-color: #4cdf8b;
+      color: #08160e;
+    }
+
+    @media (max-width: 900px) {
+      .main-controls {
+        grid-template-columns: 1fr;
+      }
+
+      .control-card select {
+        min-height: 56px;
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="top-bar">
+      <div class="title">FIRE Plan Visualizer</div>
+      <div class="swr-control">
+        <label for="swrSelect">Safe Withdrawal Rate</label>
+        <select id="swrSelect" aria-label="Safe Withdrawal Rate"></select>
+      </div>
+    </div>
+
+    <div class="main-controls">
+      <div class="control-card">
+        <label for="yearsSelect">Years</label>
+        <select id="yearsSelect" aria-label="Years"></select>
+      </div>
+
+      <div class="control-card">
+        <label for="portfolioSelect">Portfolio</label>
+        <select id="portfolioSelect" aria-label="Portfolio"></select>
+      </div>
+
+      <div class="control-card">
+        <label for="expenseSelect">Annual Spend</label>
+        <select id="expenseSelect" aria-label="Annual Spend"></select>
+      </div>
+    </div>
+
+    <div class="summary" id="summary"></div>
+
+    <div class="bottom-pane">
+      <div id="boxTitle">Years funded</div>
+      <div id="yearGrid" class="year-grid"></div>
+    </div>
+  </div>
+
+  <script>
+    const yearsSelect = document.getElementById("yearsSelect");
+    const portfolioSelect = document.getElementById("portfolioSelect");
+    const expenseSelect = document.getElementById("expenseSelect");
+    const swrSelect = document.getElementById("swrSelect");
+    const summary = document.getElementById("summary");
+    const yearGrid = document.getElementById("yearGrid");
+    const boxTitle = document.getElementById("boxTitle");
+
+    function formatMoney(value) {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits: 0
+      }).format(value);
+    }
+
+    function addOptions(select, values, formatter, defaultValue) {
+      values.forEach((value) => {
+        const option = document.createElement("option");
+        option.value = String(value);
+        option.textContent = formatter(value);
+        select.appendChild(option);
+      });
+      select.value = String(defaultValue);
+    }
+
+    function buildRange(start, end, step) {
+      const out = [];
+      for (let value = start; value <= end + 0.0001; value += step) {
+        out.push(Number(value.toFixed(5)));
+      }
+      return out;
+    }
+
+    const yearsValues = buildRange(20, 40, 1);
+    const portfolioValues = buildRange(1500000, 8000000, 250000);
+    const expenseValues = buildRange(100000, 300000, 10000);
+    const swrValues = buildRange(2.5, 5, 0.25);
+
+    addOptions(yearsSelect, yearsValues, (v) => `${v} Years`, 30);
+    addOptions(portfolioSelect, portfolioValues, (v) => formatMoney(v), 4000000);
+    addOptions(expenseSelect, expenseValues, (v) => `${formatMoney(v)}`, 160000);
+    addOptions(swrSelect, swrValues, (v) => `${v.toFixed(2).replace(/\.00$/, "")}%`, 4);
+
+    function render() {
+      const years = Number(yearsSelect.value);
+      const portfolio = Number(portfolioSelect.value);
+      const annualSpend = Number(expenseSelect.value);
+      const swr = Number(swrSelect.value) / 100;
+
+      const safeAnnualWithdrawal = portfolio * swr;
+
+      // Ratio-based visualization: if spend is above safe withdrawal,
+      // only a proportional part of selected years is shown as funded.
+      const fundedYears = Math.max(
+        0,
+        Math.min(years, Math.floor((safeAnnualWithdrawal / annualSpend) * years))
+      );
+
+      summary.innerHTML = `
+        <span><strong>Selected Years:</strong> ${years}</span>
+        <span><strong>Portfolio:</strong> ${formatMoney(portfolio)}</span>
+        <span><strong>Annual Spend:</strong> ${formatMoney(annualSpend)}</span>
+        <span><strong>SWR:</strong> ${(swr * 100).toFixed(2).replace(/\.00$/, "")}%</span>
+        <span><strong>Safe Withdrawal:</strong> ${formatMoney(safeAnnualWithdrawal)}</span>
+        <span><strong>Years Funded:</strong> ${fundedYears} / ${years}</span>
+      `;
+
+      boxTitle.textContent = `Year Boxes (${years} total)`;
+      yearGrid.innerHTML = "";
+
+      for (let i = 1; i <= years; i += 1) {
+        const box = document.createElement("div");
+        box.className = `year-box ${i <= fundedYears ? "on" : ""}`;
+        box.textContent = `Year ${i}`;
+        yearGrid.appendChild(box);
+      }
+    }
+
+    [yearsSelect, portfolioSelect, expenseSelect, swrSelect].forEach((el) => {
+      el.addEventListener("change", render);
+    });
+
+    render();
+  </script>
+</body>
+</html>
