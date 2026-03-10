@@ -442,7 +442,7 @@
           body: JSON.stringify({
             key,
             content: payload,
-            expireAfter: 60 * 60 * 24 * 30
+            expireAfter: 60 * 60 * 24 * 7
           })
         });
         const responseText = await response.text();
