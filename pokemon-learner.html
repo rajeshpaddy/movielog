@@ -606,6 +606,25 @@
       { name: 'Paldea', start: 906, end: 1025 }
     ];
     
+    function safeGetItem(key) {
+      try {
+        return localStorage.getItem(key);
+      } catch (error) {
+        console.warn('Storage read failed:', key, error);
+        return null;
+      }
+    }
+
+    function safeSetItem(key, value) {
+      try {
+        localStorage.setItem(key, value);
+        return true;
+      } catch (error) {
+        console.warn('Storage write failed:', key, error);
+        return false;
+      }
+    }
+
     let allPokemon = [];
     let learnedPokemon = {};
     let failedPokemon = new Set();
@@ -632,7 +651,7 @@
     const transferStatus = document.getElementById('transferStatus');
     let leftPaneCollapsed = false;
     let rightPaneCollapsed = false;
-    let imageTheme = localStorage.getItem(IMAGE_THEME_KEY) === IMAGE_THEMES.NORMAL
+    let imageTheme = safeGetItem(IMAGE_THEME_KEY) === IMAGE_THEMES.NORMAL
       ? IMAGE_THEMES.NORMAL
       : IMAGE_THEMES.ANNIVERSARY;
 
@@ -675,7 +694,7 @@
       appContainer.classList.toggle('right-collapsed', rightPaneCollapsed);
       syncPaneButtons();
       if (save) {
-        localStorage.setItem('pokemonLearnerPaneLayout', JSON.stringify({
+        safeSetItem('pokemonLearnerPaneLayout', JSON.stringify({
           leftPaneCollapsed,
           rightPaneCollapsed
         }));
@@ -683,7 +702,7 @@
     }
 
     function loadPaneLayout() {
-      const saved = localStorage.getItem('pokemonLearnerPaneLayout');
+      const saved = safeGetItem('pokemonLearnerPaneLayout');
       if (!saved) return;
       try {
         const parsed = JSON.parse(saved);
@@ -711,14 +730,24 @@
     }
     
     function loadLearnedPokemon() {
-      const saved = localStorage.getItem('learnedPokemon');
-      if (saved) {
-        learnedPokemon = JSON.parse(saved);
+      const saved = safeGetItem('learnedPokemon');
+      if (!saved) return;
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          learnedPokemon = parsed;
+        } else {
+          learnedPokemon = {};
+        }
+      } catch (error) {
+        console.warn('Invalid learnedPokemon storage value, resetting it.');
+        learnedPokemon = {};
+        safeSetItem('learnedPokemon', JSON.stringify(learnedPokemon));
       }
     }
     
     function saveLearnedPokemon() {
-      localStorage.setItem('learnedPokemon', JSON.stringify(learnedPokemon));
+      safeSetItem('learnedPokemon', JSON.stringify(learnedPokemon));
     }
 
     function setTransferStatus(message, isError = false) {
@@ -835,7 +864,7 @@
 
     function applyImageTheme(save = true) {
       if (save) {
-        localStorage.setItem(IMAGE_THEME_KEY, imageTheme);
+        safeSetItem(IMAGE_THEME_KEY, imageTheme);
       }
       syncImageThemeButton();
       renderLeftList();
@@ -908,23 +937,27 @@
     
     async function fetchAllPokemon() {
       try {
-        const response = await fetch(`${POKEMON_API}/pokemon?limit=${TOTAL_POKEMON}`);
+        const response = await fetch(`${POKEMON_API}/pokemon-species?limit=${TOTAL_POKEMON}`);
         if (!response.ok) throw new Error('Pokemon API request failed');
         const data = await response.json();
         allPokemon = data.results
-          .map((p, i) => ({
+          .map((p) => {
+            const number = parseInt(p.url.split('/').filter(Boolean).pop(), 10);
+            return {
             name: p.name,
-            number: i + 1,
-            url: p.url
-          }))
-          .filter(p => !p.name.includes('-') && p.number <= 1025);
+            number,
+            url: `${POKEMON_API}/pokemon/${number}`
+          };
+          })
+          .filter(p => Number.isInteger(p.number) && p.number >= 1 && p.number <= TOTAL_POKEMON)
+          .sort((a, b) => a.number - b.number);
 
-        localStorage.setItem(POKEMON_CACHE_KEY, JSON.stringify(allPokemon));
+        safeSetItem(POKEMON_CACHE_KEY, JSON.stringify(allPokemon));
         setTransferStatus(`Loaded ${allPokemon.length} Pokemon`);
         renderLeftList();
         renderRightList();
       } catch (error) {
-        const cached = localStorage.getItem(POKEMON_CACHE_KEY);
+        const cached = safeGetItem(POKEMON_CACHE_KEY);
         if (cached) {
           try {
             const parsed = JSON.parse(cached);
