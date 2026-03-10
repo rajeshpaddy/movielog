@@ -119,6 +119,8 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
     }
     .pokemon-item {
       background: #0f3460;
@@ -366,15 +368,8 @@
     }
     
     .pokemon-list::-webkit-scrollbar {
-      width: 10px;
-    }
-    .pokemon-list::-webkit-scrollbar-track {
-      background: #0f3460;
-      border-radius: 5px;
-    }
-    .pokemon-list::-webkit-scrollbar-thumb {
-      background: #00d9ff;
-      border-radius: 5px;
+      width: 0;
+      height: 0;
     }
 
     .stats-bar {
