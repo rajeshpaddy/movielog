@@ -35,12 +35,39 @@
       flex: 1; 
       min-width: 350px;
     }
+    .app-container.left-collapsed .left-pane,
+    .app-container.right-collapsed .right-pane {
+      display: none;
+    }
+    .app-container.left-collapsed .center-pane,
+    .app-container.right-collapsed .center-pane {
+      min-width: 0;
+    }
     .pane-title {
       font-size: 24px;
       font-weight: bold;
       margin-bottom: 15px;
       color: #00d9ff;
       text-align: center;
+    }
+    .pane-toggle-controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+    .pane-toggle-btn {
+      border: 1px solid #00d9ff;
+      background: #0f3460;
+      color: #d6f8ff;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .pane-toggle-btn:hover {
+      background: #1a4a7a;
     }
     .search-box {
       width: 100%;
@@ -536,6 +563,10 @@
     </div>
     
     <div class="pane center-pane">
+      <div class="pane-toggle-controls">
+        <button type="button" class="pane-toggle-btn" id="toggleLeftPaneBtn" aria-label="Toggle left pane">Hide Left Pane</button>
+        <button type="button" class="pane-toggle-btn" id="toggleRightPaneBtn" aria-label="Toggle right pane">Hide Right Pane</button>
+      </div>
       <div class="center-content" id="centerContent">
         <div class="empty-state">Click a Pokemon to learn about it!</div>
       </div>
@@ -582,7 +613,10 @@
     const rightSearch = document.getElementById('rightSearch');
     const leftList = document.getElementById('leftList');
     const rightList = document.getElementById('rightList');
+    const appContainer = document.querySelector('.app-container');
     const centerContent = document.getElementById('centerContent');
+    const toggleLeftPaneBtn = document.getElementById('toggleLeftPaneBtn');
+    const toggleRightPaneBtn = document.getElementById('toggleRightPaneBtn');
     const statsBar = document.getElementById('statsBar');
     const regionStats = document.getElementById('regionStats');
     const shortcutsOverlay = document.getElementById('shortcutsOverlay');
@@ -590,6 +624,67 @@
     const importLearnedBtn = document.getElementById('importLearnedBtn');
     const importLearnedFile = document.getElementById('importLearnedFile');
     const transferStatus = document.getElementById('transferStatus');
+    let leftPaneCollapsed = false;
+    let rightPaneCollapsed = false;
+
+    function getPrimarySearchTarget() {
+      if (!leftPaneCollapsed) return leftSearch;
+      if (!rightPaneCollapsed) return rightSearch;
+      return null;
+    }
+
+    function focusPrimarySearch() {
+      const primarySearch = getPrimarySearchTarget();
+      if (!primarySearch) return;
+      tabFocus = primarySearch === rightSearch ? 'rightSearch' : 'leftSearch';
+      primarySearch.focus();
+    }
+
+    function syncPaneButtons() {
+      if (!toggleLeftPaneBtn || !toggleRightPaneBtn) return;
+      toggleLeftPaneBtn.textContent = leftPaneCollapsed ? 'Show Left Pane' : 'Hide Left Pane';
+      toggleRightPaneBtn.textContent = rightPaneCollapsed ? 'Show Right Pane' : 'Hide Right Pane';
+      toggleLeftPaneBtn.setAttribute('aria-pressed', String(leftPaneCollapsed));
+      toggleRightPaneBtn.setAttribute('aria-pressed', String(rightPaneCollapsed));
+    }
+
+    function applyPaneLayout(save = true) {
+      if (!appContainer) return;
+      appContainer.classList.toggle('left-collapsed', leftPaneCollapsed);
+      appContainer.classList.toggle('right-collapsed', rightPaneCollapsed);
+      syncPaneButtons();
+      if (save) {
+        localStorage.setItem('pokemonLearnerPaneLayout', JSON.stringify({
+          leftPaneCollapsed,
+          rightPaneCollapsed
+        }));
+      }
+    }
+
+    function loadPaneLayout() {
+      const saved = localStorage.getItem('pokemonLearnerPaneLayout');
+      if (!saved) return;
+      try {
+        const parsed = JSON.parse(saved);
+        leftPaneCollapsed = !!parsed.leftPaneCollapsed;
+        rightPaneCollapsed = !!parsed.rightPaneCollapsed;
+      } catch (error) {
+        console.warn('Invalid saved pane layout');
+      }
+    }
+
+    function togglePane(side) {
+      if (side === 'left') {
+        leftPaneCollapsed = !leftPaneCollapsed;
+      } else {
+        rightPaneCollapsed = !rightPaneCollapsed;
+      }
+      applyPaneLayout();
+      const activeElement = document.activeElement;
+      if (activeElement !== leftSearch && activeElement !== rightSearch) {
+        focusPrimarySearch();
+      }
+    }
     
     function loadLearnedPokemon() {
       const saved = localStorage.getItem('learnedPokemon');
@@ -992,6 +1087,12 @@
     if (importLearnedFile) {
       importLearnedFile.addEventListener('change', importLearnedPokemonData);
     }
+    if (toggleLeftPaneBtn) {
+      toggleLeftPaneBtn.addEventListener('click', () => togglePane('left'));
+    }
+    if (toggleRightPaneBtn) {
+      toggleRightPaneBtn.addEventListener('click', () => togglePane('right'));
+    }
     
     document.addEventListener('keydown', (e) => {
       if (e.ctrlKey && e.key === '/') {
@@ -1014,13 +1115,13 @@
           }
         } else if (e.key === '/') {
           e.preventDefault();
-          leftSearch.focus();
+          focusPrimarySearch();
         } else if (e.key === 'Escape') {
           leftSearch.value = '';
           rightSearch.value = '';
           renderLeftList();
           renderRightList();
-          leftSearch.focus();
+          focusPrimarySearch();
         }
       }
     });
@@ -1078,8 +1179,13 @@
       if (e.key === 'Tab') {
         e.preventDefault();
         if (tabFocus === 'leftList') {
-          tabFocus = 'rightSearch';
-          rightSearch.focus();
+          if (rightPaneCollapsed) {
+            tabFocus = 'leftSearch';
+            leftSearch.focus();
+          } else {
+            tabFocus = 'rightSearch';
+            rightSearch.focus();
+          }
         } else if (tabFocus === 'rightSearch') {
           tabFocus = 'rightList';
           rightFocusedIndex = 0;
@@ -1104,11 +1210,15 @@
         if (e.key === 'Tab') {
           e.preventDefault();
           if (isLeft && tabFocus === 'leftList') {
-            tabFocus = 'rightSearch';
-            rightSearch.focus();
+            if (rightPaneCollapsed) {
+              tabFocus = 'leftSearch';
+              leftSearch.focus();
+            } else {
+              tabFocus = 'rightSearch';
+              rightSearch.focus();
+            }
           } else if (!isLeft && tabFocus === 'rightList') {
-            tabFocus = 'leftSearch';
-            leftSearch.focus();
+            focusPrimarySearch();
           }
         } else if (e.key === ' ') {
           e.preventDefault();
@@ -1197,6 +1307,8 @@
     });
     
     loadLearnedPokemon();
+    loadPaneLayout();
+    applyPaneLayout(false);
     calculateStats();
     fetchAllPokemon();
   </script>
