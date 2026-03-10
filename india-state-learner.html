@@ -350,6 +350,7 @@
 
     let d3Ready = null;
     let accurateReady = false;
+    let accurateGeoData = null;
     const regionsByCode = new Map();
     const codeToItem = Object.fromEntries(DATA.map(d => [d.code, d]));
 
@@ -570,6 +571,28 @@
       });
     }
 
+    async function fetchIndiaGeoJson() {
+      if (accurateGeoData) return accurateGeoData;
+      const urls = [
+        'https://cdn.jsdelivr.net/gh/plotly/datasets@master/india_states.geojson',
+        'https://raw.githubusercontent.com/plotly/datasets/master/india_states.geojson'
+      ];
+      for (const url of urls) {
+        try {
+          const res = await fetch(url, { cache: 'force-cache' });
+          if (!res.ok) continue;
+          const geo = await res.json();
+          if (geo && Array.isArray(geo.features) && geo.features.length > 0) {
+            accurateGeoData = geo;
+            return accurateGeoData;
+          }
+        } catch (error) {
+          // Try next source.
+        }
+      }
+      throw new Error('Unable to load accurate India map data');
+    }
+
     function resolveCodeFromFeature(properties) {
       const nameCandidates = [
         properties?.st_nm,
@@ -594,9 +617,7 @@
         if (!d3Ready) d3Ready = ensureD3();
         await d3Ready;
 
-        const res = await fetch('https://raw.githubusercontent.com/plotly/datasets/master/india_states.geojson');
-        if (!res.ok) throw new Error('map data failed');
-        const geo = await res.json();
+        const geo = await fetchIndiaGeoJson();
 
         const projection = d3.geoMercator().fitExtent([[8, 8], [992, 892]], geo);
         const path = d3.geoPath(projection);
@@ -635,6 +656,7 @@
         accurateReady = true;
         return true;
       } catch (error) {
+        console.error('Accurate India map failed:', error);
         return false;
       }
     }
@@ -662,8 +684,10 @@
             localStorage.setItem(MODE_KEY, mapMode);
             applyMapMode();
             renderApproxMap();
+            setTransferStatus('Accurate map unavailable, switched to Approx mode', true);
             return;
           }
+          setTransferStatus('');
           renderAccurateStyles();
         } else {
           renderApproxMap();
