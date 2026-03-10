@@ -43,6 +43,31 @@
       gap: 10px;
       margin-bottom: 16px;
     }
+    .mode-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .mode-label {
+      color: #cbd5e1;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .mode-select {
+      border: 1px solid #fbbf24;
+      background: #0b1220;
+      color: #e5e7eb;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 13px;
+      min-width: 220px;
+    }
+    .mode-hint {
+      color: #94a3b8;
+      font-size: 12px;
+    }
     .rule {
       background: #0f172a;
       border: 1px solid #334155;
@@ -70,6 +95,64 @@
       display: flex;
       gap: 10px;
       margin-bottom: 12px;
+    }
+    .machine-section {
+      display: none;
+      margin-bottom: 12px;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      background: #0f172a;
+      padding: 12px;
+    }
+    .machine-setup {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .machine-secret {
+      flex: 1;
+      min-width: 220px;
+      border: 1px solid #fbbf24;
+      background: #0b1220;
+      color: #fff;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      letter-spacing: 3px;
+    }
+    .machine-turn {
+      border: 1px solid #334155;
+      border-radius: 10px;
+      background: #111827;
+      padding: 10px;
+    }
+    .machine-guess {
+      font-size: 15px;
+      color: #f8fafc;
+      margin-bottom: 8px;
+    }
+    .machine-guess-code {
+      color: #fbbf24;
+      font-size: 24px;
+      letter-spacing: 5px;
+      font-weight: 700;
+      margin-left: 6px;
+    }
+    .machine-feedback {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .machine-feedback input {
+      width: 80px;
+      border: 1px solid #475569;
+      background: #0b1220;
+      color: #fff;
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 14px;
     }
     .guess-input {
       flex: 1;
@@ -215,6 +298,7 @@
       .app { grid-template-columns: 1fr; }
       .rules { grid-template-columns: 1fr; }
       .guess-form { flex-direction: column; }
+      .machine-setup { flex-direction: column; }
       .btn { min-height: 46px; }
       .guess-input { letter-spacing: 6px; }
       .history-wrap { max-height: 360px; }
@@ -233,12 +317,38 @@
         <div class="rule"><strong>Win / Reset</strong><br>Get 4 Bulls to win. After 10 tries, answer is revealed.</div>
       </div>
 
+      <div class="mode-row">
+        <label class="mode-label" for="modeSelect">Mode</label>
+        <select id="modeSelect" class="mode-select">
+          <option value="human">Human Guesses</option>
+          <option value="machine">Machine Guesses</option>
+        </select>
+        <div id="modeHint" class="mode-hint">You guess the machine's number.</div>
+      </div>
+
       <div id="status" class="status">New game started. Enter a 4-digit guess.</div>
 
       <form id="guessForm" class="guess-form" autocomplete="off">
         <input id="guessInput" class="guess-input" type="text" inputmode="numeric" maxlength="4" placeholder="1234" aria-label="4 digit guess">
         <button id="guessBtn" class="btn" type="submit">Submit Guess</button>
       </form>
+
+      <div id="machineSection" class="machine-section">
+        <div class="machine-setup">
+          <input id="machineSecretInput" class="machine-secret" type="password" inputmode="numeric" maxlength="4" placeholder="Your hidden 4-digit number">
+          <button id="machineStartBtn" class="btn-secondary" type="button">Start Machine Game</button>
+        </div>
+        <div class="machine-turn">
+          <div class="machine-guess">Machine Guess: <span id="machineGuessValue" class="machine-guess-code">----</span></div>
+          <div class="machine-feedback">
+            <label for="machineBulls">Bulls</label>
+            <input id="machineBulls" type="number" min="0" max="4" value="0">
+            <label for="machineCows">Cows</label>
+            <input id="machineCows" type="number" min="0" max="4" value="0">
+            <button id="machineNextBtn" class="btn" type="button">Next Turn</button>
+          </div>
+        </div>
+      </div>
 
       <div class="controls">
         <button id="newGameBtn" class="btn-secondary" type="button">New Game</button>
@@ -254,6 +364,7 @@
               <th style="width: 120px;">Guess</th>
               <th style="width: 100px;">Bulls</th>
               <th style="width: 100px;">Cows</th>
+              <th style="width: 140px;">Remaining</th>
             </tr>
           </thead>
           <tbody id="historyTable"></tbody>
@@ -293,16 +404,31 @@
   <script>
     const MAX_ATTEMPTS = 10;
     const SCORE_KEY = 'cowsNBullsScoreHistory';
+    const MODE_HUMAN = 'human';
+    const MODE_MACHINE = 'machine';
 
+    let gameMode = MODE_HUMAN;
     let secret = '';
     let attempts = 0;
     let turns = [];
     let gameOver = false;
+    let machineStarted = false;
+    let machineCandidates = [];
+    let machineCurrentGuess = '';
 
     const statusEl = document.getElementById('status');
+    const modeSelect = document.getElementById('modeSelect');
+    const modeHint = document.getElementById('modeHint');
     const guessForm = document.getElementById('guessForm');
     const guessInput = document.getElementById('guessInput');
     const guessBtn = document.getElementById('guessBtn');
+    const machineSection = document.getElementById('machineSection');
+    const machineSecretInput = document.getElementById('machineSecretInput');
+    const machineStartBtn = document.getElementById('machineStartBtn');
+    const machineGuessValue = document.getElementById('machineGuessValue');
+    const machineBulls = document.getElementById('machineBulls');
+    const machineCows = document.getElementById('machineCows');
+    const machineNextBtn = document.getElementById('machineNextBtn');
     const newGameBtn = document.getElementById('newGameBtn');
     const attemptNote = document.getElementById('attemptNote');
     const historyTable = document.getElementById('historyTable');
@@ -331,6 +457,24 @@
       return digits.slice(0, 4).join('');
     }
 
+    function getAllValidNumbers() {
+      const values = [];
+      for (let n = 1023; n <= 9876; n += 1) {
+        const text = String(n);
+        if (new Set(text.split('')).size !== 4) continue;
+        values.push(text);
+      }
+      return values;
+    }
+
+    function validateNumber(value) {
+      const raw = String(value || '').trim();
+      if (!/^\d{4}$/.test(raw)) return { ok: false, message: 'Enter exactly 4 digits.' };
+      if (raw[0] === '0') return { ok: false, message: 'First digit cannot be 0.' };
+      if (new Set(raw.split('')).size !== 4) return { ok: false, message: 'Use 4 different digits (no repeats).' };
+      return { ok: true, value: raw };
+    }
+
     function getScores() {
       try {
         const parsed = JSON.parse(localStorage.getItem(SCORE_KEY) || '[]');
@@ -345,12 +489,14 @@
       localStorage.setItem(SCORE_KEY, JSON.stringify(scores));
     }
 
-    function addScore(result, usedAttempts, answer) {
+    function addScore(result, usedAttempts, answer, mode, winner) {
       const scores = getScores();
       scores.unshift({
         result,
         attempts: usedAttempts,
         answer,
+        mode,
+        winner,
         playedAt: new Date().toISOString()
       });
       saveScores(scores.slice(0, 100));
@@ -387,13 +533,17 @@
       scoreHistory.innerHTML = scores.map(score => {
         const resultClass = score.result === 'WIN' ? 'win' : 'loss';
         const resultText = score.result === 'WIN' ? 'Winner' : 'Try Again';
+        const modeText = score.mode || 'Human Guesses';
+        const winnerText = score.winner || (score.result === 'WIN' ? 'Human' : 'Machine');
+        const answerText = score.answer || '-';
         return `
           <div class="history-item">
             <div class="history-top">
               <span class="history-date">${formatDate(score.playedAt)}</span>
               <span class="history-result ${resultClass}">${resultText}</span>
             </div>
-            <div class="history-meta">Attempts: ${score.attempts} / ${MAX_ATTEMPTS} • Answer: ${score.answer}</div>
+            <div class="history-meta">Mode: ${modeText} • Winner: ${winnerText}</div>
+            <div class="history-meta">Attempts: ${score.attempts} / ${MAX_ATTEMPTS} • Answer: ${answerText}</div>
           </div>
         `;
       }).join('');
@@ -407,7 +557,12 @@
     }
 
     function updateAttemptNote() {
-      attemptNote.textContent = `Attempts: ${attempts} / ${MAX_ATTEMPTS}`;
+      if (gameMode === MODE_MACHINE) {
+        const remaining = machineStarted ? machineCandidates.length : '-';
+        attemptNote.textContent = `Machine Attempts: ${attempts} / ${MAX_ATTEMPTS} • Remaining numbers: ${remaining}`;
+      } else {
+        attemptNote.textContent = `Attempts: ${attempts} / ${MAX_ATTEMPTS}`;
+      }
     }
 
     function renderTurns() {
@@ -423,6 +578,7 @@
           <td>${turn.guess}</td>
           <td>${turn.bulls}</td>
           <td>${turn.cows}</td>
+          <td>${turn.remaining == null ? '-' : turn.remaining}</td>
         </tr>
       `).join('');
     }
@@ -432,11 +588,19 @@
       guessBtn.disabled = !enabled;
     }
 
-    function startNewGame() {
+    function startHumanGame() {
       secret = generateSecret();
       attempts = 0;
       turns = [];
       gameOver = false;
+      machineStarted = false;
+      machineCandidates = [];
+      machineCurrentGuess = '';
+      gameMode = MODE_HUMAN;
+      modeSelect.value = MODE_HUMAN;
+      modeHint.textContent = 'You guess the machine\\'s number.';
+      guessForm.style.display = 'flex';
+      machineSection.style.display = 'none';
       setStatus('New game started. Enter a 4-digit guess.');
       updateAttemptNote();
       renderTurns();
@@ -445,44 +609,151 @@
       guessInput.focus();
     }
 
-    function evaluateGuess(guess) {
+    function evaluateGuess(guess, answer) {
       let bulls = 0;
       let cows = 0;
       for (let i = 0; i < 4; i += 1) {
-        if (guess[i] === secret[i]) {
+        if (guess[i] === answer[i]) {
           bulls += 1;
-        } else if (secret.includes(guess[i])) {
+        } else if (answer.includes(guess[i])) {
           cows += 1;
         }
       }
       return { bulls, cows };
     }
 
-    function handleGuessSubmit(event) {
-      event.preventDefault();
-      if (gameOver) return;
+    function setMachineControlsEnabled(enabled) {
+      machineBulls.disabled = !enabled;
+      machineCows.disabled = !enabled;
+      machineNextBtn.disabled = !enabled;
+    }
 
-      const raw = guessInput.value.trim();
-      if (!/^\d{4}$/.test(raw)) {
-        setStatus('Enter exactly 4 digits.', 'loss');
+    function updateMachineGuessDisplay() {
+      machineGuessValue.textContent = machineCurrentGuess || '----';
+    }
+
+    function prepareMachineMode() {
+      attempts = 0;
+      turns = [];
+      gameOver = false;
+      machineStarted = false;
+      machineCandidates = [];
+      machineCurrentGuess = '';
+      gameMode = MODE_MACHINE;
+      modeSelect.value = MODE_MACHINE;
+      modeHint.textContent = 'Machine guesses your hidden number.';
+      guessForm.style.display = 'none';
+      machineSection.style.display = 'block';
+      setMachineControlsEnabled(false);
+      machineSecretInput.value = '';
+      machineBulls.value = '0';
+      machineCows.value = '0';
+      updateMachineGuessDisplay();
+      updateAttemptNote();
+      renderTurns();
+      setStatus('Machine Guess mode: Enter your hidden 4-digit number and click Start Machine Game.');
+      machineSecretInput.focus();
+    }
+
+    function startMachineGame() {
+      if (gameMode !== MODE_MACHINE) return;
+      const valid = validateNumber(machineSecretInput.value);
+      if (!valid.ok) {
+        setStatus(valid.message, 'loss');
         return;
       }
-      if (raw[0] === '0') {
-        setStatus('First digit cannot be 0.', 'loss');
-        return;
-      }
-      if (new Set(raw.split('')).size !== 4) {
-        setStatus('Use 4 different digits (no repeats).', 'loss');
+      attempts = 0;
+      turns = [];
+      gameOver = false;
+      machineStarted = true;
+      machineCandidates = getAllValidNumbers();
+      machineCurrentGuess = machineCandidates[0];
+      updateMachineGuessDisplay();
+      setMachineControlsEnabled(true);
+      machineBulls.value = '0';
+      machineCows.value = '0';
+      updateAttemptNote();
+      renderTurns();
+      setStatus(`Machine Turn 1 guess is ${machineCurrentGuess}. Enter Bulls/Cows feedback and click Next Turn.`);
+      machineBulls.focus();
+    }
+
+    function handleMachineNextTurn() {
+      if (gameMode !== MODE_MACHINE || !machineStarted || gameOver) return;
+
+      const bulls = Number(machineBulls.value);
+      const cows = Number(machineCows.value);
+      if (!Number.isInteger(bulls) || !Number.isInteger(cows) || bulls < 0 || cows < 0 || bulls > 4 || cows > 4 || bulls + cows > 4) {
+        setStatus('Feedback must be valid integers where Bulls + Cows <= 4.', 'loss');
         return;
       }
 
       attempts += 1;
-      const result = evaluateGuess(raw);
+      machineCandidates = machineCandidates.filter(candidate => {
+        const result = evaluateGuess(machineCurrentGuess, candidate);
+        return result.bulls === bulls && result.cows === cows;
+      });
+
+      turns.unshift({
+        turn: attempts,
+        guess: machineCurrentGuess,
+        bulls,
+        cows,
+        remaining: machineCandidates.length
+      });
+      renderTurns();
+      updateAttemptNote();
+
+      if (bulls === 4) {
+        gameOver = true;
+        setMachineControlsEnabled(false);
+        setStatus(`Machine is the winner! It guessed your number in ${attempts} attempts.`, 'win');
+        addScore('WIN', attempts, 'Hidden by player', 'Machine Guesses', 'Machine');
+        return;
+      }
+
+      if (attempts >= MAX_ATTEMPTS) {
+        gameOver = true;
+        setMachineControlsEnabled(false);
+        setStatus('Machine used all 10 attempts. Human wins. Start a new game to try again.', 'loss');
+        addScore('LOSS', attempts, 'Hidden by player', 'Machine Guesses', 'Human');
+        return;
+      }
+
+      if (machineCandidates.length === 0) {
+        gameOver = true;
+        setMachineControlsEnabled(false);
+        setStatus('No numbers remain. Feedback became inconsistent. Restart Machine mode and try again.', 'loss');
+        return;
+      }
+
+      machineCurrentGuess = machineCandidates[0];
+      updateMachineGuessDisplay();
+      machineBulls.value = '0';
+      machineCows.value = '0';
+      setStatus(`Machine Turn ${attempts + 1} guess is ${machineCurrentGuess}. Enter Bulls/Cows and click Next Turn.`);
+      machineBulls.focus();
+    }
+
+    function handleGuessSubmit(event) {
+      event.preventDefault();
+      if (gameMode !== MODE_HUMAN || gameOver) return;
+
+      const valid = validateNumber(guessInput.value);
+      if (!valid.ok) {
+        setStatus(valid.message, 'loss');
+        return;
+      }
+      const raw = valid.value;
+
+      attempts += 1;
+      const result = evaluateGuess(raw, secret);
       turns.unshift({
         turn: attempts,
         guess: raw,
         bulls: result.bulls,
-        cows: result.cows
+        cows: result.cows,
+        remaining: null
       });
 
       renderTurns();
@@ -492,7 +763,7 @@
         gameOver = true;
         setGameInputEnabled(false);
         setStatus(`You are a winner! You cracked ${secret} in ${attempts} attempts.`, 'win');
-        addScore('WIN', attempts, secret);
+        addScore('WIN', attempts, secret, 'Human Guesses', 'Human');
         return;
       }
 
@@ -500,7 +771,7 @@
         gameOver = true;
         setGameInputEnabled(false);
         setStatus(`No more attempts left. The number was ${secret}. Try again with a new game.`, 'loss');
-        addScore('LOSS', attempts, secret);
+        addScore('LOSS', attempts, secret, 'Human Guesses', 'Machine');
         return;
       }
 
@@ -509,11 +780,22 @@
       guessInput.focus();
     }
 
+    function switchMode(mode) {
+      if (mode === MODE_MACHINE) {
+        prepareMachineMode();
+      } else {
+        startHumanGame();
+      }
+    }
+
     guessForm.addEventListener('submit', handleGuessSubmit);
-    newGameBtn.addEventListener('click', startNewGame);
+    modeSelect.addEventListener('change', (e) => switchMode(e.target.value));
+    machineStartBtn.addEventListener('click', startMachineGame);
+    machineNextBtn.addEventListener('click', handleMachineNextTurn);
+    newGameBtn.addEventListener('click', () => switchMode(gameMode));
 
     renderScoreCard();
-    startNewGame();
+    startHumanGame();
   </script>
 </body>
 </html>
