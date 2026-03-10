@@ -1021,12 +1021,25 @@
             safeStorageSet('movielog_movies', JSON.stringify(movies));
         }
 
+        async function fetchJsonWithTimeout(url, timeoutMs = 8000) {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), timeoutMs);
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                return await response.json();
+            } finally {
+                clearTimeout(timeout);
+            }
+        }
+
         async function fetchAutocompleteSuggestions(query) {
             if (!query || query.length < 2) return;
             
             try {
-                const res = await fetch(`https://imdb.iamidiotareyoutoo.com/search?q=${encodeURIComponent(query)}`);
-                const data = await res.json();
+                const data = await fetchJsonWithTimeout(
+                    `https://imdb.iamidiotareyoutoo.com/search?q=${encodeURIComponent(query)}`,
+                    5000
+                );
                 
                 if (data.ok && data.description && data.description.length > 0) {
                     const dataList = document.getElementById('movieSuggestions');
@@ -1072,8 +1085,10 @@
             searchBtn.innerHTML = '<div class="spinner"></div> Searching...';
 
             try {
-                const res = await fetch(`https://imdb.iamidiotareyoutoo.com/search?q=${encodeURIComponent(query)}`);
-                const data = await res.json();
+                const data = await fetchJsonWithTimeout(
+                    `https://imdb.iamidiotareyoutoo.com/search?q=${encodeURIComponent(query)}`,
+                    8000
+                );
                 
                 if (data.ok && data.description && data.description.length > 0) {
                     showMovieResults(data.description.slice(0, 8));
@@ -1083,10 +1098,10 @@
             } catch (err) {
                 console.error(err);
                 showManualEntry(query);
+            } finally {
+                searchBtn.disabled = false;
+                searchBtn.textContent = 'Search';
             }
-
-            searchBtn.disabled = false;
-            searchBtn.textContent = 'Search';
         }
 
         function showMovieResults(results) {
@@ -1372,12 +1387,14 @@
             showManualEntry(movieNameInput.value.trim() || 'New Movie');
         });
 
-        document.querySelectorAll('.nav-btn').forEach(btn => {
+        document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
                 document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
                 btn.classList.add('active');
-                document.getElementById(btn.dataset.tab + 'Tab').classList.add('active');
+                const tab = document.getElementById(btn.dataset.tab + 'Tab');
+                if (!tab) return;
+                tab.classList.add('active');
                 
                 if (btn.dataset.tab === 'reports') {
                     renderReports();
