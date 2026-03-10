@@ -297,9 +297,9 @@
 
   <script>
     const STORAGE_KEY = 'ideaLogEntriesV1';
-    const SHARED_STORE_BASE = 'https://kvdb.io';
-    const SHARED_BUCKET_ID = 'EkLaKpKZDbYnMpUvPi1wrN';
-    const SHARED_FALLBACK_BASE = 'https://www.jsonstore.io';
+    const JSONBLOB_API = 'https://jsonblob.com/api/jsonBlob';
+    const SHARED_INDEX_ID = '019cd91c-9c68-798d-9493-a39d5249fa3e';
+    const SHARED_INDEX_URL = `${JSONBLOB_API}/${SHARED_INDEX_ID}`;
     const STATES = {
       EXPERIMENTING: 'experimenting',
       DISCARDED: 'discarded',
@@ -532,100 +532,131 @@
       return `idea-log-${keyword}`;
     }
 
-    function getSharedProvidersForKey(key) {
-      return [
-        {
-          name: 'kvdb',
-          url: `${SHARED_STORE_BASE}/${SHARED_BUCKET_ID}/${encodeURIComponent(key)}`,
-          method: 'PUT'
-        },
-        {
-          name: 'jsonstore',
-          url: `${SHARED_FALLBACK_BASE}/${encodeURIComponent(key)}`,
-          method: 'PUT'
-        }
-      ];
+    function parseJsonBlobId(response, fallbackUrl) {
+      const headerId = response.headers.get('x-jsonblob-id');
+      if (headerId) return headerId;
+      const location = response.headers.get('location') || fallbackUrl || '';
+      const parts = location.split('/').filter(Boolean);
+      return parts[parts.length - 1] || '';
+    }
+
+    function asAbsoluteJsonBlobUrl(locationOrUrl) {
+      if (!locationOrUrl) return '';
+      if (locationOrUrl.startsWith('http://') || locationOrUrl.startsWith('https://')) {
+        return locationOrUrl;
+      }
+      return `https://jsonblob.com${locationOrUrl}`;
+    }
+
+    function extractSharedPayload(raw) {
+      if (!raw || typeof raw !== 'object') return null;
+      return Array.isArray(raw.ideas) ? raw : null;
+    }
+
+    async function loadSharedIndex() {
+      const response = await fetch(SHARED_INDEX_URL);
+      if (!response.ok) {
+        throw new Error(`Shared index read failed (${response.status})`);
+      }
+      const raw = await response.json();
+      if (!raw || typeof raw !== 'object') return { app: 'idea-log-shared-index', entries: {} };
+      if (!raw.entries || typeof raw.entries !== 'object') raw.entries = {};
+      return raw;
+    }
+
+    async function saveSharedIndex(indexData) {
+      const response = await fetch(SHARED_INDEX_URL, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(indexData)
+      });
+      if (!response.ok) {
+        const detail = await response.text().catch(() => '');
+        throw new Error(`Shared index update failed (${response.status})${detail ? `: ${detail}` : ''}`);
+      }
     }
 
     async function exportIdeasShared() {
       const keyword = promptKeyword('Export to shared storage');
       if (!keyword) return;
+      const key = getSharedKey(keyword);
+      const exportedAt = new Date().toISOString();
       const payload = {
         app: 'idea-log',
         version: 1,
-        exportedAt: new Date().toISOString(),
+        exportedAt,
         keyword,
         ideas
       };
-      const key = getSharedKey(keyword);
-      const providers = getSharedProvidersForKey(key);
-      let lastError = '';
-      for (const provider of providers) {
-        try {
-          const response = await fetch(provider.url, {
-            method: provider.method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          if (!response.ok) {
-            const detail = await response.text().catch(() => '');
-            lastError = `${provider.name}: ${response.status}${detail ? ` ${detail}` : ''}`;
-            continue;
-          }
-          setStatus(`Shared export completed with keyword "${keyword}" via ${provider.name}.`, false);
-          setSharedLink(provider.url);
-          return;
-        } catch (error) {
-          lastError = `${provider.name}: ${error.message || 'request failed'}`;
-        }
-      }
-      setStatus(`Shared export failed. ${lastError || 'No provider succeeded.'}`, true);
-    }
 
-    function extractSharedPayload(raw) {
-      if (!raw || typeof raw !== 'object') return null;
-      if (Array.isArray(raw.ideas)) return raw;
-      if (raw.result && typeof raw.result === 'object' && Array.isArray(raw.result.ideas)) return raw.result;
-      if (raw.data && typeof raw.data === 'object' && Array.isArray(raw.data.ideas)) return raw.data;
-      if (raw.result && raw.result.value && Array.isArray(raw.result.value.ideas)) return raw.result.value;
-      return null;
+      try {
+        const createResponse = await fetch(JSONBLOB_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!createResponse.ok) {
+          const detail = await createResponse.text().catch(() => '');
+          throw new Error(`Shared export failed (${createResponse.status})${detail ? `: ${detail}` : ''}`);
+        }
+
+        const snapshotUrl = asAbsoluteJsonBlobUrl(createResponse.headers.get('location'));
+        const snapshotId = parseJsonBlobId(createResponse, snapshotUrl);
+        const indexData = await loadSharedIndex();
+        const existing = Array.isArray(indexData.entries[key]) ? indexData.entries[key] : [];
+        indexData.entries[key] = [
+          {
+            id: snapshotId,
+            url: snapshotUrl,
+            exportedAt
+          },
+          ...existing.filter(entry => entry && entry.id !== snapshotId)
+        ].slice(0, 25);
+        await saveSharedIndex(indexData);
+
+        setStatus(`Shared export completed with keyword "${keyword}".`, false);
+        setSharedLink(snapshotUrl);
+      } catch (error) {
+        setStatus(error.message || 'Shared export failed.', true);
+      }
     }
 
     async function importIdeasShared() {
       const keyword = promptKeyword('Import from shared storage');
       if (!keyword) return;
       const key = getSharedKey(keyword);
-      const providers = getSharedProvidersForKey(key);
-      let lastError = '';
-      for (const provider of providers) {
-        try {
-          const response = await fetch(provider.url);
-          if (!response.ok) {
-            const detail = await response.text().catch(() => '');
-            lastError = `${provider.name}: ${response.status}${detail ? ` ${detail}` : ''}`;
-            continue;
-          }
-          const rawText = await response.text();
-          const parsed = JSON.parse(rawText);
-          const payload = extractSharedPayload(parsed);
-          if (!payload || !Array.isArray(payload.ideas)) {
-            lastError = `${provider.name}: invalid payload`;
-            continue;
-          }
-          const incoming = payload.ideas.map(normalizeIdea).filter(Boolean);
-          const byId = new Map(ideas.map(i => [i.id, i]));
-          incoming.forEach(item => byId.set(item.id, item));
-          ideas = Array.from(byId.values()).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-          saveIdeas();
-          renderAll();
-          setStatus(`Imported ${incoming.length} ideas from shared storage using "${keyword}" via ${provider.name}.`, false);
-          setSharedLink(provider.url);
-          return;
-        } catch (error) {
-          lastError = `${provider.name}: ${error.message || 'request failed'}`;
+
+      try {
+        const indexData = await loadSharedIndex();
+        const entries = Array.isArray(indexData.entries[key]) ? indexData.entries[key] : [];
+        if (entries.length === 0) {
+          throw new Error(`No shared data found for keyword "${keyword}".`);
         }
+
+        const latest = entries[0];
+        const snapshotUrl = latest.url || `${JSONBLOB_API}/${latest.id}`;
+        const response = await fetch(snapshotUrl);
+        if (!response.ok) {
+          const detail = await response.text().catch(() => '');
+          throw new Error(`Shared import failed (${response.status})${detail ? `: ${detail}` : ''}`);
+        }
+        const parsed = await response.json();
+        const payload = extractSharedPayload(parsed);
+        if (!payload || !Array.isArray(payload.ideas)) {
+          throw new Error('Shared data format is invalid.');
+        }
+
+        const incoming = payload.ideas.map(normalizeIdea).filter(Boolean);
+        const byId = new Map(ideas.map(i => [i.id, i]));
+        incoming.forEach(item => byId.set(item.id, item));
+        ideas = Array.from(byId.values()).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        saveIdeas();
+        renderAll();
+        setStatus(`Imported ${incoming.length} ideas from shared storage using "${keyword}".`, false);
+        setSharedLink(snapshotUrl);
+      } catch (error) {
+        setStatus(error.message || 'Shared import failed.', true);
       }
-      setStatus(`Shared import failed. ${lastError || 'No provider succeeded.'}`, true);
     }
 
     function renderStats() {
