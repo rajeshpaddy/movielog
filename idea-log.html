@@ -236,6 +236,17 @@
       min-height: 18px;
     }
     .status.error { color: #fca5a5; }
+    .shared-link {
+      margin-top: 6px;
+      font-size: 12px;
+      color: #7dd3fc;
+      min-height: 16px;
+      word-break: break-all;
+    }
+    .shared-link a {
+      color: #7dd3fc;
+      text-decoration: underline;
+    }
 
     @media (max-width: 980px) {
       .stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -274,6 +285,7 @@
         <input id="importFile" type="file" accept="application/json" hidden>
       </div>
       <div id="status" class="status" aria-live="polite"></div>
+      <div id="sharedLink" class="shared-link" aria-live="polite"></div>
     </section>
 
     <section class="panel">
@@ -312,6 +324,7 @@
     const importSharedBtn = document.getElementById('importSharedBtn');
     const importFile = document.getElementById('importFile');
     const statusEl = document.getElementById('status');
+    const sharedLinkEl = document.getElementById('sharedLink');
     const statsGrid = document.getElementById('statsGrid');
     const board = document.getElementById('board');
 
@@ -337,6 +350,15 @@
     function setStatus(message, isError) {
       statusEl.textContent = message || '';
       statusEl.classList.toggle('error', !!isError);
+    }
+
+    function setSharedLink(url) {
+      if (!url) {
+        sharedLinkEl.textContent = '';
+        return;
+      }
+      const safeUrl = String(url);
+      sharedLinkEl.innerHTML = `Shared URL: <a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${safeUrl}</a>`;
     }
 
     function formatDate(iso) {
@@ -514,14 +536,16 @@
         ideas
       };
       const key = getSharedKey(keyword);
+      const sharedUrl = `${SHARED_STORE_BASE}/${encodeURIComponent(key)}`;
       try {
-        const response = await fetch(`${SHARED_STORE_BASE}/${encodeURIComponent(key)}`, {
+        const response = await fetch(sharedUrl, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
         if (!response.ok) throw new Error(`Shared export failed (${response.status})`);
         setStatus(`Shared export completed with keyword "${keyword}".`, false);
+        setSharedLink(sharedUrl);
       } catch (error) {
         setStatus(error.message || 'Shared export failed.', true);
       }
@@ -540,8 +564,9 @@
       const keyword = promptKeyword('Import from shared storage');
       if (!keyword) return;
       const key = getSharedKey(keyword);
+      const sharedUrl = `${SHARED_STORE_BASE}/${encodeURIComponent(key)}`;
       try {
-        const response = await fetch(`${SHARED_STORE_BASE}/${encodeURIComponent(key)}`);
+        const response = await fetch(sharedUrl);
         if (!response.ok) throw new Error(`No shared data found for keyword "${keyword}".`);
         const parsed = await response.json();
         const payload = extractSharedPayload(parsed);
@@ -555,6 +580,7 @@
         saveIdeas();
         renderAll();
         setStatus(`Imported ${incoming.length} ideas from shared storage using "${keyword}".`, false);
+        setSharedLink(sharedUrl);
       } catch (error) {
         setStatus(error.message || 'Shared import failed.', true);
       }
