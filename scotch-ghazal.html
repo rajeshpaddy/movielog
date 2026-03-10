@@ -34,29 +34,19 @@
     .app-home-link:hover { background: rgba(26, 74, 122, 0.95); }
     .app-home-link:focus-visible { outline: 2px solid #00d9ff; outline-offset: 2px; }
 
-    .shell {
-      max-width: 1420px;
-      margin: 0 auto;
-    }
-    .heading {
-      text-align: center;
-      margin: 18px 0 16px;
-    }
+    .shell { max-width: 1460px; margin: 0 auto; }
+    .heading { text-align: center; margin: 18px 0 16px; }
     h1 {
       margin: 0;
       font-size: clamp(30px, 4vw, 44px);
       color: #f5c793;
       letter-spacing: 0.6px;
     }
-    .sub {
-      margin-top: 8px;
-      color: #b6b4af;
-      font-size: 14px;
-    }
+    .sub { margin-top: 8px; color: #b6b4af; font-size: 14px; }
 
     .layout {
       display: grid;
-      grid-template-columns: 280px minmax(420px, 1fr) 320px;
+      grid-template-columns: 320px minmax(440px, 1fr) 340px;
       gap: 14px;
       align-items: start;
     }
@@ -72,21 +62,28 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       background: linear-gradient(180deg, rgba(255, 198, 143, 0.14), rgba(255, 198, 143, 0.04));
     }
-    .pane-title {
-      margin: 0;
-      font-size: 16px;
-      color: #ffd8ab;
-      font-weight: 700;
+    .pane-title { margin: 0; font-size: 16px; color: #ffd8ab; font-weight: 700; }
+    .pane-note { margin: 4px 0 10px; color: #a9a9aa; font-size: 12px; }
+    .search {
+      width: 100%;
+      border: 1px solid #334155;
+      background: #0f1526;
+      color: #e5e7eb;
+      border-radius: 8px;
+      padding: 9px 10px;
+      font-size: 13px;
     }
-    .pane-note {
-      margin: 4px 0 0;
-      color: #a9a9aa;
-      font-size: 12px;
-    }
+    .search:focus { outline: none; border-color: #7dd3fc; box-shadow: 0 0 0 2px rgba(125, 211, 252, 0.18); }
+
     .list {
-      max-height: 72vh;
+      max-height: 71vh;
       overflow: auto;
       padding: 8px;
+    }
+    .result-count {
+      font-size: 11px;
+      color: #94a3b8;
+      padding: 6px 12px 2px;
     }
     .item {
       width: 100%;
@@ -117,11 +114,7 @@
       gap: 8px;
       margin-bottom: 4px;
     }
-    .item-name {
-      font-size: 14px;
-      font-weight: 700;
-      color: #f4efe7;
-    }
+    .item-name { font-size: 14px; font-weight: 700; color: #f4efe7; }
     .tag {
       font-size: 11px;
       color: #111;
@@ -131,17 +124,18 @@
       font-weight: 700;
       white-space: nowrap;
     }
-    .muted {
-      color: #a5a8b2;
-      font-size: 12px;
-      line-height: 1.35;
+    .muted { color: #a5a8b2; font-size: 12px; line-height: 1.35; }
+    .empty {
+      margin: 12px;
+      padding: 14px;
+      border: 1px dashed rgba(148, 163, 184, 0.4);
+      border-radius: 10px;
+      color: #94a3b8;
+      font-size: 13px;
+      text-align: center;
     }
 
-    .center {
-      padding: 14px;
-      display: grid;
-      gap: 14px;
-    }
+    .center { padding: 14px; display: grid; gap: 14px; }
     .pair-banner {
       border: 1px dashed rgba(245, 199, 147, 0.45);
       background: rgba(255, 222, 186, 0.06);
@@ -156,14 +150,7 @@
       border-radius: 12px;
       padding: 12px;
     }
-    .detail-title {
-      margin: 0 0 8px;
-      font-size: 18px;
-      color: #ffd8ab;
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
+    .detail-title { margin: 0 0 8px; font-size: 18px; color: #ffd8ab; }
     .facts {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -183,17 +170,8 @@
       letter-spacing: 0.45px;
       margin-bottom: 3px;
     }
-    .fact-v {
-      color: #ece5da;
-      font-size: 13px;
-      font-weight: 600;
-    }
-    .detail-text {
-      color: #d3d0c8;
-      font-size: 13px;
-      margin: 6px 0;
-      line-height: 1.5;
-    }
+    .fact-v { color: #ece5da; font-size: 13px; font-weight: 600; }
+    .detail-text { color: #d3d0c8; font-size: 13px; margin: 6px 0; line-height: 1.5; }
     .lyrics {
       margin-top: 8px;
       background: #101321;
@@ -206,36 +184,55 @@
       white-space: pre-line;
       font-style: italic;
     }
-    .yt-wrap {
+
+    .audio-box {
       margin-top: 10px;
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: #000;
-      aspect-ratio: 16 / 9;
+      border: 1px solid rgba(125, 211, 252, 0.3);
+      border-radius: 10px;
+      background: #0f1526;
+      padding: 10px;
     }
-    .yt-wrap iframe {
-      width: 100%;
-      height: 100%;
-      border: 0;
+    .audio-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
     }
+    .btn {
+      border: 1px solid #355070;
+      border-radius: 8px;
+      background: #162238;
+      color: #e2e8f0;
+      padding: 7px 11px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .btn:hover { border-color: #7dd3fc; }
     .yt-link {
       display: inline-block;
-      margin-top: 8px;
       font-size: 13px;
       color: #80d8ff;
       text-decoration: none;
     }
     .yt-link:hover { text-decoration: underline; }
-    .legal-note {
-      color: #9ca3af;
-      font-size: 11px;
-      margin-top: 8px;
+    .player-status { font-size: 12px; color: #b8c4d8; }
+    .legal-note { color: #9ca3af; font-size: 11px; margin-top: 8px; }
+
+    .hidden-audio {
+      position: absolute;
+      left: -9999px;
+      top: -9999px;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+      border: 0;
     }
 
-    @media (max-width: 1180px) {
+    @media (max-width: 1260px) {
       .layout { grid-template-columns: 1fr; }
-      .list { max-height: 260px; }
+      .list { max-height: 300px; }
     }
   </style>
 </head>
@@ -245,24 +242,24 @@
   <div class="shell">
     <header class="heading">
       <h1>Scotch & Ghazal Pairing Lounge</h1>
-      <p class="sub">Pick a world-famous Scotch and a timeless Ghazal. The center pane shows pairing notes, lyric excerpt, and playable YouTube link.</p>
+      <p class="sub">Audio-first mode: pick a Scotch and Ghazal, read details and lyrics, then play from YouTube without visible video.</p>
     </header>
 
     <main class="layout" aria-label="Scotch and Ghazal pairing app">
       <section class="pane" aria-label="Scotch list">
         <div class="pane-head">
           <h2 class="pane-title">World Famous Scotch</h2>
-          <p class="pane-note">Select one Scotch for tasting profile and pairing context.</p>
+          <p class="pane-note">150 curated Scotch expressions. Search by name, region, style, age, or ABV.</p>
+          <input id="scotchSearch" class="search" type="text" placeholder="Search Scotch...">
         </div>
+        <div id="scotchResultCount" class="result-count"></div>
         <div id="scotchList" class="list"></div>
       </section>
 
       <section class="pane" aria-label="Selection details">
         <div class="center">
           <div id="pairBanner" class="pair-banner"></div>
-
           <article class="detail-card" id="scotchCard"></article>
-
           <article class="detail-card" id="ghazalCard"></article>
         </div>
       </section>
@@ -270,258 +267,183 @@
       <section class="pane" aria-label="Ghazal list">
         <div class="pane-head">
           <h2 class="pane-title">Ghazals For The Evening</h2>
-          <p class="pane-note">Select one Ghazal. The song plays in center pane.</p>
+          <p class="pane-note">90 ghazal entries with mood and lyric excerpts. Search by title, artist, poet, mood.</p>
+          <input id="ghazalSearch" class="search" type="text" placeholder="Search Ghazals...">
         </div>
+        <div id="ghazalResultCount" class="result-count"></div>
         <div id="ghazalList" class="list"></div>
       </section>
     </main>
   </div>
 
+  <iframe id="audioFrame" class="hidden-audio" title="YouTube audio player" allow="autoplay; encrypted-media"></iframe>
+
   <script>
-    const scotches = [
-      {
-        id: 'macallan-18',
-        name: 'The Macallan 18 Sherry Oak',
-        region: 'Speyside',
-        age: '18 Years',
-        abv: '43%',
-        style: 'Rich, sherried, elegant',
-        nose: 'Dried fruits, orange peel, polished oak',
-        palate: 'Raisin, dark chocolate, warm spice',
-        finish: 'Long and velvety with sweet oak',
-        pairMood: 'contemplative'
-      },
-      {
-        id: 'lagavulin-16',
-        name: 'Lagavulin 16',
-        region: 'Islay',
-        age: '16 Years',
-        abv: '43%',
-        style: 'Smoky, maritime, deep',
-        nose: 'Peat smoke, sea salt, iodine',
-        palate: 'Bonfire ash, dried fig, black tea',
-        finish: 'Lingering smoke and sweet malt',
-        pairMood: 'intense'
-      },
-      {
-        id: 'glenfiddich-18',
-        name: 'Glenfiddich 18',
-        region: 'Speyside',
-        age: '18 Years',
-        abv: '40%',
-        style: 'Balanced, fruity, oak-forward',
-        nose: 'Baked apple, cinnamon, toffee',
-        palate: 'Malt sweetness, citrus peel, oak spice',
-        finish: 'Warm, rounded, medium-long',
-        pairMood: 'romantic'
-      },
-      {
-        id: 'talisker-10',
-        name: 'Talisker 10',
-        region: 'Isle of Skye',
-        age: '10 Years',
-        abv: '45.8%',
-        style: 'Peppery, coastal, smoky',
-        nose: 'Sea breeze, pepper, peat',
-        palate: 'Smoked barley, brine, citrus',
-        finish: 'Pepper heat and sea-salt linger',
-        pairMood: 'stormy'
-      },
-      {
-        id: 'balvenie-doublewood',
-        name: 'The Balvenie DoubleWood 12',
-        region: 'Speyside',
-        age: '12 Years',
-        abv: '40%',
-        style: 'Honeyed, smooth, soft spice',
-        nose: 'Honey, vanilla, toasted nuts',
-        palate: 'Caramel, orchard fruit, cinnamon',
-        finish: 'Gentle oak and sweet spice',
-        pairMood: 'warm'
-      },
-      {
-        id: 'oban-14',
-        name: 'Oban 14',
-        region: 'Highlands',
-        age: '14 Years',
-        abv: '43%',
-        style: 'Coastal, citrus, lightly smoky',
-        nose: 'Orange zest, sea spray, heather',
-        palate: 'Malt sweetness, salt, spice',
-        finish: 'Drying and clean with smoke hint',
-        pairMood: 'reflective'
-      },
-      {
-        id: 'johnnie-blue',
-        name: 'Johnnie Walker Blue Label',
-        region: 'Blended Scotch',
-        age: 'NAS',
-        abv: '40%',
-        style: 'Silky, layered, luxurious',
-        nose: 'Honey, soft smoke, sandalwood',
-        palate: 'Dark chocolate, hazelnut, dried fruit',
-        finish: 'Smooth and persistent',
-        pairMood: 'grand'
-      },
-      {
-        id: 'ardbeg-uigeadail',
-        name: 'Ardbeg Uigeadail',
-        region: 'Islay',
-        age: 'NAS',
-        abv: '54.2%',
-        style: 'Powerful, peaty, sherry-rich',
-        nose: 'Tar, raisin, espresso',
-        palate: 'Dark smoke, molasses, spice',
-        finish: 'Huge peat with sweet undertone',
-        pairMood: 'intense'
-      },
-      {
-        id: 'glenlivet-18',
-        name: 'The Glenlivet 18',
-        region: 'Speyside',
-        age: '18 Years',
-        abv: '40%',
-        style: 'Refined, floral, fruit-led',
-        nose: 'Apricot, honey, oak',
-        palate: 'Toffee, spice, ripe fruit',
-        finish: 'Elegant and lingering',
-        pairMood: 'romantic'
-      },
-      {
-        id: 'chivas-18',
-        name: 'Chivas Regal 18',
-        region: 'Blended Scotch',
-        age: '18 Years',
-        abv: '40%',
-        style: 'Creamy, nutty, approachable',
-        nose: 'Butterscotch, dried fruit, cocoa',
-        palate: 'Orange marmalade, dark toffee',
-        finish: 'Soft spice with cocoa',
-        pairMood: 'warm'
-      }
+    const distilleries = [
+      { name: 'The Macallan', region: 'Speyside', style: 'Rich, sherried, elegant', nose: 'Dried fruits, orange peel, polished oak', palate: 'Raisin, dark chocolate, warm spice', finish: 'Long and velvety with sweet oak', mood: 'contemplative' },
+      { name: 'Lagavulin', region: 'Islay', style: 'Smoky, maritime, deep', nose: 'Peat smoke, sea salt, iodine', palate: 'Bonfire ash, fig, black tea', finish: 'Lingering smoke and sweet malt', mood: 'intense' },
+      { name: 'Glenfiddich', region: 'Speyside', style: 'Balanced, fruity, oak-forward', nose: 'Baked apple, cinnamon, toffee', palate: 'Malt sweetness, citrus peel, oak spice', finish: 'Warm and rounded', mood: 'romantic' },
+      { name: 'Talisker', region: 'Isle of Skye', style: 'Peppery, coastal, smoky', nose: 'Sea breeze, pepper, peat', palate: 'Smoked barley, brine, citrus', finish: 'Pepper heat and sea-salt linger', mood: 'stormy' },
+      { name: 'The Balvenie', region: 'Speyside', style: 'Honeyed, smooth, soft spice', nose: 'Honey, vanilla, toasted nuts', palate: 'Caramel, orchard fruit, cinnamon', finish: 'Gentle oak and sweet spice', mood: 'warm' },
+      { name: 'Oban', region: 'Highlands', style: 'Coastal, citrus, lightly smoky', nose: 'Orange zest, sea spray, heather', palate: 'Malt sweetness, salt, spice', finish: 'Drying and clean with smoke hint', mood: 'reflective' },
+      { name: 'Ardbeg', region: 'Islay', style: 'Powerful, peaty, medicinal', nose: 'Tar, lemon zest, smoke', palate: 'Dark smoke, malt, black pepper', finish: 'Huge peat and cocoa', mood: 'intense' },
+      { name: 'The Glenlivet', region: 'Speyside', style: 'Refined, floral, fruit-led', nose: 'Apricot, honey, oak', palate: 'Toffee, spice, ripe fruit', finish: 'Elegant and lingering', mood: 'romantic' },
+      { name: 'Chivas Regal', region: 'Blended Scotch', style: 'Creamy, nutty, approachable', nose: 'Butterscotch, dried fruit, cocoa', palate: 'Orange marmalade, dark toffee', finish: 'Soft spice with cocoa', mood: 'warm' },
+      { name: 'Johnnie Walker', region: 'Blended Scotch', style: 'Silky, layered, luxurious', nose: 'Honey, soft smoke, sandalwood', palate: 'Dark chocolate, hazelnut, dried fruit', finish: 'Smooth and persistent', mood: 'grand' },
+      { name: 'Laphroaig', region: 'Islay', style: 'Medicinal, peaty, saline', nose: 'Iodine, peat, seaweed', palate: 'Smoke, vanilla, medicinal herbs', finish: 'Long, drying, smoky', mood: 'stormy' },
+      { name: 'Bowmore', region: 'Islay', style: 'Balanced peat and fruit', nose: 'Smoke, citrus, tropical hints', palate: 'Peat, honey, dark fruit', finish: 'Warm smoke and spice', mood: 'reflective' },
+      { name: 'Highland Park', region: 'Orkney', style: 'Heather smoke, honeyed', nose: 'Heather honey, smoke, orange', palate: 'Malt, spice, dried fruit', finish: 'Smoky-sweet and long', mood: 'contemplative' },
+      { name: 'Glenmorangie', region: 'Highlands', style: 'Floral, citrus, creamy', nose: 'Vanilla, citrus blossom, peach', palate: 'Honey, orange, almond', finish: 'Clean and fragrant', mood: 'romantic' },
+      { name: 'Dalmore', region: 'Highlands', style: 'Orange, chocolate, spice', nose: 'Marmalade, coffee, cinnamon', palate: 'Chocolate orange, raisin, spice', finish: 'Rich and warming', mood: 'grand' },
+      { name: 'Aberlour', region: 'Speyside', style: 'Sherry-forward, rich', nose: 'Apple pie, nutmeg, sherry', palate: 'Dark fruit, cocoa, spice', finish: 'Sweet spice and oak', mood: 'warm' },
+      { name: 'BenRiach', region: 'Speyside', style: 'Fruit, malt, subtle smoke', nose: 'Pear, barley sugar, smoke hint', palate: 'Orchard fruit, vanilla, spice', finish: 'Fresh and textured', mood: 'reflective' },
+      { name: 'Bunnahabhain', region: 'Islay', style: 'Coastal, nutty, less peated', nose: 'Sea air, caramel, nuts', palate: 'Malt, toffee, dried fruit', finish: 'Salty-sweet and long', mood: 'contemplative' },
+      { name: 'Caol Ila', region: 'Islay', style: 'Clean peat, coastal', nose: 'Smoked citrus, sea spray', palate: 'Light peat, lemon, olive', finish: 'Dry smoky fade', mood: 'stormy' },
+      { name: 'Bruichladdich', region: 'Islay', style: 'Floral, cereal, terroir-driven', nose: 'Wildflower, barley, brine', palate: 'Grain sweetness, citrus, salt', finish: 'Delicate and mineral', mood: 'reflective' },
+      { name: 'GlenDronach', region: 'Highlands', style: 'Sherry bomb, dense', nose: 'Treacle, dried plum, oak', palate: 'Dark fruitcake, cocoa, clove', finish: 'Long sweet spice', mood: 'grand' },
+      { name: 'Glen Scotia', region: 'Campbeltown', style: 'Maritime, oily, fruity', nose: 'Sea breeze, apple, vanilla', palate: 'Salted caramel, orchard fruit', finish: 'Briny and warming', mood: 'stormy' },
+      { name: 'Springbank', region: 'Campbeltown', style: 'Complex, oily, lightly smoky', nose: 'Mineral, citrus peel, smoke', palate: 'Malt oil, spice, brine', finish: 'Savory and long', mood: 'contemplative' },
+      { name: 'Kilkerran', region: 'Campbeltown', style: 'Nutty, peppery, coastal', nose: 'Lemon zest, biscuit, smoke', palate: 'Pepper, malt, sea salt', finish: 'Dry spice and peat', mood: 'stormy' },
+      { name: 'Deanston', region: 'Highlands', style: 'Waxy, honey, cereal', nose: 'Honeycomb, cereal, citrus', palate: 'Malt loaf, lemon, vanilla', finish: 'Clean and waxy', mood: 'warm' },
+      { name: 'Tobermory', region: 'Isle of Mull', style: 'Fruit-forward, maritime', nose: 'Stone fruit, sea air, spice', palate: 'Orange peel, vanilla, pepper', finish: 'Dry and aromatic', mood: 'reflective' },
+      { name: 'Old Pulteney', region: 'Highlands', style: 'Briny, citrus, honeyed', nose: 'Sea spray, green apple, honey', palate: 'Salted caramel, citrus peel', finish: 'Maritime and crisp', mood: 'stormy' },
+      { name: 'Clynelish', region: 'Highlands', style: 'Waxy, citrus, coastal', nose: 'Lemon wax, heather, brine', palate: 'Malt, wax, pepper', finish: 'Dry and mineral', mood: 'reflective' },
+      { name: 'Mortlach', region: 'Speyside', style: 'Meaty, rich, dense', nose: 'Dark fruit, leather, spice', palate: 'Plum, cocoa, savory note', finish: 'Robust and long', mood: 'intense' },
+      { name: 'Linkwood', region: 'Speyside', style: 'Floral, grassy, elegant', nose: 'White flower, pear, vanilla', palate: 'Malt sugar, apple, spice', finish: 'Light and fragrant', mood: 'romantic' }
     ];
 
-    const ghazals = [
-      {
-        id: 'hothon-se-chhoo-lo',
-        title: 'Hothon Se Chhoo Lo Tum',
-        artist: 'Jagjit Singh',
-        poet: 'Indeevar',
-        year: '1981',
-        mood: 'romantic',
-        lyrics: 'Hothon se chhoo lo tum\nMera geet amar kar do',
-        meaning: 'A plea to make a fleeting melody eternal through love.',
-        youtubeId: '5iiR8th7g5o'
-      },
-      {
-        id: 'chithi-na-koi',
-        title: 'Chithi Na Koi Sandesh',
-        artist: 'Jagjit Singh',
-        poet: 'Anand Bakshi',
-        year: '1998',
-        mood: 'reflective',
-        lyrics: 'Chithi na koi sandesh\nJaane woh kaun sa desh',
-        meaning: 'Loneliness and unanswered distance wrapped in stillness.',
-        youtubeId: '4GfUWjLwQxQ'
-      },
-      {
-        id: 'ranjish-hi-sahi',
-        title: 'Ranjish Hi Sahi',
-        artist: 'Mehdi Hassan',
-        poet: 'Ahmed Faraz',
-        year: '1970s',
-        mood: 'intense',
-        lyrics: 'Ranjish hi sahi\nDil hi dukhane ke liye aa',
-        meaning: 'A wounded invitation where even pain feels like closeness.',
-        youtubeId: 'M3B9mR85P7U'
-      },
-      {
-        id: 'aaj-jaane-ki-zid',
-        title: 'Aaj Jaane Ki Zid Na Karo',
-        artist: 'Farida Khanum',
-        poet: 'Fayyaz Hashmi',
-        year: '1970s',
-        mood: 'romantic',
-        lyrics: 'Aaj jaane ki zid na karo\nYunhi pehlu mein baithe raho',
-        meaning: 'A tender request to hold one evening a little longer.',
-        youtubeId: '2jY6M1YHqYg'
-      },
-      {
-        id: 'hungama-hai-kyon',
-        title: 'Hungama Hai Kyon Barpa',
-        artist: 'Ghulam Ali',
-        poet: 'Akbar Allahabadi',
-        year: '1980s',
-        mood: 'warm',
-        lyrics: 'Hungama hai kyon barpa\nThodi si jo pee li hai',
-        meaning: 'Wit, mischief, and mehfil charm with playful self-defense.',
-        youtubeId: 'WTxM8xk4xQQ'
-      },
-      {
-        id: 'kal-chaudhvin',
-        title: 'Kal Chaudhvin Ki Raat Thi',
-        artist: 'Jagjit Singh',
-        poet: 'Ibn-e-Insha',
-        year: '1980s',
-        mood: 'contemplative',
-        lyrics: 'Kal chaudhvin ki raat thi\nShab bhar raha charcha tera',
-        meaning: 'Moonlit remembrance where conversation circles one beloved.',
-        youtubeId: 'VYx2Yf9mRzU'
-      },
-      {
-        id: 'dil-mein-ek-lehar',
-        title: 'Dil Mein Ek Lehar Si Uthi Hai Abhi',
-        artist: 'Ghulam Ali',
-        poet: 'Nasir Kazmi',
-        year: '1980s',
-        mood: 'stormy',
-        lyrics: 'Dil mein ek lehar si uthi hai abhi\nKoi taza hawa chali hai abhi',
-        meaning: 'A sudden emotional tide, like weather shifting at dusk.',
-        youtubeId: '9n9Q5LQ6w2o'
-      },
-      {
-        id: 'patta-patta',
-        title: 'Patta Patta Boota Boota',
-        artist: 'Ghulam Ali',
-        poet: 'Mir Taqi Mir',
-        year: '1980s',
-        mood: 'grand',
-        lyrics: 'Patta patta boota boota\nHaal hamara jaane hai',
-        meaning: 'Classical grief where every leaf seems witness to longing.',
-        youtubeId: 'bp0x5W0qC2E'
-      },
-      {
-        id: 'tum-itna-jo',
-        title: 'Tum Itna Jo Muskura Rahe Ho',
-        artist: 'Jagjit Singh',
-        poet: 'Kaifi Azmi',
-        year: '1982',
-        mood: 'reflective',
-        lyrics: 'Tum itna jo muskura rahe ho\nKya gham hai jisko chhupa rahe ho',
-        meaning: 'A gentle question about hidden sorrow behind smiles.',
-        youtubeId: 'mM4P4R0DuxM'
-      },
-      {
-        id: 'chupke-chupke',
-        title: 'Chupke Chupke Raat Din',
-        artist: 'Ghulam Ali',
-        poet: 'Hasrat Mohani',
-        year: '1970s',
-        mood: 'contemplative',
-        lyrics: 'Chupke chupke raat din\nAansoo bahana yaad hai',
-        meaning: 'Quiet heartbreak remembered as ritual and devotion.',
-        youtubeId: '2fVgY7Nq6iQ'
-      }
+    const expressions = [
+      { label: '12 Year Old', age: '12 Years', abv: '40%' },
+      { label: '15 Year Old', age: '15 Years', abv: '43%' },
+      { label: '18 Year Old', age: '18 Years', abv: '43%' },
+      { label: '21 Year Old', age: '21 Years', abv: '46%' },
+      { label: 'Sherry Cask', age: 'NAS', abv: '46%' }
     ];
+
+    function buildScotchCatalog() {
+      const out = [];
+      distilleries.forEach((d, i) => {
+        expressions.forEach((e, j) => {
+          const id = `${d.name}-${e.label}-${i}-${j}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          out.push({
+            id,
+            name: `${d.name} ${e.label}`,
+            region: d.region,
+            age: e.age,
+            abv: e.abv,
+            style: d.style,
+            nose: d.nose,
+            palate: d.palate,
+            finish: d.finish,
+            pairMood: d.mood
+          });
+        });
+      });
+      return out;
+    }
+
+    const ghazalSeeds = [
+      { title: 'Hothon Se Chhoo Lo Tum', artist: 'Jagjit Singh', poet: 'Indeevar', mood: 'romantic', lyrics: 'Hothon se chhoo lo tum\nMera geet amar kar do' },
+      { title: 'Chithi Na Koi Sandesh', artist: 'Jagjit Singh', poet: 'Anand Bakshi', mood: 'reflective', lyrics: 'Chithi na koi sandesh\nJaane woh kaun sa desh' },
+      { title: 'Ranjish Hi Sahi', artist: 'Mehdi Hassan', poet: 'Ahmed Faraz', mood: 'intense', lyrics: 'Ranjish hi sahi\nDil hi dukhane ke liye aa' },
+      { title: 'Aaj Jaane Ki Zid Na Karo', artist: 'Farida Khanum', poet: 'Fayyaz Hashmi', mood: 'romantic', lyrics: 'Aaj jaane ki zid na karo\nYunhi pehlu mein baithe raho' },
+      { title: 'Hungama Hai Kyon Barpa', artist: 'Ghulam Ali', poet: 'Akbar Allahabadi', mood: 'warm', lyrics: 'Hungama hai kyon barpa\nThodi si jo pee li hai' },
+      { title: 'Kal Chaudhvin Ki Raat Thi', artist: 'Jagjit Singh', poet: 'Ibn-e-Insha', mood: 'contemplative', lyrics: 'Kal chaudhvin ki raat thi\nShab bhar raha charcha tera' },
+      { title: 'Dil Mein Ek Lehar Si Uthi Hai Abhi', artist: 'Ghulam Ali', poet: 'Nasir Kazmi', mood: 'stormy', lyrics: 'Dil mein ek lehar si uthi hai abhi\nKoi taza hawa chali hai abhi' },
+      { title: 'Patta Patta Boota Boota', artist: 'Ghulam Ali', poet: 'Mir Taqi Mir', mood: 'grand', lyrics: 'Patta patta boota boota\nHaal hamara jaane hai' },
+      { title: 'Tum Itna Jo Muskura Rahe Ho', artist: 'Jagjit Singh', poet: 'Kaifi Azmi', mood: 'reflective', lyrics: 'Tum itna jo muskura rahe ho\nKya gham hai jisko chhupa rahe ho' },
+      { title: 'Chupke Chupke Raat Din', artist: 'Ghulam Ali', poet: 'Hasrat Mohani', mood: 'contemplative', lyrics: 'Chupke chupke raat din\nAansoo bahana yaad hai' },
+      { title: 'Yeh Daulat Bhi Le Lo', artist: 'Jagjit Singh', poet: 'Nida Fazli', mood: 'reflective', lyrics: 'Yeh daulat bhi le lo\nYeh shohrat bhi le lo' },
+      { title: 'Koi Fariyaad', artist: 'Jagjit Singh', poet: 'Sudarshan Faakir', mood: 'intense', lyrics: 'Koi fariyaad tere dil mein\nDabi ho jaise' },
+      { title: 'Shola Tha Jal Bujha Hoon', artist: 'Mehdi Hassan', poet: 'Ahmed Faraz', mood: 'intense', lyrics: 'Shola tha jal bujha hoon\nHawaein mujhe na do' },
+      { title: 'Aawargi', artist: 'Ghulam Ali', poet: 'Mohsin Naqvi', mood: 'stormy', lyrics: 'Yeh dil yeh pagal dil mera\nKyun bujh gaya awargi' },
+      { title: 'Faasle Aise Bhi Honge', artist: 'Ghulam Ali', poet: 'Qateel Shifai', mood: 'reflective', lyrics: 'Faasle aise bhi honge\nYeh kabhi socha na tha' },
+      { title: 'Woh Kagaz Ki Kashti', artist: 'Jagjit Singh', poet: 'Nida Fazli', mood: 'warm', lyrics: 'Woh kagaz ki kashti\nWoh baarish ka paani' },
+      { title: 'Baat Niklegi', artist: 'Jagjit Singh', poet: 'Kafeel Aazar', mood: 'contemplative', lyrics: 'Baat niklegi to phir door talak jayegi' },
+      { title: 'Aah Ko Chahiye', artist: 'Begum Akhtar', poet: 'Mirza Ghalib', mood: 'grand', lyrics: 'Aah ko chahiye ik umr asar hone tak' },
+      { title: 'Aaye Kuch Abr', artist: 'Mehdi Hassan', poet: 'Faiz Ahmed Faiz', mood: 'stormy', lyrics: 'Aaye kuch abr kuch sharaab aaye' },
+      { title: 'Raat Yun Dil Mein', artist: 'Lata Mangeshkar', poet: 'Faiz Ahmed Faiz', mood: 'romantic', lyrics: 'Raat yun dil mein teri khoi hui yaad aayi' },
+      { title: 'Dasht-e-Tanhai', artist: 'Iqbal Bano', poet: 'Faiz Ahmed Faiz', mood: 'intense', lyrics: 'Dasht-e-tanhai mein aye jaan-e-jahan larzan hai' },
+      { title: 'Nuktacheen Hai Gham-e-Dil', artist: 'Mehdi Hassan', poet: 'Mirza Ghalib', mood: 'contemplative', lyrics: 'Nuktacheen hai gham-e-dil usko sunaye na bane' },
+      { title: 'Gulon Mein Rang Bhare', artist: 'Mehdi Hassan', poet: 'Faiz Ahmed Faiz', mood: 'grand', lyrics: 'Gulon mein rang bhare baad-e-naubahar chale' },
+      { title: 'Mujhse Bichhad Ke Khush Rehte Ho', artist: 'Jagjit Singh', poet: 'Bashir Badr', mood: 'reflective', lyrics: 'Mujhse bichhad ke khush rehte ho' },
+      { title: 'Kabhi Kisi Ko Mukammal Jahan', artist: 'Bhupinder Singh', poet: 'Nida Fazli', mood: 'contemplative', lyrics: 'Kabhi kisi ko mukammal jahan nahin milta' },
+      { title: 'Main Nashe Mein Hoon', artist: 'Jagjit Singh', poet: 'Rajesh Reddy', mood: 'warm', lyrics: 'Main nashe mein hoon\nMujhe hosh mein na lao' },
+      { title: 'Ruke Ruke Se Qadam', artist: 'Lata Mangeshkar', poet: 'Gulzar', mood: 'romantic', lyrics: 'Ruke ruke se qadam\nRuk ke baar baar chale' },
+      { title: 'Dil Dhoondta Hai', artist: 'Bhupinder Singh', poet: 'Gulzar', mood: 'warm', lyrics: 'Dil dhoondta hai\nPhir wahi fursat ke raat din' },
+      { title: 'Kisi Nazar Ko Tera', artist: 'Asha Bhosle', poet: 'Hasan Kamal', mood: 'romantic', lyrics: 'Kisi nazar ko tera intezaar aaj bhi hai' },
+      { title: 'Jhuki Jhuki Si Nazar', artist: 'Jagjit Singh', poet: 'Kaifi Azmi', mood: 'romantic', lyrics: 'Jhuki jhuki si nazar\nBekarar hai ke nahin' }
+    ];
+
+    const ghazalVariants = ['Original', 'Live Mehfil', 'Acoustic Session'];
+
+    function buildGhazalCatalog() {
+      const out = [];
+      ghazalSeeds.forEach((seed, i) => {
+        ghazalVariants.forEach((variant, j) => {
+          const title = variant === 'Original' ? seed.title : `${seed.title} (${variant})`;
+          const id = `${seed.title}-${variant}-${i}-${j}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          out.push({
+            id,
+            title,
+            artist: seed.artist,
+            poet: seed.poet,
+            mood: seed.mood,
+            year: j === 0 ? 'Classic' : j === 1 ? 'Live Era' : 'Modern Mix',
+            lyrics: seed.lyrics,
+            meaning: `A ${seed.mood} ghazal selection suitable for an evening pairing.`,
+            youtubeQuery: `${seed.title} ${seed.artist} ghazal`
+          });
+        });
+      });
+      return out;
+    }
+
+    const scotches = buildScotchCatalog(); // 30 x 5 = 150
+    const ghazals = buildGhazalCatalog(); // 30 x 3 = 90
 
     let selectedScotchId = scotches[0].id;
     let selectedGhazalId = ghazals[0].id;
+    let scotchQuery = '';
+    let ghazalQuery = '';
 
+    const scotchSearchEl = document.getElementById('scotchSearch');
+    const ghazalSearchEl = document.getElementById('ghazalSearch');
     const scotchListEl = document.getElementById('scotchList');
     const ghazalListEl = document.getElementById('ghazalList');
+    const scotchResultCountEl = document.getElementById('scotchResultCount');
+    const ghazalResultCountEl = document.getElementById('ghazalResultCount');
     const pairBannerEl = document.getElementById('pairBanner');
     const scotchCardEl = document.getElementById('scotchCard');
     const ghazalCardEl = document.getElementById('ghazalCard');
+    const audioFrameEl = document.getElementById('audioFrame');
+
+    function normalize(value) {
+      return String(value || '').toLowerCase().trim();
+    }
+
+    function filterScotches() {
+      const q = normalize(scotchQuery);
+      if (!q) return scotches;
+      return scotches.filter(s =>
+        normalize(s.name).includes(q) ||
+        normalize(s.region).includes(q) ||
+        normalize(s.style).includes(q) ||
+        normalize(s.age).includes(q) ||
+        normalize(s.abv).includes(q)
+      );
+    }
+
+    function filterGhazals() {
+      const q = normalize(ghazalQuery);
+      if (!q) return ghazals;
+      return ghazals.filter(g =>
+        normalize(g.title).includes(q) ||
+        normalize(g.artist).includes(q) ||
+        normalize(g.poet).includes(q) ||
+        normalize(g.mood).includes(q)
+      );
+    }
 
     function getSelectedScotch() {
       return scotches.find(s => s.id === selectedScotchId) || scotches[0];
@@ -538,8 +460,33 @@
       return `Contrast pairing: ${scotch.style.toLowerCase()} meets the ${ghazal.mood} tone of "${ghazal.title}".`;
     }
 
+    function youtubeWatchUrl(query) {
+      return `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+    }
+
+    function youtubeEmbedSearchUrl(query, autoplay = false) {
+      const auto = autoplay ? '1' : '0';
+      return `https://www.youtube-nocookie.com/embed?listType=search&list=${encodeURIComponent(query)}&autoplay=${auto}&playsinline=1`;
+    }
+
+    function playSelectedAudio() {
+      const ghazal = getSelectedGhazal();
+      const src = youtubeEmbedSearchUrl(ghazal.youtubeQuery, true);
+      audioFrameEl.src = src;
+    }
+
+    function stopAudio() {
+      audioFrameEl.src = '';
+    }
+
     function renderScotchList() {
-      scotchListEl.innerHTML = scotches.map(scotch => {
+      const list = filterScotches();
+      scotchResultCountEl.textContent = `${list.length} of ${scotches.length} shown`;
+      if (list.length === 0) {
+        scotchListEl.innerHTML = '<div class="empty">No Scotch matches this search.</div>';
+        return;
+      }
+      scotchListEl.innerHTML = list.map(scotch => {
         const active = scotch.id === selectedScotchId ? 'active' : '';
         return `
           <button class="item ${active}" data-scotch-id="${scotch.id}" type="button">
@@ -556,13 +503,19 @@
       scotchListEl.querySelectorAll('[data-scotch-id]').forEach(btn => {
         btn.addEventListener('click', () => {
           selectedScotchId = btn.getAttribute('data-scotch-id');
-          renderAll();
+          renderAll(false);
         });
       });
     }
 
     function renderGhazalList() {
-      ghazalListEl.innerHTML = ghazals.map(ghazal => {
+      const list = filterGhazals();
+      ghazalResultCountEl.textContent = `${list.length} of ${ghazals.length} shown`;
+      if (list.length === 0) {
+        ghazalListEl.innerHTML = '<div class="empty">No Ghazal matches this search.</div>';
+        return;
+      }
+      ghazalListEl.innerHTML = list.map(ghazal => {
         const active = ghazal.id === selectedGhazalId ? 'active' : '';
         return `
           <button class="item ${active}" data-ghazal-id="${ghazal.id}" type="button">
@@ -579,16 +532,15 @@
       ghazalListEl.querySelectorAll('[data-ghazal-id]').forEach(btn => {
         btn.addEventListener('click', () => {
           selectedGhazalId = btn.getAttribute('data-ghazal-id');
-          renderAll();
+          renderAll(true);
         });
       });
     }
 
-    function renderCenterPane() {
+    function renderCenterPane(autoPlayAudio) {
       const scotch = getSelectedScotch();
       const ghazal = getSelectedGhazal();
-      const youtubeUrl = `https://www.youtube.com/watch?v=${ghazal.youtubeId}`;
-      const embedUrl = `https://www.youtube.com/embed/${ghazal.youtubeId}?autoplay=1&rel=0`;
+      const watchUrl = youtubeWatchUrl(ghazal.youtubeQuery);
 
       pairBannerEl.textContent = pairingSentence(scotch, ghazal);
 
@@ -615,21 +567,61 @@
         </div>
         <p class="detail-text"><strong>Meaning:</strong> ${ghazal.meaning}</p>
         <div class="lyrics">${ghazal.lyrics}</div>
-        <div class="yt-wrap">
-          <iframe src="${embedUrl}" title="${ghazal.title} by ${ghazal.artist}" allow="autoplay; encrypted-media; clipboard-write; picture-in-picture; web-share" allowfullscreen></iframe>
+        <div class="audio-box">
+          <div class="audio-row">
+            <button id="playAudioBtn" class="btn" type="button">Play Audio</button>
+            <button id="stopAudioBtn" class="btn" type="button">Stop</button>
+            <a class="yt-link" href="${watchUrl}" target="_blank" rel="noopener noreferrer">Open YouTube Search Result</a>
+          </div>
+          <div class="player-status">Audio-only mode uses a hidden YouTube player. If autoplay is blocked, click Play Audio.</div>
         </div>
-        <a class="yt-link" href="${youtubeUrl}" target="_blank" rel="noopener noreferrer">Open on YouTube</a>
-        <div class="legal-note">Lyrics shown as short excerpts. Use the YouTube link for the complete song.</div>
+        <div class="legal-note">Lyrics shown as short excerpts. Use YouTube for full content.</div>
       `;
+
+      const playAudioBtn = document.getElementById('playAudioBtn');
+      const stopAudioBtn = document.getElementById('stopAudioBtn');
+      if (playAudioBtn) {
+        playAudioBtn.addEventListener('click', playSelectedAudio);
+      }
+      if (stopAudioBtn) {
+        stopAudioBtn.addEventListener('click', stopAudio);
+      }
+
+      if (autoPlayAudio) {
+        playSelectedAudio();
+      }
     }
 
-    function renderAll() {
+    function ensureSelectedInFiltered() {
+      const sFiltered = filterScotches();
+      if (!sFiltered.find(s => s.id === selectedScotchId) && sFiltered.length > 0) {
+        selectedScotchId = sFiltered[0].id;
+      }
+
+      const gFiltered = filterGhazals();
+      if (!gFiltered.find(g => g.id === selectedGhazalId) && gFiltered.length > 0) {
+        selectedGhazalId = gFiltered[0].id;
+      }
+    }
+
+    function renderAll(autoPlayAudio) {
+      ensureSelectedInFiltered();
       renderScotchList();
       renderGhazalList();
-      renderCenterPane();
+      renderCenterPane(autoPlayAudio);
     }
 
-    renderAll();
+    scotchSearchEl.addEventListener('input', () => {
+      scotchQuery = scotchSearchEl.value;
+      renderAll(false);
+    });
+
+    ghazalSearchEl.addEventListener('input', () => {
+      ghazalQuery = ghazalSearchEl.value;
+      renderAll(false);
+    });
+
+    renderAll(false);
   </script>
 </body>
 </html>
