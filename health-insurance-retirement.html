@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retirement Health Insurance Navigator</title>
+  <style>
+    :root {
+      --bg: #f5efe3;
+      --ink: #1e2430;
+      --muted: #5d6777;
+      --panel: rgba(255, 252, 246, 0.92);
+      --panel-strong: #fffaf2;
+      --border: rgba(58, 73, 92, 0.16);
+      --accent: #0f6d69;
+      --accent-2: #cb6a2e;
+      --accent-3: #f0b45a;
+      --good: #1f8f58;
+      --warn: #b35b24;
+      --bad: #9d3535;
+      --shadow: 0 22px 50px rgba(41, 38, 31, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at top left, rgba(15, 109, 105, 0.18), transparent 28%),
+        radial-gradient(circle at right 20%, rgba(203, 106, 46, 0.16), transparent 24%),
+        linear-gradient(180deg, #efe4cf 0%, #f8f4eb 46%, #f3ede1 100%);
+      padding: 18px;
+    }
+
+    .app-home-link {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 20;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(15, 109, 105, 0.25);
+      background: rgba(255, 250, 242, 0.95);
+      color: var(--accent);
+      text-decoration: none;
+      font: 600 14px/1.1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .app-home-link:hover { border-color: rgba(15, 109, 105, 0.45); }
+
+    .shell {
+      max-width: 1460px;
+      margin: 0 auto;
+      padding-top: 48px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, rgba(255, 250, 242, 0.95), rgba(247, 240, 228, 0.94));
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -90px;
+      top: -60px;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(240, 180, 90, 0.42), rgba(240, 180, 90, 0));
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 1.4px;
+      font: 700 12px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 880px;
+      font-size: clamp(34px, 6vw, 58px);
+      line-height: 0.94;
+      letter-spacing: -0.04em;
+    }
+
+    .hero-copy {
+      margin: 16px 0 0;
+      max-width: 900px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.55;
+    }
+
+    .hero-grid {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .hero-stat {
+      border-radius: 18px;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.62);
+      border: 1px solid rgba(15, 109, 105, 0.12);
+    }
+
+    .hero-stat-label {
+      color: var(--muted);
+      font: 600 11px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+    }
+
+    .hero-stat-value {
+      margin-top: 5px;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 340px minmax(0, 1fr) 360px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(4px);
+    }
+
+    .panel-head {
+      padding: 18px 20px 10px;
+      border-bottom: 1px solid rgba(58, 73, 92, 0.08);
+      background: linear-gradient(180deg, rgba(15, 109, 105, 0.08), rgba(15, 109, 105, 0));
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.1;
+    }
+
+    .panel-note {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .panel-body {
+      padding: 18px 20px 20px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .field-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font: 600 12px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0.2px;
+      text-transform: uppercase;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid rgba(58, 73, 92, 0.18);
+      background: rgba(255, 255, 255, 0.82);
+      color: var(--ink);
+      padding: 12px 13px;
+      font: 600 15px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      outline: none;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: rgba(15, 109, 105, 0.55);
+      box-shadow: 0 0 0 3px rgba(15, 109, 105, 0.14);
+    }
+
+    .mini-note {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .summary-card {
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid rgba(58, 73, 92, 0.12);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .summary-card .label {
+      color: var(--muted);
+      font: 600 11px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .summary-card .value {
+      margin-top: 8px;
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .rank-banner {
+      display: grid;
+      gap: 12px;
+    }
+
+    .best-path {
+      border-radius: 22px;
+      padding: 18px;
+      background: linear-gradient(135deg, rgba(15, 109, 105, 0.96), rgba(12, 81, 77, 0.96));
+      color: #f7fbfa;
+    }
+
+    .best-path small {
+      display: block;
+      font: 700 11px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      opacity: 0.86;
+    }
+
+    .best-path h3 {
+      margin: 8px 0 6px;
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .best-path p {
+      margin: 0;
+      line-height: 1.5;
+      font-size: 15px;
+      color: rgba(247, 251, 250, 0.92);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .option-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .option-card {
+      border-radius: 20px;
+      border: 1px solid rgba(58, 73, 92, 0.12);
+      background: rgba(255, 255, 255, 0.82);
+      padding: 16px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .option-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .option-name {
+      font-size: 21px;
+      line-height: 1;
+    }
+
+    .score-pill,
+    .status-pill {
+      border-radius: 999px;
+      padding: 5px 10px;
+      white-space: nowrap;
+      font: 700 12px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .score-pill {
+      background: rgba(15, 109, 105, 0.1);
+      color: var(--accent);
+    }
+
+    .status-pill.good { background: rgba(31, 143, 88, 0.1); color: var(--good); }
+    .status-pill.warn { background: rgba(179, 91, 36, 0.1); color: var(--warn); }
+    .status-pill.bad { background: rgba(157, 53, 53, 0.1); color: var(--bad); }
+
+    .option-body,
+    .option-list,
+    .next-list,
+    .source-list {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font: 500 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .option-body {
+      padding-left: 0;
+      list-style: none;
+    }
+
+    .option-list li,
+    .next-list li,
+    .source-list li {
+      margin-bottom: 6px;
+    }
+
+    .podcast-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .insight-card {
+      border-radius: 18px;
+      padding: 16px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(249, 243, 233, 0.92));
+      border: 1px solid rgba(58, 73, 92, 0.1);
+    }
+
+    .insight-card h4 {
+      margin: 0 0 8px;
+      font-size: 17px;
+      line-height: 1.1;
+    }
+
+    .insight-card p {
+      margin: 0;
+      color: var(--muted);
+      font: 500 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .next-card {
+      border-radius: 18px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.84);
+      border: 1px solid rgba(58, 73, 92, 0.1);
+    }
+
+    .source-list a,
+    .resource-link {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .source-list a:hover,
+    .resource-link:hover {
+      text-decoration: underline;
+    }
+
+    .footnote {
+      color: var(--muted);
+      font: 500 12px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    @media (max-width: 1180px) {
+      .layout,
+      .hero-grid,
+      .summary-grid,
+      .podcast-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 760px) {
+      body { padding: 12px; }
+      .shell { padding-top: 56px; }
+      .hero { padding: 22px 18px; border-radius: 22px; }
+      .panel { border-radius: 20px; }
+      .hero-grid,
+      .summary-grid,
+      .podcast-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="app-home-link" href="app-catalog.html" title="Back to App Catalog">Home</a>
+
+  <div class="shell">
+    <section class="hero">
+      <p class="eyebrow">Retirement Coverage Planning</p>
+      <h1>Health insurance gets easier once you frame the decision in the right order.</h1>
+      <p class="hero-copy">
+        This single-page app turns the key themes from ChooseFI episode 588 into a practical decision aid:
+        first identify your coverage lane, then pressure-test subsidies, timing, continuity of care, COBRA cost,
+        retiree-plan tradeoffs, Medicare deadlines, and HSA consequences.
+      </p>
+      <div class="hero-grid">
+        <div class="hero-stat">
+          <div class="hero-stat-label">Podcast Anchor</div>
+          <div class="hero-stat-value">Ep 588</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-label">Coverage Lanes</div>
+          <div class="hero-stat-value">4</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-label">Official Sources</div>
+          <div class="hero-stat-value">5</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-label">Best Use</div>
+          <div class="hero-stat-value">Pre-Quote</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="layout">
+      <aside class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title">Your Scenario</h2>
+          <p class="panel-note">Set the retirement timing, income posture, and coverage facts that most often drive the decision.</p>
+        </div>
+        <div class="panel-body field-grid">
+          <div class="field">
+            <label for="currentAge">Current age</label>
+            <input id="currentAge" type="number" min="45" max="75" value="61">
+          </div>
+          <div class="field">
+            <label for="monthsToRetire">Months until retirement</label>
+            <input id="monthsToRetire" type="number" min="0" max="60" value="6">
+          </div>
+          <div class="field">
+            <label for="monthsTo65">Months until Medicare eligibility</label>
+            <input id="monthsTo65" type="number" min="0" max="240" value="48">
+          </div>
+          <div class="field">
+            <label for="householdSize">Household size</label>
+            <select id="householdSize">
+              <option value="1">1</option>
+              <option value="2" selected>2</option>
+              <option value="3">3</option>
+              <option value="4">4+</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="incomeBand">Expected income vs ACA subsidy ranges</label>
+            <select id="incomeBand">
+              <option value="low">Likely under 250% FPL</option>
+              <option value="mid" selected>Likely 250% to 400% FPL</option>
+              <option value="high">Likely above 400% FPL</option>
+              <option value="uncertain">Not sure yet</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="jobCoverage">Will job-based coverage end at retirement?</label>
+            <select id="jobCoverage">
+              <option value="yes" selected>Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="cobraAvailable">COBRA available?</label>
+            <select id="cobraAvailable">
+              <option value="yes" selected>Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="retireeCoverage">Retiree coverage status</label>
+            <select id="retireeCoverage">
+              <option value="none" selected>None offered</option>
+              <option value="eligible">Eligible but not enrolled</option>
+              <option value="enrolled">Already enrolled</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="medicareStatus">Medicare status</label>
+            <select id="medicareStatus">
+              <option value="not-eligible" selected>Not eligible yet</option>
+              <option value="soon">Eligible within 12 months</option>
+              <option value="eligible">Eligible now</option>
+              <option value="enrolled">Already enrolled</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="continuityPriority">How important is keeping current doctors?</label>
+            <select id="continuityPriority">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="careNeeds">Expected care intensity next year</label>
+            <select id="careNeeds">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="incomeControl">Can you intentionally manage taxable income?</label>
+            <select id="incomeControl">
+              <option value="yes" selected>Yes</option>
+              <option value="somewhat">Somewhat</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="hsaStatus">HSA position</label>
+            <select id="hsaStatus">
+              <option value="none">No HSA</option>
+              <option value="balance" selected>Have an HSA balance</option>
+              <option value="contributing">Still contributing to HSA</option>
+            </select>
+          </div>
+          <p class="mini-note">
+            This tool is educational, not plan-specific advice. Use it to narrow the lane, then verify pricing and enrollment timing with official quote tools or a licensed professional.
+          </p>
+        </div>
+      </aside>
+
+      <main class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title">Coverage Decision Board</h2>
+          <p class="panel-note">The engine ranks likely paths for your scenario and surfaces the traps most likely to cost money or flexibility.</p>
+        </div>
+        <div class="panel-body">
+          <div id="summaryGrid" class="summary-grid"></div>
+          <div id="rankBanner" class="rank-banner"></div>
+          <div id="optionGrid" class="option-grid"></div>
+          <div>
+            <h3 class="panel-title">What the podcast emphasizes</h3>
+            <p class="panel-note">ChooseFI episode 588 highlighted that retirement health coverage is often a tax-planning and timing problem, not just a shopping problem.</p>
+          </div>
+          <div id="podcastGrid" class="podcast-grid"></div>
+        </div>
+      </main>
+
+      <aside class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title">Next Steps</h2>
+          <p class="panel-note">Use this list to turn the recommendation into action before you retire or turn 65.</p>
+        </div>
+        <div class="panel-body">
+          <div id="nextStepsCard" class="next-card"></div>
+          <div class="next-card">
+            <h3 class="panel-title">Source links</h3>
+            <ul class="source-list">
+              <li><a href="https://podcasts.apple.com/us/podcast/choosefi/id1187770032?i=1000752403289" target="_blank" rel="noopener noreferrer">ChooseFI: Navigating Health Insurance with Cody Garrett | Ep 588</a></li>
+              <li><a href="https://www.healthcare.gov/retirees/" target="_blank" rel="noopener noreferrer">HealthCare.gov: Health coverage for retirees</a></li>
+              <li><a href="https://www.healthcare.gov/medicare/medicare-and-the-marketplace/index.html" target="_blank" rel="noopener noreferrer">HealthCare.gov: Medicare and the Marketplace</a></li>
+              <li><a href="https://www.healthcare.gov/direct-enrollment/" target="_blank" rel="noopener noreferrer">HealthCare.gov: Certified enrollment partners</a></li>
+              <li><a href="https://www.medicare.gov/basics/get-started-with-medicare/sign-up/when-can-i-sign-up-for-medicare" target="_blank" rel="noopener noreferrer">Medicare.gov: When can I sign up for Medicare?</a></li>
+              <li><a href="https://www.irs.gov/publications/p969" target="_blank" rel="noopener noreferrer">IRS Publication 969: HSAs and Medicare</a></li>
+              <li><a href="https://www.dol.gov/agencies/ebsa/about-ebsa/our-activities/resource-center/publications/an-employers-guide-to-group-health-continuation-coverage-under-cobra" target="_blank" rel="noopener noreferrer">U.S. DOL: COBRA continuation coverage guide</a></li>
+            </ul>
+          </div>
+          <p class="footnote">
+            Current official rules cited here include: loss of job-based coverage can trigger a Marketplace Special Enrollment Period; Medicare generally has a 7-month initial enrollment window around age 65; once enrolled in Medicare, you no longer qualify for Marketplace savings; and HSA contributions must stop once Medicare enrollment begins.
+          </p>
+        </div>
+      </aside>
+    </section>
+  </div>
+
+  <script>
+    const state = {
+      currentAge: document.getElementById('currentAge'),
+      monthsToRetire: document.getElementById('monthsToRetire'),
+      monthsTo65: document.getElementById('monthsTo65'),
+      householdSize: document.getElementById('householdSize'),
+      incomeBand: document.getElementById('incomeBand'),
+      jobCoverage: document.getElementById('jobCoverage'),
+      cobraAvailable: document.getElementById('cobraAvailable'),
+      retireeCoverage: document.getElementById('retireeCoverage'),
+      medicareStatus: document.getElementById('medicareStatus'),
+      continuityPriority: document.getElementById('continuityPriority'),
+      careNeeds: document.getElementById('careNeeds'),
+      incomeControl: document.getElementById('incomeControl'),
+      hsaStatus: document.getElementById('hsaStatus')
+    };
+
+    const summaryGridEl = document.getElementById('summaryGrid');
+    const rankBannerEl = document.getElementById('rankBanner');
+    const optionGridEl = document.getElementById('optionGrid');
+    const podcastGridEl = document.getElementById('podcastGrid');
+    const nextStepsCardEl = document.getElementById('nextStepsCard');
+
+    function readScenario() {
+      return {
+        age: Number(state.currentAge.value) || 0,
+        monthsToRetire: Number(state.monthsToRetire.value) || 0,
+        monthsTo65: Number(state.monthsTo65.value) || 0,
+        householdSize: state.householdSize.value,
+        incomeBand: state.incomeBand.value,
+        jobCoverage: state.jobCoverage.value,
+        cobraAvailable: state.cobraAvailable.value,
+        retireeCoverage: state.retireeCoverage.value,
+        medicareStatus: state.medicareStatus.value,
+        continuityPriority: state.continuityPriority.value,
+        careNeeds: state.careNeeds.value,
+        incomeControl: state.incomeControl.value,
+        hsaStatus: state.hsaStatus.value
+      };
+    }
+
+    function boolWeight(value, good, medium, low) {
+      if (value === 'high' || value === 'yes' || value === 'eligible' || value === 'enrolled') return good;
+      if (value === 'medium' || value === 'somewhat' || value === 'soon') return medium;
+      return low;
+    }
+
+    function clamp(num, min, max) {
+      return Math.max(min, Math.min(max, num));
+    }
+
+    function buildOptions(s) {
+      const medicareNow = s.medicareStatus === 'eligible' || s.medicareStatus === 'enrolled' || s.monthsTo65 <= 0 || s.age >= 65;
+      const medicareSoon = !medicareNow && (s.medicareStatus === 'soon' || s.monthsTo65 <= 12);
+      const continuityHigh = s.continuityPriority === 'high';
+      const careHigh = s.careNeeds === 'high';
+      const lowIncome = s.incomeBand === 'low';
+      const midIncome = s.incomeBand === 'mid';
+      const highIncome = s.incomeBand === 'high';
+      const canManageIncome = s.incomeControl === 'yes' || s.incomeControl === 'somewhat';
+
+      const marketplace = {
+        id: 'marketplace',
+        name: 'ACA Marketplace',
+        score: 48,
+        status: 'warn',
+        thesis: 'Most compelling before age 65 when employer coverage ends and you may qualify for income-based savings.',
+        reasons: [],
+        cautions: [],
+        actions: []
+      };
+
+      if (!medicareNow) marketplace.score += 18;
+      if (s.jobCoverage === 'yes') marketplace.score += 12;
+      if (lowIncome || midIncome) marketplace.score += 14;
+      if (canManageIncome) marketplace.score += 8;
+      if (s.retireeCoverage === 'enrolled') marketplace.score -= 26;
+      if (highIncome) marketplace.score -= 12;
+      if (medicareSoon) marketplace.score -= 8;
+
+      marketplace.reasons.push('Losing job-based coverage generally creates a Special Enrollment Period on HealthCare.gov.');
+      if (lowIncome || midIncome) marketplace.reasons.push('The episode emphasized that subsidy planning can materially change total cost.');
+      if (canManageIncome) marketplace.reasons.push('Intentional income control can make Marketplace pricing more predictable year to year.');
+      marketplace.cautions.push('Your actual prices depend heavily on ZIP code, carrier lineup, and network design.');
+      marketplace.cautions.push('If you are enrolled in retiree coverage, HealthCare.gov says you cannot also receive premium tax credits.');
+      if (medicareSoon) marketplace.cautions.push('This may only be a bridge if Medicare eligibility is less than a year away.');
+      marketplace.actions.push('Pull Marketplace quotes 60 days before employer coverage ends.');
+      marketplace.actions.push('Compare net premium, deductible, MOOP, and specialist network rather than premium alone.');
+
+      const cobra = {
+        id: 'cobra',
+        name: 'COBRA Bridge',
+        score: 36,
+        status: 'warn',
+        thesis: 'Most useful when continuity matters and you need a short bridge to another coverage event.',
+        reasons: [],
+        cautions: [],
+        actions: []
+      };
+
+      if (s.cobraAvailable === 'yes') cobra.score += 16;
+      else cobra.score -= 35;
+      if (continuityHigh) cobra.score += 16;
+      if (careHigh) cobra.score += 12;
+      if (s.monthsTo65 > 0 && s.monthsTo65 <= 12) cobra.score += 10;
+      if (s.monthsToRetire <= 3) cobra.score += 8;
+      if (lowIncome || midIncome) cobra.score -= 14;
+      if (s.monthsTo65 > 18 && s.monthsToRetire > 12) cobra.score -= 10;
+      if (medicareNow) cobra.score -= 10;
+
+      cobra.reasons.push('COBRA preserves the same employer plan, which can reduce provider disruption during active treatment.');
+      cobra.reasons.push('The podcast framed COBRA as a bridge tool, not an automatic best answer.');
+      cobra.cautions.push('The Department of Labor says COBRA can cost up to 102% of the full plan cost, so it often feels much pricier after leaving work.');
+      cobra.cautions.push('HealthCare.gov says dropping COBRA early generally does not create a Special Enrollment Period; the SEP applies when COBRA runs out.');
+      if (medicareNow) cobra.cautions.push('If Medicare is available now, a COBRA-first approach can become a timing trap.');
+      cobra.actions.push('Ask HR for the true full monthly COBRA premium before retirement.');
+      cobra.actions.push('Use COBRA when network continuity is worth more than likely Marketplace savings.');
+
+      const retiree = {
+        id: 'retiree',
+        name: 'Retiree Coverage',
+        score: 34,
+        status: 'warn',
+        thesis: 'Potentially strong if your former employer subsidizes it or if you highly value continuity, but it can block Marketplace savings.',
+        reasons: [],
+        cautions: [],
+        actions: []
+      };
+
+      if (s.retireeCoverage === 'eligible') retiree.score += 22;
+      if (s.retireeCoverage === 'enrolled') retiree.score += 26;
+      if (continuityHigh) retiree.score += 10;
+      if (careHigh) retiree.score += 8;
+      if (lowIncome || midIncome) retiree.score -= 8;
+      if (s.retireeCoverage === 'none') retiree.score -= 28;
+
+      retiree.reasons.push('Employer-sponsored retiree plans can be simpler operationally than re-shopping each year.');
+      if (s.retireeCoverage !== 'none') retiree.reasons.push('This is worth pricing side-by-side against ACA plans, not assuming it wins.');
+      retiree.cautions.push('HealthCare.gov says if you are enrolled in retiree coverage, you cannot also receive Marketplace premium tax credits.');
+      retiree.cautions.push('HealthCare.gov also says voluntarily dropping retiree coverage does not trigger a Marketplace Special Enrollment Period.');
+      retiree.actions.push('Confirm whether your retiree option is subsidized, secondary to Medicare later, and whether dependents can stay on it.');
+      retiree.actions.push('Ask for the annual premium schedule, drug formulary, and whether pricing changes at age 65.');
+
+      const medicare = {
+        id: 'medicare',
+        name: 'Medicare Path',
+        score: 30,
+        status: 'warn',
+        thesis: 'Dominant lane once you are eligible, but enrollment timing and coordination with other coverage matter.',
+        reasons: [],
+        cautions: [],
+        actions: []
+      };
+
+      if (medicareNow) medicare.score += 46;
+      if (medicareSoon) medicare.score += 22;
+      if (s.monthsTo65 <= 3) medicare.score += 10;
+      if (s.hsaStatus === 'contributing') medicare.score += 4;
+      if (!medicareNow && s.monthsTo65 > 18) medicare.score -= 14;
+
+      medicare.reasons.push('Medicare.gov says the initial enrollment window generally runs from 3 months before to 3 months after the month you turn 65.');
+      if (medicareNow) medicare.reasons.push('Once you have Medicare Part A or a Medicare Advantage plan, HealthCare.gov says you no longer qualify for Marketplace savings.');
+      if (s.hsaStatus !== 'none') medicare.reasons.push('IRS Publication 969 says HSA contributions must stop once Medicare enrollment begins.');
+      medicare.cautions.push('Marketplace coverage does not automatically end when Medicare starts, so you need to terminate the Marketplace plan intentionally.');
+      medicare.cautions.push('Late enrollment can trigger gaps or penalties if you do not have a valid delay reason.');
+      medicare.actions.push('Start Medicare planning at least 3 to 6 months before eligibility.');
+      medicare.actions.push('Price Original Medicare plus Medigap plus Part D against Medicare Advantage based on provider access and drug needs.');
+
+      const options = [marketplace, cobra, retiree, medicare].map(option => {
+        option.score = clamp(option.score, 0, 99);
+        if (option.score >= 72) option.status = 'good';
+        else if (option.score >= 45) option.status = 'warn';
+        else option.status = 'bad';
+        return option;
+      });
+
+      return options.sort((a, b) => b.score - a.score);
+    }
+
+    function buildSummary(s, options) {
+      const top = options[0];
+      const medicareLane = s.medicareStatus === 'enrolled' || s.medicareStatus === 'eligible' || s.monthsTo65 <= 0 ? 'Active' : (s.monthsTo65 <= 12 ? 'Soon' : 'Future');
+      const subsidyView = s.incomeBand === 'low' ? 'Strong' : s.incomeBand === 'mid' ? 'Possible' : s.incomeBand === 'high' ? 'Less likely' : 'Unknown';
+      const bridgeWindow = s.monthsTo65 > 0 ? `${s.monthsTo65} mo` : 'Now';
+
+      return [
+        { label: 'Best Lane', value: top.name },
+        { label: 'Medicare Clock', value: medicareLane },
+        { label: 'Subsidy View', value: subsidyView },
+        { label: 'Bridge to 65', value: bridgeWindow }
+      ];
+    }
+
+    function buildPodcastInsights(s) {
+      return [
+        {
+          title: 'ZIP code matters',
+          body: 'Episode 588 stressed that premium and plan choice vary dramatically by geography, so a national rule of thumb is not enough. Run local quotes early.'
+        },
+        {
+          title: 'Income planning changes the answer',
+          body: s.incomeControl === 'no'
+            ? 'If you cannot control taxable income, the Marketplace subsidy angle is harder to optimize and plan choice may lean more on continuity and timing.'
+            : 'Because you can manage income at least somewhat, the Marketplace path deserves a real tax-year planning exercise before you retire.'
+        },
+        {
+          title: 'COBRA is usually a bridge',
+          body: 'COBRA shines when you need the exact same doctors or a short transition. It is usually not the cheapest default once the employer subsidy disappears.'
+        },
+        {
+          title: 'Retiree coverage is not a free pass',
+          body: 'If you enroll in retiree coverage, HealthCare.gov says you cannot also receive premium tax credits. Price the tradeoff before locking yourself in.'
+        },
+        {
+          title: 'Medicare timing is its own project',
+          body: s.monthsTo65 <= 12
+            ? 'You are close enough to Medicare that enrollment timing should be on the same checklist as retirement paperwork.'
+            : 'Even if Medicare is not immediate, the eventual handoff will matter for HSA contributions, Marketplace termination, and supplemental coverage choices.'
+        },
+        {
+          title: 'HSA rules need a clean cutoff',
+          body: s.hsaStatus === 'none'
+            ? 'No HSA action needed, but the HSA rule still matters if you ever switch into an HDHP before Medicare.'
+            : 'IRS Publication 969 says HSA contributions stop when Medicare begins, but existing HSA balances can still be valuable for qualified medical expenses.'
+        }
+      ];
+    }
+
+    function buildNextSteps(s, options) {
+      const top = options[0];
+      const steps = [];
+
+      if (top.id === 'marketplace') {
+        steps.push('Get real Marketplace quotes using your ZIP code and projected household income.');
+        steps.push('If you are leaving work, apply inside the 60-day Special Enrollment Period window around loss of coverage.');
+        steps.push('Compare provider networks and maximum out-of-pocket exposure, not just the premium.');
+      }
+
+      if (top.id === 'cobra') {
+        steps.push('Request the exact monthly COBRA premium from HR or the plan administrator.');
+        steps.push('Decide whether continuity of care is worth the full unsubsidized cost.');
+        steps.push('Map the bridge end date now so you do not miss the move to Marketplace or Medicare later.');
+      }
+
+      if (top.id === 'retiree') {
+        steps.push('Request the retiree plan SPD, premium schedule, and age-65 transition rules.');
+        steps.push('Verify whether dependents can stay on the plan and what happens when Medicare starts.');
+        steps.push('Model retiree coverage against Marketplace quotes before enrollment, because it can shut off premium tax credits.');
+      }
+
+      if (top.id === 'medicare') {
+        steps.push('Set a Medicare enrollment calendar now, anchored 3 months before your eligibility month.');
+        steps.push('List all prescriptions and physicians before comparing Original Medicare plus Medigap vs Medicare Advantage.');
+        steps.push('If you still contribute to an HSA, plan the stop date before Medicare enrollment is effective.');
+      }
+
+      if (s.hsaStatus !== 'none') {
+        steps.push('Review HSA contribution timing and keep receipts for qualified expenses.');
+      }
+
+      if (s.retireeCoverage === 'enrolled') {
+        steps.push('Do not drop retiree coverage casually. HealthCare.gov says voluntary termination does not create a Marketplace Special Enrollment Period.');
+      }
+
+      if (s.cobraAvailable === 'yes') {
+        steps.push('Keep COBRA election paperwork even if you expect to choose another lane, because it can serve as a fallback during a transition.');
+      }
+
+      return steps.slice(0, 7);
+    }
+
+    function render() {
+      const scenario = readScenario();
+      const options = buildOptions(scenario);
+      const summary = buildSummary(scenario, options);
+      const best = options[0];
+      const podcastInsights = buildPodcastInsights(scenario);
+      const nextSteps = buildNextSteps(scenario, options);
+
+      summaryGridEl.innerHTML = summary.map(item => `
+        <div class="summary-card">
+          <div class="label">${item.label}</div>
+          <div class="value">${item.value}</div>
+        </div>
+      `).join('');
+
+      rankBannerEl.innerHTML = `
+        <div class="best-path">
+          <small>Recommended Starting Point</small>
+          <h3>${best.name}</h3>
+          <p>${best.thesis}</p>
+        </div>
+      `;
+
+      optionGridEl.innerHTML = options.map(option => `
+        <article class="option-card">
+          <div class="option-top">
+            <div>
+              <div class="option-name">${option.name}</div>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <span class="status-pill ${option.status}">${option.status === 'good' ? 'Strong fit' : option.status === 'warn' ? 'Worth comparing' : 'Lower fit'}</span>
+              <span class="score-pill">${option.score}/99</span>
+            </div>
+          </div>
+          <ul class="option-body">
+            <li>${option.thesis}</li>
+          </ul>
+          <div>
+            <strong>Why it fits</strong>
+            <ul class="option-list">${option.reasons.map(item => `<li>${item}</li>`).join('')}</ul>
+          </div>
+          <div>
+            <strong>Watch-outs</strong>
+            <ul class="option-list">${option.cautions.map(item => `<li>${item}</li>`).join('')}</ul>
+          </div>
+          <div>
+            <strong>What to do next</strong>
+            <ul class="option-list">${option.actions.map(item => `<li>${item}</li>`).join('')}</ul>
+          </div>
+        </article>
+      `).join('');
+
+      podcastGridEl.innerHTML = podcastInsights.map(item => `
+        <article class="insight-card">
+          <h4>${item.title}</h4>
+          <p>${item.body}</p>
+        </article>
+      `).join('');
+
+      nextStepsCardEl.innerHTML = `
+        <h3 class="panel-title">Your checklist</h3>
+        <ul class="next-list">${nextSteps.map(item => `<li>${item}</li>`).join('')}</ul>
+        <p class="mini-note">
+          Need live plan pricing? Start with <a class="resource-link" href="https://www.healthcare.gov/see-plans/" target="_blank" rel="noopener noreferrer">HealthCare.gov quotes</a> before retirement, and
+          <a class="resource-link" href="https://www.medicare.gov/plan-compare/" target="_blank" rel="noopener noreferrer">Medicare plan compare</a> when you are eligible.
+        </p>
+      `;
+    }
+
+    Object.values(state).forEach(el => {
+      el.addEventListener('input', render);
+      el.addEventListener('change', render);
+    });
+
+    render();
+  </script>
+</body>
+</html>
