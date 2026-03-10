@@ -178,6 +178,11 @@
       justify-content: center;
       margin-bottom: 20px;
     }
+    .showcase-region {
+      font-size: 18px;
+      color: #9fd9ff;
+      margin: -6px 0 16px;
+    }
     .type-badge {
       padding: 8px 20px;
       border-radius: 25px;
@@ -846,6 +851,7 @@
           value: s.base_stat
         }));
         const types = details.types.map(t => t.type.name);
+        const region = getRegion(pokemon.number);
         
         let evolutionHtml = '<div class="empty-state">No evolution data</div>';
         if (species.evolution_chain.url) {
@@ -862,6 +868,7 @@
           <div class="showcase">
             <img class="showcase-image" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.number}.png" alt="${pokemon.name}" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.number}.png'">
             <div class="showcase-name">${pokemon.name}</div>
+            <div class="showcase-region">Region: ${region}</div>
             <div class="showcase-types">
               ${types.map(t => `<span class="type-badge type-${t}">${t}</span>`).join('')}
             </div>
