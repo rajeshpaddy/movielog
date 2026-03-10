@@ -68,6 +68,12 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .list::-webkit-scrollbar {
+      width: 0;
+      height: 0;
     }
     .item {
       background: #0f172a;
@@ -204,6 +210,10 @@
       stroke: #2b6aa8;
       stroke-width: 0.5;
       vector-effect: non-scaling-stroke;
+    }
+    .region-shape.unmapped {
+      fill: #1e3a5f;
+      stroke: #2c5282;
     }
     .region-shape.visited { fill: #16a34a; stroke: #4ade80; }
     .region-shape.selected { fill: #8b5cf6; stroke: #c4b5fd; }
@@ -593,22 +603,35 @@
 
         mapSvg.innerHTML = '';
         regionsByCode.clear();
+        let mappedCount = 0;
+        let drawnCount = 0;
 
         geo.features.forEach(feature => {
           const code = resolveCodeFromFeature(feature.properties || {});
-          if (!code) return;
           const d = path(feature);
           if (!d) return;
           const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
           p.setAttribute('d', d);
           p.classList.add('region-shape');
-          p.dataset.code = code;
+          drawnCount += 1;
+          if (code) {
+            p.dataset.code = code;
+            mappedCount += 1;
+          } else {
+            p.classList.add('unmapped');
+          }
           mapSvg.appendChild(p);
-          const list = regionsByCode.get(code) || [];
-          list.push(p);
-          regionsByCode.set(code, list);
+          if (code) {
+            const list = regionsByCode.get(code) || [];
+            list.push(p);
+            regionsByCode.set(code, list);
+          }
         });
 
+        if (drawnCount === 0) throw new Error('map path render failed');
+        if (mappedCount === 0) {
+          console.warn('Accurate map rendered, but state mapping was unavailable.');
+        }
         accurateReady = true;
         return true;
       } catch (error) {
