@@ -55,14 +55,42 @@
       font-size: 13px;
       font-weight: 600;
     }
-    .mode-select {
-      border: 1px solid #fbbf24;
+    .mode-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
       background: #0b1220;
-      color: #e5e7eb;
-      border-radius: 10px;
-      padding: 8px 10px;
-      font-size: 13px;
-      min-width: 220px;
+      border: 1px solid #334155;
+      border-radius: 999px;
+      padding: 5px 8px;
+      user-select: none;
+    }
+    .mode-switch {
+      appearance: none;
+      width: 46px;
+      height: 24px;
+      border-radius: 999px;
+      background: #334155;
+      position: relative;
+      cursor: pointer;
+      outline: none;
+    }
+    .mode-switch::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      transition: transform 0.2s ease;
+    }
+    .mode-switch:checked { background: #f59e0b; }
+    .mode-switch:checked::after { transform: translateX(22px); }
+    .mode-name {
+      font-size: 12px;
+      color: #cbd5e1;
     }
     .mode-hint {
       color: #94a3b8;
@@ -318,11 +346,12 @@
       </div>
 
       <div class="mode-row">
-        <label class="mode-label" for="modeSelect">Mode</label>
-        <select id="modeSelect" class="mode-select">
-          <option value="human">Human Guesses</option>
-          <option value="machine">Machine Guesses</option>
-        </select>
+        <span class="mode-label">Mode</span>
+        <label class="mode-toggle" for="modeSwitch">
+          <span class="mode-name">Human</span>
+          <input id="modeSwitch" class="mode-switch" type="checkbox" aria-label="Switch between human and machine guess mode">
+          <span class="mode-name">Machine</span>
+        </label>
         <div id="modeHint" class="mode-hint">You guess the machine's number.</div>
       </div>
 
@@ -417,7 +446,7 @@
     let machineCurrentGuess = '';
 
     const statusEl = document.getElementById('status');
-    const modeSelect = document.getElementById('modeSelect');
+    const modeSwitch = document.getElementById('modeSwitch');
     const modeHint = document.getElementById('modeHint');
     const guessForm = document.getElementById('guessForm');
     const guessInput = document.getElementById('guessInput');
@@ -597,8 +626,8 @@
       machineCandidates = [];
       machineCurrentGuess = '';
       gameMode = MODE_HUMAN;
-      modeSelect.value = MODE_HUMAN;
-      modeHint.textContent = 'You guess the machine\\'s number.';
+      modeSwitch.checked = false;
+      modeHint.textContent = "You guess the machine's number.";
       guessForm.style.display = 'flex';
       machineSection.style.display = 'none';
       setStatus('New game started. Enter a 4-digit guess.');
@@ -640,7 +669,7 @@
       machineCandidates = [];
       machineCurrentGuess = '';
       gameMode = MODE_MACHINE;
-      modeSelect.value = MODE_MACHINE;
+      modeSwitch.checked = true;
       modeHint.textContent = 'Machine guesses your hidden number.';
       guessForm.style.display = 'none';
       machineSection.style.display = 'block';
@@ -789,7 +818,7 @@
     }
 
     guessForm.addEventListener('submit', handleGuessSubmit);
-    modeSelect.addEventListener('change', (e) => switchMode(e.target.value));
+    modeSwitch.addEventListener('change', (e) => switchMode(e.target.checked ? MODE_MACHINE : MODE_HUMAN));
     machineStartBtn.addEventListener('click', startMachineGame);
     machineNextBtn.addEventListener('click', handleMachineNextTurn);
     newGameBtn.addEventListener('click', () => switchMode(gameMode));
