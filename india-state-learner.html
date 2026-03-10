@@ -313,6 +313,8 @@
       <div class="transfer-row">
         <button id="exportBtn" class="transfer-btn" aria-label="Export visited states" title="Export visited states">⤓</button>
         <button id="importBtn" class="transfer-btn" aria-label="Import visited states" title="Import visited states">⤒</button>
+        <button id="exportSharedBtn" class="transfer-btn" aria-label="Shared export visited states" title="Shared export visited states">⇪</button>
+        <button id="importSharedBtn" class="transfer-btn" aria-label="Shared import visited states" title="Shared import visited states">⇩</button>
         <input id="importFile" type="file" accept="application/json" hidden>
       </div>
       <div id="transferStatus" class="transfer-status" aria-live="polite"></div>
@@ -366,6 +368,8 @@
 
     const STORE_KEY = 'visitedIndiaStates';
     const MODE_KEY = 'indiaMapMode';
+    const SETGET_SET_URL = 'https://setget.io/api/set';
+    const SETGET_GET_BASE = 'https://setget.io/api/get';
 
     let visited = JSON.parse(localStorage.getItem(STORE_KEY) || '{}');
     let selectedCode = null;
@@ -417,6 +421,8 @@
     const mapModeSwitch = document.getElementById('mapModeSwitch');
     const exportBtn = document.getElementById('exportBtn');
     const importBtn = document.getElementById('importBtn');
+    const exportSharedBtn = document.getElementById('exportSharedBtn');
+    const importSharedBtn = document.getElementById('importSharedBtn');
     const importFile = document.getElementById('importFile');
     const transferStatus = document.getElementById('transferStatus');
 
@@ -785,6 +791,80 @@
       reader.readAsText(file);
     }
 
+    function promptSharedKeyword(label) {
+      const raw = prompt(`${label}: enter a keyword`, '');
+      if (raw == null) return '';
+      const normalized = String(raw).trim().toLowerCase().replaceAll(/\s+/g, '-').replaceAll(/[^a-z0-9-_]/g, '');
+      if (!normalized) {
+        setTransferStatus('Keyword is required for shared transfer.', true);
+      }
+      return normalized;
+    }
+
+    async function exportSharedData() {
+      const keyword = promptSharedKeyword('Shared export');
+      if (!keyword) return;
+      const key = `india-state-learner-${keyword}`;
+      const payload = {
+        app: 'india-state-learner',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        visited
+      };
+      try {
+        let response = await fetch(SETGET_SET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key, content: payload, expireAfter: 604800 })
+        });
+        let text = await response.text();
+        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
+          response = await fetch(SETGET_SET_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key, content: payload })
+          });
+          text = await response.text();
+        }
+        if (!response.ok) throw new Error(`Shared export failed (${response.status})${text ? `: ${text}` : ''}`);
+        setTransferStatus(`Shared export complete (${keyword})`, false);
+      } catch (error) {
+        setTransferStatus(error.message || 'Shared export failed', true);
+      }
+    }
+
+    async function importSharedData() {
+      const keyword = promptSharedKeyword('Shared import');
+      if (!keyword) return;
+      const key = `india-state-learner-${keyword}`;
+      try {
+        const response = await fetch(`${SETGET_GET_BASE}/${encodeURIComponent(key)}`);
+        const text = await response.text();
+        if (!response.ok) throw new Error(`Shared import failed (${response.status})${text ? `: ${text}` : ''}`);
+        const parsed = JSON.parse(text);
+        const source = parsed?.content?.visited ?? parsed?.visited ?? parsed?.content ?? parsed;
+        if (!source || typeof source !== 'object' || Array.isArray(source)) throw new Error('Invalid format');
+        const next = {};
+        Object.entries(source).forEach(([k, v]) => {
+          const code = String(k).toUpperCase();
+          if (!codeToItem[code]) return;
+          if (v === false || v == null) return;
+          next[code] = typeof v === 'number' ? v : Date.now();
+        });
+        if (Object.keys(next).length === 0) throw new Error('No valid entries in shared data');
+        visited = next;
+        saveVisited();
+        renderStats();
+        renderLists();
+        renderVisitButton();
+        renderStatus();
+        scheduleMapRender();
+        setTransferStatus(`Shared import complete (${keyword})`, false);
+      } catch (error) {
+        setTransferStatus(error.message || 'Shared import failed', true);
+      }
+    }
+
     leftSearch.addEventListener('input', e => { leftQuery = e.target.value; renderLists(); });
     rightSearch.addEventListener('input', e => { rightQuery = e.target.value; renderLists(); });
     leftRegionSel.addEventListener('change', e => { leftRegion = e.target.value; renderLists(); });
@@ -804,6 +884,8 @@
       const [file] = e.target.files || [];
       if (file) importData(file);
     });
+    exportSharedBtn.addEventListener('click', exportSharedData);
+    importSharedBtn.addEventListener('click', importSharedData);
 
     mapImg.addEventListener('error', () => {
       if (mapImg.dataset.fallback1 !== '1') {

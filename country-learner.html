@@ -1074,6 +1074,8 @@
       <div class="transfer-actions">
         <button type="button" class="transfer-btn" id="exportVisitedBtn" aria-label="Export visited countries" title="Export visited countries">⤓</button>
         <button type="button" class="transfer-btn" id="importVisitedBtn" aria-label="Import visited countries" title="Import visited countries">⤒</button>
+        <button type="button" class="transfer-btn" id="exportSharedVisitedBtn" aria-label="Shared export visited countries" title="Shared export visited countries">⇪</button>
+        <button type="button" class="transfer-btn" id="importSharedVisitedBtn" aria-label="Shared import visited countries" title="Shared import visited countries">⇩</button>
         <input type="file" id="importVisitedFile" accept="application/json" hidden>
       </div>
       <div class="transfer-status" id="transferStatus" aria-live="polite"></div>
@@ -1104,6 +1106,8 @@
   </div>
 
   <script>
+    const SETGET_SET_URL = 'https://setget.io/api/set';
+    const SETGET_GET_BASE = 'https://setget.io/api/get';
    const COUNTRIES = [
       { code: "AF", name: "Afghanistan", nativeName: "افغانستان", flag: "🇦🇫", continent: "asia", capital: "Kabul", population: 40028462, currency: "Afghan afghani (AFN)", language: "Pashto, Dari", travelAdvisory: 4, travelNote: "Do not travel due to terrorism, kidnapping, and armed conflict.", lat: 33.9391, lng: 67.7100 },
       { code: "AL", name: "Albania", nativeName: "Shqipëria", flag: "🇦🇱", continent: "europe", capital: "Tirana", population: 2842321, currency: "Albanian lek (ALL)", language: "Albanian", travelAdvisory: 1, travelNote: "Exercise normal precautions.", lat: 41.1533, lng: 20.1683 },
@@ -1342,6 +1346,8 @@
     const rightTravelFilterRadios = document.querySelectorAll('input[name="rightTravelRating"]');
     const exportVisitedBtn = document.getElementById('exportVisitedBtn');
     const importVisitedBtn = document.getElementById('importVisitedBtn');
+    const exportSharedVisitedBtn = document.getElementById('exportSharedVisitedBtn');
+    const importSharedVisitedBtn = document.getElementById('importSharedVisitedBtn');
     const importVisitedFile = document.getElementById('importVisitedFile');
     const transferStatus = document.getElementById('transferStatus');
     const centerContent = document.getElementById('centerContent');
@@ -1685,6 +1691,73 @@
       reader.readAsText(file);
     }
 
+    function promptSharedKeyword(label) {
+      const raw = prompt(`${label}: enter a keyword`, '');
+      if (raw == null) return '';
+      const normalized = String(raw).trim().toLowerCase().replaceAll(/\s+/g, '-').replaceAll(/[^a-z0-9-_]/g, '');
+      if (!normalized) {
+        setTransferStatus('Keyword is required for shared transfer.', true);
+      }
+      return normalized;
+    }
+
+    async function exportVisitedCountriesShared() {
+      const keyword = promptSharedKeyword('Shared export');
+      if (!keyword) return;
+      const key = `country-learner-${keyword}`;
+      const payload = {
+        app: 'country-learner',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        visitedCountries
+      };
+      try {
+        let response = await fetch(SETGET_SET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key, content: payload, expireAfter: 604800 })
+        });
+        let text = await response.text();
+        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
+          response = await fetch(SETGET_SET_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key, content: payload })
+          });
+          text = await response.text();
+        }
+        if (!response.ok) throw new Error(`Shared export failed (${response.status})${text ? `: ${text}` : ''}`);
+        setTransferStatus(`Shared export complete (${keyword})`, false);
+      } catch (error) {
+        setTransferStatus(error.message || 'Shared export failed', true);
+      }
+    }
+
+    async function importVisitedCountriesShared() {
+      const keyword = promptSharedKeyword('Shared import');
+      if (!keyword) return;
+      const key = `country-learner-${keyword}`;
+      try {
+        const response = await fetch(`${SETGET_GET_BASE}/${encodeURIComponent(key)}`);
+        const text = await response.text();
+        if (!response.ok) throw new Error(`Shared import failed (${response.status})${text ? `: ${text}` : ''}`);
+        const parsed = JSON.parse(text);
+        visitedCountries = normalizeImportedVisitedData(parsed?.content ?? parsed);
+        saveVisitedCountries();
+        calculateStats();
+        calculateContinentStats();
+        renderLeftList();
+        renderRightList();
+        if (selectedCountryCode && countriesByCode[selectedCountryCode]) {
+          renderCenter(countriesByCode[selectedCountryCode]);
+        }
+        scheduleWorldMapRender();
+        setTransferStatus(`Shared import complete (${keyword})`, false);
+      } catch (error) {
+        setTransferStatus(error.message || 'Shared import failed', true);
+      }
+    }
+
     function calculateStats() {
       const total = COUNTRIES.length;
       const visitedCount = Object.keys(visitedCountries).length;
@@ -1995,6 +2068,12 @@
     }
     if (importVisitedFile) {
       importVisitedFile.addEventListener('change', importVisitedCountriesData);
+    }
+    if (exportSharedVisitedBtn) {
+      exportSharedVisitedBtn.addEventListener('click', exportVisitedCountriesShared);
+    }
+    if (importSharedVisitedBtn) {
+      importSharedVisitedBtn.addEventListener('click', importVisitedCountriesShared);
     }
 
     if (mapModeSwitch) {

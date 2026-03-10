@@ -546,6 +546,8 @@
       <div class="transfer-actions">
         <button type="button" class="transfer-btn" id="exportStudiedBtn" aria-label="Export studied presidents" title="Export studied presidents">⤓</button>
         <button type="button" class="transfer-btn" id="importStudiedBtn" aria-label="Import studied presidents" title="Import studied presidents">⤒</button>
+        <button type="button" class="transfer-btn" id="exportSharedStudiedBtn" aria-label="Shared export studied presidents" title="Shared export studied presidents">⇪</button>
+        <button type="button" class="transfer-btn" id="importSharedStudiedBtn" aria-label="Shared import studied presidents" title="Shared import studied presidents">⇩</button>
         <input type="file" id="importStudiedFile" accept="application/json" hidden>
       </div>
       <div class="transfer-status" id="transferStatus" aria-live="polite"></div>
@@ -555,6 +557,8 @@
   </div>
 
   <script>
+    const SETGET_SET_URL = 'https://setget.io/api/set';
+    const SETGET_GET_BASE = 'https://setget.io/api/get';
     const PRESIDENTS = [
       { number: 1, name: "George Washington", years: "1789-1797", tenureYears: 8, party: "independent", nickname: "Father of His Country", birthDeath: "1732-1799", priorOffice: "Commander-in-Chief of the Continental Army", priorOccupation: "Planter, Military Leader", vicePresidents: ["John Adams"], image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Presidents_George_Washington.jpg/220px-Presidents_George_Washington.jpg", accomplishments: "Established many traditions including the two-term limit, the cabinet system, and the inaugural address. Set precedents for the peaceful transfer of power.", keyEvents: ["1789: First inauguration", "1791: Bill of Rights ratified", "1794: Whiskey Rebellion", "1796: Farewell Address"] },
       { number: 2, name: "John Adams", years: "1797-1801", tenureYears: 4, party: "federalist", nickname: "The Father of the American Navy", birthDeath: "1735-1826", priorOffice: "Vice President", priorOccupation: "Lawyer, Diplomat", vicePresidents: ["Thomas Jefferson"], image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/John_Adams.jpg/220px-John_Adams.jpg", accomplishments: "Strengthened the navy, avoided war with France, and established the Marine Corps. Defended the Boston Massacre soldiers.", keyEvents: ["1797: First president to live in White House", "1798: Alien and Sedition Acts", "1798: Marine Corps founded", "1800: Move to Washington D.C."] },
@@ -623,6 +627,8 @@
     const shortcutsOverlay = document.getElementById('shortcutsOverlay');
     const exportStudiedBtn = document.getElementById('exportStudiedBtn');
     const importStudiedBtn = document.getElementById('importStudiedBtn');
+    const exportSharedStudiedBtn = document.getElementById('exportSharedStudiedBtn');
+    const importSharedStudiedBtn = document.getElementById('importSharedStudiedBtn');
     const importStudiedFile = document.getElementById('importStudiedFile');
     const transferStatus = document.getElementById('transferStatus');
     
@@ -726,6 +732,72 @@
         importStudiedFile.value = '';
       };
       reader.readAsText(file);
+    }
+
+    function promptSharedKeyword(label) {
+      const raw = prompt(`${label}: enter a keyword`, '');
+      if (raw == null) return '';
+      const normalized = String(raw).trim().toLowerCase().replaceAll(/\s+/g, '-').replaceAll(/[^a-z0-9-_]/g, '');
+      if (!normalized) {
+        setTransferStatus('Keyword is required for shared transfer.', true);
+      }
+      return normalized;
+    }
+
+    async function exportStudiedPresidentsShared() {
+      const keyword = promptSharedKeyword('Shared export');
+      if (!keyword) return;
+      const key = `president-learner-${keyword}`;
+      const payload = {
+        app: 'president-learner',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        studiedPresidents
+      };
+      try {
+        let response = await fetch(SETGET_SET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key, content: payload, expireAfter: 604800 })
+        });
+        let text = await response.text();
+        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
+          response = await fetch(SETGET_SET_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key, content: payload })
+          });
+          text = await response.text();
+        }
+        if (!response.ok) throw new Error(`Shared export failed (${response.status})${text ? `: ${text}` : ''}`);
+        setTransferStatus(`Shared export complete (${keyword})`, false);
+      } catch (error) {
+        setTransferStatus(error.message || 'Shared export failed', true);
+      }
+    }
+
+    async function importStudiedPresidentsShared() {
+      const keyword = promptSharedKeyword('Shared import');
+      if (!keyword) return;
+      const key = `president-learner-${keyword}`;
+      try {
+        const response = await fetch(`${SETGET_GET_BASE}/${encodeURIComponent(key)}`);
+        const text = await response.text();
+        if (!response.ok) throw new Error(`Shared import failed (${response.status})${text ? `: ${text}` : ''}`);
+        const parsed = JSON.parse(text);
+        studiedPresidents = normalizeImportedStudiedData(parsed?.content ?? parsed);
+        saveStudiedPresidents();
+        calculateStats();
+        renderLeftList();
+        renderRightList();
+        if (selectedPresident) {
+          selectedFromRight = !!studiedPresidents[selectedPresident.number];
+          showPresidentDetails(selectedPresident);
+        }
+        setTransferStatus(`Shared import complete (${keyword})`, false);
+      } catch (error) {
+        setTransferStatus(error.message || 'Shared import failed', true);
+      }
     }
     
     function calculateStats() {
@@ -983,6 +1055,12 @@
     }
     if (importStudiedFile) {
       importStudiedFile.addEventListener('change', importStudiedPresidentsData);
+    }
+    if (exportSharedStudiedBtn) {
+      exportSharedStudiedBtn.addEventListener('click', exportStudiedPresidentsShared);
+    }
+    if (importSharedStudiedBtn) {
+      importSharedStudiedBtn.addEventListener('click', importStudiedPresidentsShared);
     }
     
     document.addEventListener('keydown', (e) => {

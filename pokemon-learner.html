@@ -600,6 +600,8 @@
       <div class="transfer-actions">
         <button type="button" class="transfer-btn" id="exportLearnedBtn" aria-label="Export learned Pokemon" title="Export learned Pokemon">⤓</button>
         <button type="button" class="transfer-btn" id="importLearnedBtn" aria-label="Import learned Pokemon" title="Import learned Pokemon">⤒</button>
+        <button type="button" class="transfer-btn" id="exportSharedLearnedBtn" aria-label="Shared export learned Pokemon" title="Shared export learned Pokemon">⇪</button>
+        <button type="button" class="transfer-btn" id="importSharedLearnedBtn" aria-label="Shared import learned Pokemon" title="Shared import learned Pokemon">⇩</button>
         <input type="file" id="importLearnedFile" accept="application/json" hidden>
       </div>
       <div class="transfer-status" id="transferStatus" aria-live="polite"></div>
@@ -616,6 +618,8 @@
     const POKEMON_ARTWORK_TEMPLATE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{num}.png';
     const IMAGE_THEME_KEY = 'pokemonLearnerImageTheme';
     const POKEMON_CACHE_KEY = 'pokemonLearnerAllPokemonCache';
+    const SETGET_SET_URL = 'https://setget.io/api/set';
+    const SETGET_GET_BASE = 'https://setget.io/api/get';
     const IMAGE_THEMES = {
       NORMAL: 'normal',
       ANNIVERSARY: '30th'
@@ -674,6 +678,8 @@
     const shortcutsOverlay = document.getElementById('shortcutsOverlay');
     const exportLearnedBtn = document.getElementById('exportLearnedBtn');
     const importLearnedBtn = document.getElementById('importLearnedBtn');
+    const exportSharedLearnedBtn = document.getElementById('exportSharedLearnedBtn');
+    const importSharedLearnedBtn = document.getElementById('importSharedLearnedBtn');
     const importLearnedFile = document.getElementById('importLearnedFile');
     const transferStatus = document.getElementById('transferStatus');
     let leftPaneCollapsed = false;
@@ -866,6 +872,72 @@
         importLearnedFile.value = '';
       };
       reader.readAsText(file);
+    }
+
+    function promptSharedKeyword(label) {
+      const raw = prompt(`${label}: enter a keyword`, '');
+      if (raw == null) return '';
+      const normalized = String(raw).trim().toLowerCase().replaceAll(/\s+/g, '-').replaceAll(/[^a-z0-9-_]/g, '');
+      if (!normalized) {
+        setTransferStatus('Keyword is required for shared transfer.', true);
+      }
+      return normalized;
+    }
+
+    async function exportLearnedPokemonShared() {
+      const keyword = promptSharedKeyword('Shared export');
+      if (!keyword) return;
+      const key = `pokemon-learner-${keyword}`;
+      const payload = {
+        app: 'pokemon-learner',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        learnedPokemon
+      };
+      try {
+        let response = await fetch(SETGET_SET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key, content: payload, expireAfter: 604800 })
+        });
+        let text = await response.text();
+        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
+          response = await fetch(SETGET_SET_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key, content: payload })
+          });
+          text = await response.text();
+        }
+        if (!response.ok) throw new Error(`Shared export failed (${response.status})${text ? `: ${text}` : ''}`);
+        setTransferStatus(`Shared export complete (${keyword})`, false);
+      } catch (error) {
+        setTransferStatus(error.message || 'Shared export failed', true);
+      }
+    }
+
+    async function importLearnedPokemonShared() {
+      const keyword = promptSharedKeyword('Shared import');
+      if (!keyword) return;
+      const key = `pokemon-learner-${keyword}`;
+      try {
+        const response = await fetch(`${SETGET_GET_BASE}/${encodeURIComponent(key)}`);
+        const text = await response.text();
+        if (!response.ok) throw new Error(`Shared import failed (${response.status})${text ? `: ${text}` : ''}`);
+        const parsed = JSON.parse(text);
+        learnedPokemon = normalizeImportedLearnedData(parsed?.content ?? parsed);
+        saveLearnedPokemon();
+        calculateStats();
+        renderLeftList();
+        renderRightList();
+        if (selectedPokemon) {
+          selectedFromRight = !!learnedPokemon[selectedPokemon.number];
+          showPokemonDetails(selectedPokemon);
+        }
+        setTransferStatus(`Shared import complete (${keyword})`, false);
+      } catch (error) {
+        setTransferStatus(error.message || 'Shared import failed', true);
+      }
     }
     
     function getRegion(number) {
@@ -1234,6 +1306,12 @@
     }
     if (importLearnedFile) {
       importLearnedFile.addEventListener('change', importLearnedPokemonData);
+    }
+    if (exportSharedLearnedBtn) {
+      exportSharedLearnedBtn.addEventListener('click', exportLearnedPokemonShared);
+    }
+    if (importSharedLearnedBtn) {
+      importSharedLearnedBtn.addEventListener('click', importLearnedPokemonShared);
     }
     if (toggleLeftPaneBtn) {
       toggleLeftPaneBtn.addEventListener('click', () => togglePane('left'));

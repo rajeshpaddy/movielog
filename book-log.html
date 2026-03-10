@@ -316,6 +316,8 @@
           <button id="toggleSearchPaneBtn" class="btn-secondary" type="button">Collapse Search</button>
           <button id="exportDataBtn" class="btn-secondary" type="button">Export Data</button>
           <button id="importDataBtn" class="btn-secondary" type="button">Import Data</button>
+          <button id="exportSharedDataBtn" class="btn-secondary" type="button">Export Shared</button>
+          <button id="importSharedDataBtn" class="btn-secondary" type="button">Import Shared</button>
           <input id="importDataFile" type="file" accept="application/json" hidden>
         </div>
       </div>
@@ -366,6 +368,8 @@
 
   <script>
     const STORAGE_KEY = 'bookLogShelves';
+    const SETGET_SET_URL = 'https://setget.io/api/set';
+    const SETGET_GET_BASE = 'https://setget.io/api/get';
     const state = {
       results: [],
       selected: new Set(),
@@ -388,6 +392,8 @@
     const toggleSearchPaneBtnEl = document.getElementById('toggleSearchPaneBtn');
     const exportDataBtnEl = document.getElementById('exportDataBtn');
     const importDataBtnEl = document.getElementById('importDataBtn');
+    const exportSharedDataBtnEl = document.getElementById('exportSharedDataBtn');
+    const importSharedDataBtnEl = document.getElementById('importSharedDataBtn');
     const importDataFileEl = document.getElementById('importDataFile');
     const searchPanelBodyEl = document.getElementById('searchPanelBody');
     const searchPanelEl = searchPanelBodyEl ? searchPanelBodyEl.closest('.panel') : null;
@@ -496,6 +502,66 @@
         importDataFileEl.value = '';
       };
       reader.readAsText(file);
+    }
+
+    function promptSharedKeyword(label) {
+      const raw = prompt(`${label}: enter a keyword`, '');
+      if (raw == null) return '';
+      const normalized = String(raw).trim().toLowerCase().replaceAll(/\s+/g, '-').replaceAll(/[^a-z0-9-_]/g, '');
+      if (!normalized) {
+        setStatus('Keyword is required for shared transfer.', 'error');
+      }
+      return normalized;
+    }
+
+    async function exportAllDataShared() {
+      const keyword = promptSharedKeyword('Shared export');
+      if (!keyword) return;
+      const key = `book-log-${keyword}`;
+      const payload = {
+        app: 'book-log',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        shelves: state.shelves
+      };
+      try {
+        let response = await fetch(SETGET_SET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key, content: payload, expireAfter: 604800 })
+        });
+        let text = await response.text();
+        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
+          response = await fetch(SETGET_SET_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key, content: payload })
+          });
+          text = await response.text();
+        }
+        if (!response.ok) throw new Error(`Shared export failed (${response.status})${text ? `: ${text}` : ''}`);
+        setStatus(`Shared export complete (${keyword}).`, 'success');
+      } catch (error) {
+        setStatus(error.message || 'Shared export failed.', 'error');
+      }
+    }
+
+    async function importAllDataShared() {
+      const keyword = promptSharedKeyword('Shared import');
+      if (!keyword) return;
+      const key = `book-log-${keyword}`;
+      try {
+        const response = await fetch(`${SETGET_GET_BASE}/${encodeURIComponent(key)}`);
+        const text = await response.text();
+        if (!response.ok) throw new Error(`Shared import failed (${response.status})${text ? `: ${text}` : ''}`);
+        const parsed = JSON.parse(text);
+        state.shelves = normalizeImportedShelves(parsed?.content ?? parsed);
+        saveShelves();
+        renderShelves();
+        setStatus(`Shared import complete (${keyword}).`, 'success');
+      } catch (error) {
+        setStatus(error.message || 'Shared import failed.', 'error');
+      }
     }
 
 
@@ -781,6 +847,8 @@
     });
     exportDataBtnEl.addEventListener('click', exportAllData);
     importDataBtnEl.addEventListener('click', () => importDataFileEl.click());
+    exportSharedDataBtnEl.addEventListener('click', exportAllDataShared);
+    importSharedDataBtnEl.addEventListener('click', importAllDataShared);
     importDataFileEl.addEventListener('change', (e) => {
       const [file] = e.target.files || [];
       if (file) importAllData(file);

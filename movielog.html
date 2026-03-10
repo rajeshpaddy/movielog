@@ -892,6 +892,22 @@
                     </svg>
                     Import
                 </button>
+                <button class="nav-btn" id="exportSharedBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 3v12"></path>
+                        <path d="M7 10l5 5 5-5"></path>
+                        <path d="M5 21h14"></path>
+                    </svg>
+                    Export Shared
+                </button>
+                <button class="nav-btn" id="importSharedBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 21V9"></path>
+                        <path d="M7 14l5-5 5 5"></path>
+                        <path d="M5 3h14"></path>
+                    </svg>
+                    Import Shared
+                </button>
                 <input type="file" id="importFile" accept=".json" style="display: none;">
             </div>
         </aside>
@@ -961,6 +977,9 @@
     </div>
 
     <script>
+        const SETGET_SET_URL = 'https://setget.io/api/set';
+        const SETGET_GET_BASE = 'https://setget.io/api/get';
+
         function safeStorageGet(key) {
             try {
                 return localStorage.getItem(key);
@@ -1237,6 +1256,39 @@
             selectedRating = 0;
         }
 
+        function normalizeSharedKeyword(raw) {
+            const key = String(raw || '').trim().toLowerCase().replaceAll(/\s+/g, '-').replaceAll(/[^a-z0-9-_]/g, '');
+            return key;
+        }
+
+        function mergeImportedMovies(importedMovies) {
+            if (!Array.isArray(importedMovies)) {
+                throw new Error('Invalid file format');
+            }
+            const existingKeys = new Set(movies.map(m => `${m.title}|||${m.dateWatched}`));
+            let addedCount = 0;
+            importedMovies.forEach(m => {
+                const key = `${m.title}|||${m.dateWatched}`;
+                if (!existingKeys.has(key)) {
+                    movies.push({
+                        id: Date.now() + Math.random(),
+                        imdbId: m.imdbId || '',
+                        title: m.title,
+                        year: m.year,
+                        poster: m.poster,
+                        dateWatched: m.dateWatched,
+                        rating: m.rating || 0
+                    });
+                    existingKeys.add(key);
+                    addedCount++;
+                }
+            });
+            saveMovies();
+            renderMoviesList();
+            renderReports();
+            return { addedCount, skippedCount: importedMovies.length - addedCount };
+        }
+
         function deleteMovie(id) {
             if (confirm('Delete this movie from your log?')) {
                 movies = movies.filter(m => m.id !== id);
@@ -1436,35 +1488,8 @@
             reader.onload = (event) => {
                 try {
                     const importedMovies = JSON.parse(event.target.result);
-                    if (!Array.isArray(importedMovies)) {
-                        alert('Invalid file format');
-                        return;
-                    }
-
-                    const existingKeys = new Set(movies.map(m => `${m.title}|||${m.dateWatched}`));
-                    let addedCount = 0;
-
-                    importedMovies.forEach(m => {
-                        const key = `${m.title}|||${m.dateWatched}`;
-                        if (!existingKeys.has(key)) {
-                            movies.push({
-                                id: Date.now() + Math.random(),
-                                imdbId: m.imdbId || '',
-                                title: m.title,
-                                year: m.year,
-                                poster: m.poster,
-                                dateWatched: m.dateWatched,
-                                rating: m.rating || 0
-                            });
-                            existingKeys.add(key);
-                            addedCount++;
-                        }
-                    });
-
-                    saveMovies();
-                    renderMoviesList();
-                    renderReports();
-                    alert(`Imported ${addedCount} new movie(s). ${importedMovies.length - addedCount} duplicate(s) were skipped.`);
+                    const { addedCount, skippedCount } = mergeImportedMovies(importedMovies);
+                    alert(`Imported ${addedCount} new movie(s). ${skippedCount} duplicate(s) were skipped.`);
                 } catch (err) {
                     alert('Error parsing JSON file');
                     console.error(err);
@@ -1472,6 +1497,65 @@
             };
             reader.readAsText(file);
             e.target.value = '';
+        });
+
+        document.getElementById('exportSharedBtn').addEventListener('click', async () => {
+            const keywordRaw = prompt('Shared export: enter a keyword', '');
+            if (keywordRaw == null) return;
+            const keyword = normalizeSharedKeyword(keywordRaw);
+            if (!keyword) {
+                alert('Keyword is required for shared export.');
+                return;
+            }
+            const key = `movielog-${keyword}`;
+            const payload = {
+                app: 'movielog',
+                version: 1,
+                exportedAt: new Date().toISOString(),
+                movies
+            };
+            try {
+                let response = await fetch(SETGET_SET_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ key, content: payload, expireAfter: 604800 })
+                });
+                let text = await response.text();
+                if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
+                    response = await fetch(SETGET_SET_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ key, content: payload })
+                    });
+                    text = await response.text();
+                }
+                if (!response.ok) throw new Error(`Shared export failed (${response.status})${text ? `: ${text}` : ''}`);
+                alert(`Shared export complete (${keyword}).`);
+            } catch (error) {
+                alert(error.message || 'Shared export failed.');
+            }
+        });
+
+        document.getElementById('importSharedBtn').addEventListener('click', async () => {
+            const keywordRaw = prompt('Shared import: enter a keyword', '');
+            if (keywordRaw == null) return;
+            const keyword = normalizeSharedKeyword(keywordRaw);
+            if (!keyword) {
+                alert('Keyword is required for shared import.');
+                return;
+            }
+            const key = `movielog-${keyword}`;
+            try {
+                const response = await fetch(`${SETGET_GET_BASE}/${encodeURIComponent(key)}`);
+                const text = await response.text();
+                if (!response.ok) throw new Error(`Shared import failed (${response.status})${text ? `: ${text}` : ''}`);
+                const parsed = JSON.parse(text);
+                const source = parsed?.content?.movies ?? parsed?.movies ?? parsed?.content ?? parsed;
+                const { addedCount, skippedCount } = mergeImportedMovies(source);
+                alert(`Shared import complete (${keyword}). Added ${addedCount}, skipped ${skippedCount}.`);
+            } catch (error) {
+                alert(error.message || 'Shared import failed.');
+            }
         });
     </script>
 </body>
