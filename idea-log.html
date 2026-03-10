@@ -299,6 +299,7 @@
     const STORAGE_KEY = 'ideaLogEntriesV1';
     const SHARED_STORE_BASE = 'https://kvdb.io';
     const SHARED_BUCKET_ID = '8f6f4f9a-2e10-4d6f-9f52-b5f3996e7c11';
+    const SHARED_FALLBACK_BASE = 'https://www.jsonstore.io';
     const STATES = {
       EXPERIMENTING: 'experimenting',
       DISCARDED: 'discarded',
@@ -531,8 +532,19 @@
       return `idea-log-${keyword}`;
     }
 
-    function getSharedUrlForKey(key) {
-      return `${SHARED_STORE_BASE}/${SHARED_BUCKET_ID}/${encodeURIComponent(key)}`;
+    function getSharedProvidersForKey(key) {
+      return [
+        {
+          name: 'kvdb',
+          url: `${SHARED_STORE_BASE}/${SHARED_BUCKET_ID}/${encodeURIComponent(key)}`,
+          method: 'PUT'
+        },
+        {
+          name: 'jsonstore',
+          url: `${SHARED_FALLBACK_BASE}/${encodeURIComponent(key)}`,
+          method: 'PUT'
+        }
+      ];
     }
 
     async function exportIdeasShared() {
@@ -546,22 +558,28 @@
         ideas
       };
       const key = getSharedKey(keyword);
-      const sharedUrl = getSharedUrlForKey(key);
-      try {
-        const response = await fetch(sharedUrl, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        if (!response.ok) {
-          const detail = await response.text().catch(() => '');
-          throw new Error(`Shared export failed (${response.status})${detail ? `: ${detail}` : ''}`);
+      const providers = getSharedProvidersForKey(key);
+      let lastError = '';
+      for (const provider of providers) {
+        try {
+          const response = await fetch(provider.url, {
+            method: provider.method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (!response.ok) {
+            const detail = await response.text().catch(() => '');
+            lastError = `${provider.name}: ${response.status}${detail ? ` ${detail}` : ''}`;
+            continue;
+          }
+          setStatus(`Shared export completed with keyword "${keyword}" via ${provider.name}.`, false);
+          setSharedLink(provider.url);
+          return;
+        } catch (error) {
+          lastError = `${provider.name}: ${error.message || 'request failed'}`;
         }
-        setStatus(`Shared export completed with keyword "${keyword}".`, false);
-        setSharedLink(sharedUrl);
-      } catch (error) {
-        setStatus(error.message || 'Shared export failed.', true);
       }
+      setStatus(`Shared export failed. ${lastError || 'No provider succeeded.'}`, true);
     }
 
     function extractSharedPayload(raw) {
@@ -577,30 +595,37 @@
       const keyword = promptKeyword('Import from shared storage');
       if (!keyword) return;
       const key = getSharedKey(keyword);
-      const sharedUrl = getSharedUrlForKey(key);
-      try {
-        const response = await fetch(sharedUrl);
-        if (!response.ok) {
-          const detail = await response.text().catch(() => '');
-          throw new Error(`No shared data found for keyword "${keyword}" (${response.status})${detail ? `: ${detail}` : ''}`);
+      const providers = getSharedProvidersForKey(key);
+      let lastError = '';
+      for (const provider of providers) {
+        try {
+          const response = await fetch(provider.url);
+          if (!response.ok) {
+            const detail = await response.text().catch(() => '');
+            lastError = `${provider.name}: ${response.status}${detail ? ` ${detail}` : ''}`;
+            continue;
+          }
+          const rawText = await response.text();
+          const parsed = JSON.parse(rawText);
+          const payload = extractSharedPayload(parsed);
+          if (!payload || !Array.isArray(payload.ideas)) {
+            lastError = `${provider.name}: invalid payload`;
+            continue;
+          }
+          const incoming = payload.ideas.map(normalizeIdea).filter(Boolean);
+          const byId = new Map(ideas.map(i => [i.id, i]));
+          incoming.forEach(item => byId.set(item.id, item));
+          ideas = Array.from(byId.values()).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          saveIdeas();
+          renderAll();
+          setStatus(`Imported ${incoming.length} ideas from shared storage using "${keyword}" via ${provider.name}.`, false);
+          setSharedLink(provider.url);
+          return;
+        } catch (error) {
+          lastError = `${provider.name}: ${error.message || 'request failed'}`;
         }
-        const rawText = await response.text();
-        const parsed = JSON.parse(rawText);
-        const payload = extractSharedPayload(parsed);
-        if (!payload || !Array.isArray(payload.ideas)) {
-          throw new Error('Shared data format is invalid.');
-        }
-        const incoming = payload.ideas.map(normalizeIdea).filter(Boolean);
-        const byId = new Map(ideas.map(i => [i.id, i]));
-        incoming.forEach(item => byId.set(item.id, item));
-        ideas = Array.from(byId.values()).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        saveIdeas();
-        renderAll();
-        setStatus(`Imported ${incoming.length} ideas from shared storage using "${keyword}".`, false);
-        setSharedLink(sharedUrl);
-      } catch (error) {
-        setStatus(error.message || 'Shared import failed.', true);
       }
+      setStatus(`Shared import failed. ${lastError || 'No provider succeeded.'}`, true);
     }
 
     function renderStats() {
