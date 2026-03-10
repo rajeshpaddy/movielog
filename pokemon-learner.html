@@ -794,7 +794,7 @@
     }
 
     function getPokemonImageUrl(number) {
-      return ANNIVERSARY_IMAGE_TEMPLATE.replace('{num}', String(number));
+      return ANNIVERSARY_IMAGE_TEMPLATE.replace('{num}', String(number).padStart(4, '0'));
     }
 
     function matchesPokemonSearch(pokemon, query) {
