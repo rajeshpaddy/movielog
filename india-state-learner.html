@@ -365,6 +365,8 @@
       'jammu and kashmir': 'JK',
       'ladakh': 'LA',
       'dadra and nagar haveli and daman and diu': 'DH',
+      'dadra and nagar haveli': 'DH',
+      'daman and diu': 'DH',
       'dadra & nagar haveli and daman & diu': 'DH',
       'andaman and nicobar islands': 'AN',
       'andaman nicobar': 'AN',
@@ -574,12 +576,14 @@
     async function fetchIndiaGeoJson() {
       if (accurateGeoData) return accurateGeoData;
       const urls = [
-        'https://cdn.jsdelivr.net/gh/plotly/datasets@master/india_states.geojson',
-        'https://raw.githubusercontent.com/plotly/datasets/master/india_states.geojson'
+        'https://raw.githubusercontent.com/adarshbiradar/maps-geojson/master/india.json',
+        'https://raw.githubusercontent.com/divya-akula/GeoJson-Data-India/master/India_State.geojson',
+        'https://raw.githubusercontent.com/udit-001/india-maps-data/main/geojson/india.geojson',
+        'https://raw.githubusercontent.com/Subhash9325/GeoJson-Data-of-Indian-States/master/Indian_States'
       ];
       for (const url of urls) {
         try {
-          const res = await fetch(url, { cache: 'force-cache' });
+          const res = await fetch(url);
           if (!res.ok) continue;
           const geo = await res.json();
           if (geo && Array.isArray(geo.features) && geo.features.length > 0) {
