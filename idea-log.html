@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Idea Log</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0b1220;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 18px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .home-link {
+      border: 1px solid #38bdf8;
+      background: #0f172a;
+      color: #e0f2fe;
+      text-decoration: none;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    h1 {
+      color: #38bdf8;
+      font-size: 32px;
+    }
+    .subtitle {
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+    .panel {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .composer {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr auto;
+      gap: 10px;
+      align-items: start;
+    }
+    .input, .textarea, .select {
+      width: 100%;
+      background: #0b1220;
+      border: 1px solid #334155;
+      color: #f8fafc;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      outline: none;
+    }
+    .input:focus, .textarea:focus, .select:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+    }
+    .textarea {
+      min-height: 44px;
+      resize: vertical;
+    }
+    .btn {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #38bdf8;
+      color: #082f49;
+      min-height: 42px;
+    }
+    .btn:hover { filter: brightness(1.06); }
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-secondary {
+      background: #0f172a;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(110px, 1fr));
+      gap: 10px;
+    }
+    .stat-card {
+      background: #0f172a;
+      border: 1px solid #1f2937;
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+    }
+    .stat-label {
+      color: #94a3b8;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .stat-value {
+      margin-top: 2px;
+      font-size: 23px;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .column {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
+    }
+    .column-head {
+      padding: 12px;
+      border-bottom: 1px solid #1f2937;
+      font-weight: 700;
+      color: #cbd5e1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .column-list {
+      padding: 10px;
+      display: grid;
+      gap: 10px;
+      overflow-y: auto;
+      max-height: 62vh;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .column-list::-webkit-scrollbar { width: 0; height: 0; }
+    .idea-card {
+      background: #0b1220;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+    }
+    .idea-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #e2e8f0;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+    .idea-desc {
+      color: #94a3b8;
+      font-size: 13px;
+      line-height: 1.35;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .idea-meta {
+      color: #64748b;
+      font-size: 12px;
+    }
+    .card-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .card-row .select { flex: 1; font-size: 12px; padding: 7px 9px; }
+    .mini-btn {
+      border: 1px solid #7f1d1d;
+      background: #450a0a;
+      color: #fecaca;
+      border-radius: 8px;
+      font-size: 12px;
+      padding: 6px 9px;
+      cursor: pointer;
+    }
+    .empty {
+      color: #64748b;
+      font-size: 13px;
+      text-align: center;
+      padding: 16px;
+    }
+    .status {
+      color: #93c5fd;
+      font-size: 13px;
+      min-height: 18px;
+    }
+    .status.error { color: #fca5a5; }
+
+    @media (max-width: 980px) {
+      .stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .board { grid-template-columns: 1fr; }
+      .column-list { max-height: none; }
+      .composer { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-row">
+      <a class="home-link" href="app-catalog.html" title="Back to App Catalog">Home</a>
+      <div></div>
+    </div>
+
+    <div>
+      <h1>Idea Log</h1>
+      <p class="subtitle">Capture ideas and move them through Experimenting, Discarded, and Launched.</p>
+    </div>
+
+    <section class="panel">
+      <div class="composer">
+        <input id="ideaTitle" class="input" type="text" placeholder="Idea title..." aria-label="Idea title">
+        <textarea id="ideaDesc" class="textarea" placeholder="Optional one-line notes..." aria-label="Idea notes"></textarea>
+        <button id="addIdeaBtn" class="btn" type="button">Add Idea</button>
+      </div>
+      <div class="toolbar" style="margin-top:10px;">
+        <button id="exportBtn" class="btn btn-secondary" type="button">Export Ideas</button>
+        <button id="importBtn" class="btn btn-secondary" type="button">Import Ideas</button>
+        <input id="importFile" type="file" accept="application/json" hidden>
+      </div>
+      <div id="status" class="status" aria-live="polite"></div>
+    </section>
+
+    <section class="panel">
+      <div class="stats-grid" id="statsGrid"></div>
+    </section>
+
+    <section class="board" id="board"></section>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'ideaLogEntriesV1';
+    const STATES = {
+      EXPERIMENTING: 'experimenting',
+      DISCARDED: 'discarded',
+      LAUNCHED: 'launched'
+    };
+    const STATE_ORDER = [STATES.EXPERIMENTING, STATES.DISCARDED, STATES.LAUNCHED];
+    const STATE_LABELS = {
+      [STATES.EXPERIMENTING]: 'Experimenting',
+      [STATES.DISCARDED]: 'Discarded',
+      [STATES.LAUNCHED]: 'Launched'
+    };
+
+    const ideaTitle = document.getElementById('ideaTitle');
+    const ideaDesc = document.getElementById('ideaDesc');
+    const addIdeaBtn = document.getElementById('addIdeaBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const importBtn = document.getElementById('importBtn');
+    const importFile = document.getElementById('importFile');
+    const statusEl = document.getElementById('status');
+    const statsGrid = document.getElementById('statsGrid');
+    const board = document.getElementById('board');
+
+    let ideas = [];
+
+    function safeGetItem(key) {
+      try {
+        return localStorage.getItem(key);
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function safeSetItem(key, value) {
+      try {
+        localStorage.setItem(key, value);
+        return true;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function setStatus(message, isError) {
+      statusEl.textContent = message || '';
+      statusEl.classList.toggle('error', !!isError);
+    }
+
+    function formatDate(iso) {
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return 'Unknown';
+      return d.toLocaleString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('\"', '&quot;')
+        .replaceAll(\"'\", '&#39;');
+    }
+
+    function normalizeIdea(input) {
+      if (!input || typeof input !== 'object') return null;
+      const title = String(input.title || '').trim();
+      if (!title) return null;
+      const state = STATE_ORDER.includes(input.state) ? input.state : STATES.EXPERIMENTING;
+      const createdAt = new Date(input.createdAt || Date.now()).toISOString();
+      const updatedAt = new Date(input.updatedAt || createdAt).toISOString();
+      return {
+        id: typeof input.id === 'string' && input.id ? input.id : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        title,
+        description: String(input.description || '').trim(),
+        state,
+        createdAt,
+        updatedAt
+      };
+    }
+
+    function loadIdeas() {
+      const saved = safeGetItem(STORAGE_KEY);
+      if (!saved) return;
+      try {
+        const parsed = JSON.parse(saved);
+        if (!Array.isArray(parsed)) return;
+        ideas = parsed.map(normalizeIdea).filter(Boolean);
+      } catch (error) {
+        ideas = [];
+      }
+    }
+
+    function saveIdeas() {
+      safeSetItem(STORAGE_KEY, JSON.stringify(ideas));
+    }
+
+    function addIdea() {
+      const title = ideaTitle.value.trim();
+      const description = ideaDesc.value.trim();
+      if (!title) {
+        setStatus('Enter an idea title before adding.', true);
+        ideaTitle.focus();
+        return;
+      }
+      const nowIso = new Date().toISOString();
+      ideas.unshift({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        title,
+        description,
+        state: STATES.EXPERIMENTING,
+        createdAt: nowIso,
+        updatedAt: nowIso
+      });
+      saveIdeas();
+      ideaTitle.value = '';
+      ideaDesc.value = '';
+      setStatus('Idea added.', false);
+      renderAll();
+      ideaTitle.focus();
+    }
+
+    function moveIdea(id, newState) {
+      if (!STATE_ORDER.includes(newState)) return;
+      const idea = ideas.find(i => i.id === id);
+      if (!idea) return;
+      idea.state = newState;
+      idea.updatedAt = new Date().toISOString();
+      saveIdeas();
+      setStatus(`Moved to ${STATE_LABELS[newState]}.`, false);
+      renderAll();
+    }
+
+    function removeIdea(id) {
+      ideas = ideas.filter(i => i.id !== id);
+      saveIdeas();
+      setStatus('Idea removed.', false);
+      renderAll();
+    }
+
+    function exportIdeas() {
+      const payload = {
+        app: 'idea-log',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        ideas
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `idea-log-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setStatus(`Exported ${ideas.length} ideas.`, false);
+    }
+
+    function importIdeasFromFile(event) {
+      const file = (event.target.files || [])[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          const source = Array.isArray(parsed) ? parsed : parsed.ideas;
+          if (!Array.isArray(source)) {
+            throw new Error('Invalid file format');
+          }
+          const incoming = source.map(normalizeIdea).filter(Boolean);
+          const byId = new Map(ideas.map(i => [i.id, i]));
+          incoming.forEach(item => {
+            byId.set(item.id, item);
+          });
+          ideas = Array.from(byId.values()).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          saveIdeas();
+          setStatus(`Imported ${incoming.length} ideas.`, false);
+          renderAll();
+        } catch (error) {
+          setStatus(error.message || 'Import failed.', true);
+        } finally {
+          importFile.value = '';
+        }
+      };
+      reader.onerror = () => {
+        setStatus('Unable to read the selected file.', true);
+        importFile.value = '';
+      };
+      reader.readAsText(file);
+    }
+
+    function renderStats() {
+      const now = Date.now();
+      const day = 24 * 60 * 60 * 1000;
+      const inLast = (days) => ideas.filter(i => {
+        const created = new Date(i.createdAt).getTime();
+        if (Number.isNaN(created)) return false;
+        return now - created <= days * day;
+      }).length;
+      const countsByState = {
+        [STATES.EXPERIMENTING]: ideas.filter(i => i.state === STATES.EXPERIMENTING).length,
+        [STATES.DISCARDED]: ideas.filter(i => i.state === STATES.DISCARDED).length,
+        [STATES.LAUNCHED]: ideas.filter(i => i.state === STATES.LAUNCHED).length
+      };
+
+      const cards = [
+        { label: 'Total Ideas', value: ideas.length },
+        { label: 'Last 7 Days', value: inLast(7) },
+        { label: 'Last 30 Days', value: inLast(30) },
+        { label: 'Last 365 Days', value: inLast(365) },
+        { label: 'Experimenting', value: countsByState[STATES.EXPERIMENTING] },
+        { label: 'Discarded', value: countsByState[STATES.DISCARDED] },
+        { label: 'Launched', value: countsByState[STATES.LAUNCHED] }
+      ];
+
+      statsGrid.innerHTML = cards.map(card => `
+        <div class="stat-card">
+          <div class="stat-label">${card.label}</div>
+          <div class="stat-value">${card.value}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderBoard() {
+      board.innerHTML = STATE_ORDER.map(state => {
+        const list = ideas.filter(i => i.state === state);
+        const cards = list.length === 0
+          ? '<div class="empty">No ideas here yet.</div>'
+          : list.map(idea => `
+            <article class="idea-card">
+              <div class="idea-title">${escapeHtml(idea.title)}</div>
+              ${idea.description ? `<div class="idea-desc">${escapeHtml(idea.description)}</div>` : ''}
+              <div class="idea-meta">Created: ${formatDate(idea.createdAt)}</div>
+              <div class="card-row">
+                <select class="select" data-role="state" data-id="${idea.id}">
+                  ${STATE_ORDER.map(option => `<option value="${option}" ${option === idea.state ? 'selected' : ''}>${STATE_LABELS[option]}</option>`).join('')}
+                </select>
+                <button class="mini-btn" data-role="delete" data-id="${idea.id}" type="button">Delete</button>
+              </div>
+            </article>
+          `).join('');
+
+        return `
+          <section class="column">
+            <div class="column-head">
+              <span>${STATE_LABELS[state]}</span>
+              <span>${list.length}</span>
+            </div>
+            <div class="column-list">${cards}</div>
+          </section>
+        `;
+      }).join('');
+
+      board.querySelectorAll('select[data-role="state"]').forEach(select => {
+        select.addEventListener('change', () => moveIdea(select.dataset.id, select.value));
+      });
+      board.querySelectorAll('button[data-role="delete"]').forEach(button => {
+        button.addEventListener('click', () => removeIdea(button.dataset.id));
+      });
+    }
+
+    function renderAll() {
+      renderStats();
+      renderBoard();
+    }
+
+    addIdeaBtn.addEventListener('click', addIdea);
+    ideaTitle.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        addIdea();
+      }
+    });
+    exportBtn.addEventListener('click', exportIdeas);
+    importBtn.addEventListener('click', () => importFile.click());
+    importFile.addEventListener('change', importIdeasFromFile);
+
+    loadIdeas();
+    renderAll();
+    ideaTitle.focus();
+  </script>
+</body>
+</html>
