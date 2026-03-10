@@ -251,10 +251,10 @@
       border: none;
       background: transparent;
       color: #475569;
-      font-size: 16px;
+      font-size: 24px;
       line-height: 1;
       cursor: pointer;
-      padding: 2px;
+      padding: 2px 3px;
     }
     .star-btn.active { color: #fbbf24; }
     .star-label {
@@ -287,6 +287,9 @@
         <div class="panel-actions">
           <button id="clearSearchBtn" class="btn-secondary" type="button">Clear Search</button>
           <button id="toggleSearchPaneBtn" class="btn-secondary" type="button">Collapse Search</button>
+          <button id="exportDataBtn" class="btn-secondary" type="button">Export Data</button>
+          <button id="importDataBtn" class="btn-secondary" type="button">Import Data</button>
+          <input id="importDataFile" type="file" accept="application/json" hidden>
         </div>
       </div>
       <div id="searchPanelBody" class="panel-body">
@@ -356,6 +359,9 @@
     const searchBtnEl = document.getElementById('searchBtn');
     const clearSearchBtnEl = document.getElementById('clearSearchBtn');
     const toggleSearchPaneBtnEl = document.getElementById('toggleSearchPaneBtn');
+    const exportDataBtnEl = document.getElementById('exportDataBtn');
+    const importDataBtnEl = document.getElementById('importDataBtn');
+    const importDataFileEl = document.getElementById('importDataFile');
     const searchPanelBodyEl = document.getElementById('searchPanelBody');
     const searchPanelEl = searchPanelBodyEl ? searchPanelBodyEl.closest('.panel') : null;
     const statusEl = document.getElementById('status');
@@ -395,6 +401,74 @@
 
     function saveShelves() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state.shelves));
+    }
+
+    function exportAllData() {
+      const payload = {
+        app: 'book-log',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        shelves: state.shelves
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const datePart = new Date().toISOString().slice(0, 10);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `book-log-data-${datePart}.json`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+      setStatus('Exported To Read, Reading, and Read lists.', 'success');
+    }
+
+    function normalizeImportedShelves(parsedData) {
+      const source = parsedData?.shelves ?? parsedData;
+      if (!source || typeof source !== 'object' || Array.isArray(source)) {
+        throw new Error('Invalid import file format.');
+      }
+
+      const normalized = { toRead: [], reading: [], read: [] };
+      ['toRead', 'reading', 'read'].forEach((key) => {
+        if (!Array.isArray(source[key])) return;
+        normalized[key] = source[key]
+          .filter((item) => item && typeof item === 'object' && item.id && item.title)
+          .map((item) => ({
+            id: String(item.id),
+            title: String(item.title || 'Untitled'),
+            authors: String(item.authors || 'Unknown'),
+            publisher: String(item.publisher || 'Unknown'),
+            isbn: String(item.isbn || '-'),
+            image: String(item.image || 'https://via.placeholder.com/70x100?text=Book'),
+            apiRating: typeof item.apiRating === 'number' ? item.apiRating : null,
+            myRating: Number(item.myRating) >= 1 && Number(item.myRating) <= 5 ? Number(item.myRating) : 0,
+            comment: String(item.comment || '').slice(0, 160)
+          }));
+      });
+      return normalized;
+    }
+
+    function importAllData(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          state.shelves = normalizeImportedShelves(parsed);
+          saveShelves();
+          renderShelves();
+          setStatus('Imported To Read, Reading, and Read lists.', 'success');
+        } catch (error) {
+          setStatus(error.message || 'Import failed.', 'error');
+        } finally {
+          importDataFileEl.value = '';
+        }
+      };
+      reader.onerror = () => {
+        setStatus('Unable to read import file.', 'error');
+        importDataFileEl.value = '';
+      };
+      reader.readAsText(file);
     }
 
     function escapeHtml(value) {
@@ -676,6 +750,12 @@
     toggleSearchPaneBtnEl.addEventListener('click', () => {
       const nextCollapsed = !searchPanelEl.classList.contains('collapsed');
       setSearchPanelCollapsed(nextCollapsed);
+    });
+    exportDataBtnEl.addEventListener('click', exportAllData);
+    importDataBtnEl.addEventListener('click', () => importDataFileEl.click());
+    importDataFileEl.addEventListener('change', (e) => {
+      const [file] = e.target.files || [];
+      if (file) importAllData(file);
     });
     searchInputEl.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
