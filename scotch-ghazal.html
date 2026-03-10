@@ -219,17 +219,6 @@
     .player-status { font-size: 12px; color: #b8c4d8; }
     .legal-note { color: #9ca3af; font-size: 11px; margin-top: 8px; }
 
-    .hidden-audio {
-      position: absolute;
-      left: -9999px;
-      top: -9999px;
-      width: 1px;
-      height: 1px;
-      opacity: 0;
-      pointer-events: none;
-      border: 0;
-    }
-
     @media (max-width: 1260px) {
       .layout { grid-template-columns: 1fr; }
       .list { max-height: 300px; }
@@ -242,7 +231,7 @@
   <div class="shell">
     <header class="heading">
       <h1>Scotch & Ghazal Pairing Lounge</h1>
-      <p class="sub">Audio-first mode: pick a Scotch and Ghazal, read details and lyrics, then play from YouTube without visible video.</p>
+      <p class="sub">Pick a Scotch and Ghazal, read the in-app excerpt, then open the exact song in a new tab.</p>
     </header>
 
     <main class="layout" aria-label="Scotch and Ghazal pairing app">
@@ -267,7 +256,7 @@
       <section class="pane" aria-label="Ghazal list">
         <div class="pane-head">
           <h2 class="pane-title">Ghazals For The Evening</h2>
-          <p class="pane-note">90 ghazal entries with mood and lyric excerpts. Search by title, artist, poet, mood.</p>
+          <p class="pane-note">30 ghazal entries with mood and lyric excerpts. Search by title, artist, poet, mood.</p>
           <input id="ghazalSearch" class="search" type="text" placeholder="Search Ghazals...">
         </div>
         <div id="ghazalResultCount" class="result-count"></div>
@@ -275,8 +264,6 @@
       </section>
     </main>
   </div>
-
-  <iframe id="audioFrame" class="hidden-audio" title="YouTube audio player" allow="autoplay; encrypted-media"></iframe>
 
   <script>
     const distilleries = [
@@ -375,32 +362,119 @@
       { title: 'Jhuki Jhuki Si Nazar', artist: 'Jagjit Singh', poet: 'Kaifi Azmi', mood: 'romantic', lyrics: 'Jhuki jhuki si nazar\nBekarar hai ke nahin' }
     ];
 
-    const ghazalVariants = ['Original', 'Live Mehfil', 'Acoustic Session'];
+    const ghazalVideoIds = {
+      'Hothon Se Chhoo Lo Tum|Jagjit Singh': 'Ee5sDeaNCnw',
+      'Chithi Na Koi Sandesh|Jagjit Singh': 'HbOCFkEdrbI',
+      'Ranjish Hi Sahi|Mehdi Hassan': 'nnaC7NUOlzs',
+      'Aaj Jaane Ki Zid Na Karo|Farida Khanum': 'CfUDuYAasjE',
+      'Hungama Hai Kyon Barpa|Ghulam Ali': 'xQsMn1kmJs4',
+      'Kal Chaudhvin Ki Raat Thi|Jagjit Singh': 'QEugc1bZkfA',
+      'Dil Mein Ek Lehar Si Uthi Hai Abhi|Ghulam Ali': 'eIE4azF6Obs',
+      'Patta Patta Boota Boota|Ghulam Ali': 'qBvj5mdnlFs',
+      'Tum Itna Jo Muskura Rahe Ho|Jagjit Singh': 'Ju6kNKaBOQ8',
+      'Chupke Chupke Raat Din|Ghulam Ali': 'MWjaK_nW72E',
+      'Yeh Daulat Bhi Le Lo|Jagjit Singh': '1RH_GN9ffNo',
+      'Koi Fariyaad|Jagjit Singh': '8MN2bxMiB9A',
+      'Shola Tha Jal Bujha Hoon|Mehdi Hassan': 'CMg7AFo_etQ',
+      'Aawargi|Ghulam Ali': 'pZWqn3BC17Q',
+      'Faasle Aise Bhi Honge|Ghulam Ali': 'ugFlvnOcKq8',
+      'Woh Kagaz Ki Kashti|Jagjit Singh': 'tB0hmrY_s0U',
+      'Baat Niklegi|Jagjit Singh': '1MKdWpE_724',
+      'Aah Ko Chahiye|Begum Akhtar': 'ih6BTkJ1Ujc',
+      'Aaye Kuch Abr|Mehdi Hassan': 'w_1fsZGbvg8',
+      'Raat Yun Dil Mein|Lata Mangeshkar': '9Zd5R-TEgzY',
+      'Dasht-e-Tanhai|Iqbal Bano': 'E5jloYh5mp8',
+      'Nuktacheen Hai Gham-e-Dil|Mehdi Hassan': 'TK56_CysG7g',
+      'Gulon Mein Rang Bhare|Mehdi Hassan': 'GnMf9FHreSo',
+      'Mujhse Bichhad Ke Khush Rehte Ho|Jagjit Singh': 'a683kK8UFX8',
+      'Kabhi Kisi Ko Mukammal Jahan|Bhupinder Singh': 'WdaX0B4_YLU',
+      'Main Nashe Mein Hoon|Jagjit Singh': 'gGopFU0mynI',
+      'Ruke Ruke Se Qadam|Lata Mangeshkar': 'fx1vTY_FO-0',
+      'Dil Dhoondta Hai|Bhupinder Singh': 'tf2Cz9Kqvqk',
+      'Kisi Nazar Ko Tera|Asha Bhosle': 'J6VXs94ODt8',
+      'Jhuki Jhuki Si Nazar|Jagjit Singh': 'veLSFpMS6B0'
+    };
+
+    function normalizeTitleForMatch(value) {
+      return String(value || '')
+        .toLowerCase()
+        .replace(/&/g, ' and ')
+        .replace(/\([^)]*\)/g, ' ')
+        .replace(/\[[^\]]*\]/g, ' ')
+        .replace(/[^a-z0-9]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function levenshteinDistance(a, b) {
+      const rows = a.length + 1;
+      const cols = b.length + 1;
+      const dp = Array.from({ length: rows }, () => Array(cols).fill(0));
+
+      for (let i = 0; i < rows; i += 1) dp[i][0] = i;
+      for (let j = 0; j < cols; j += 1) dp[0][j] = j;
+
+      for (let i = 1; i < rows; i += 1) {
+        for (let j = 1; j < cols; j += 1) {
+          const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+          dp[i][j] = Math.min(
+            dp[i - 1][j] + 1,
+            dp[i][j - 1] + 1,
+            dp[i - 1][j - 1] + cost
+          );
+        }
+      }
+
+      return dp[a.length][b.length];
+    }
+
+    function areTitlesFuzzyDuplicate(a, b) {
+      const left = normalizeTitleForMatch(a);
+      const right = normalizeTitleForMatch(b);
+
+      if (!left || !right) return false;
+      if (left === right) return true;
+      if ((left.startsWith(right) || right.startsWith(left)) && Math.abs(left.length - right.length) <= 4) {
+        return true;
+      }
+
+      const distance = levenshteinDistance(left, right);
+      const threshold = Math.max(1, Math.floor(Math.min(left.length, right.length) * 0.12));
+      return distance <= threshold;
+    }
 
     function buildGhazalCatalog() {
-      const out = [];
+      const unique = [];
+
       ghazalSeeds.forEach((seed, i) => {
-        ghazalVariants.forEach((variant, j) => {
-          const title = variant === 'Original' ? seed.title : `${seed.title} (${variant})`;
-          const id = `${seed.title}-${variant}-${i}-${j}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-          out.push({
-            id,
-            title,
-            artist: seed.artist,
-            poet: seed.poet,
-            mood: seed.mood,
-            year: j === 0 ? 'Classic' : j === 1 ? 'Live Era' : 'Modern Mix',
-            lyrics: seed.lyrics,
-            meaning: `A ${seed.mood} ghazal selection suitable for an evening pairing.`,
-            youtubeQuery: `${seed.title} ${seed.artist} ghazal`
-          });
+        const isDuplicate = unique.some(existing =>
+          areTitlesFuzzyDuplicate(existing.title, seed.title)
+        );
+        if (isDuplicate) {
+          return;
+        }
+
+        const key = `${seed.title}|${seed.artist}`;
+        const videoId = ghazalVideoIds[key];
+        unique.push({
+          id: `${seed.title}-${seed.artist}-${i}`.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          title: seed.title,
+          artist: seed.artist,
+          poet: seed.poet,
+          mood: seed.mood,
+          year: 'Classic',
+          lyrics: seed.lyrics,
+          meaning: `A ${seed.mood} ghazal selection suitable for an evening pairing.`,
+          songUrl: videoId ? `https://www.youtube.com/watch?v=${videoId}` : `https://www.youtube.com/results?search_query=${encodeURIComponent(`${seed.title} ${seed.artist} ghazal`)}`,
+          lyricsUrl: `https://www.google.com/search?q=${encodeURIComponent(`${seed.title} ${seed.artist} lyrics`)}`
         });
       });
-      return out;
+
+      return unique;
     }
 
     const scotches = buildScotchCatalog(); // 30 x 5 = 150
-    const ghazals = buildGhazalCatalog(); // 30 x 3 = 90
+    const ghazals = buildGhazalCatalog(); // 30 unique entries
 
     let selectedScotchId = scotches[0].id;
     let selectedGhazalId = ghazals[0].id;
@@ -416,8 +490,6 @@
     const pairBannerEl = document.getElementById('pairBanner');
     const scotchCardEl = document.getElementById('scotchCard');
     const ghazalCardEl = document.getElementById('ghazalCard');
-    const audioFrameEl = document.getElementById('audioFrame');
-
     function normalize(value) {
       return String(value || '').toLowerCase().trim();
     }
@@ -458,25 +530,6 @@
         return `Mood match: ${scotch.name} and "${ghazal.title}" are both tuned for a ${ghazal.mood} evening.`;
       }
       return `Contrast pairing: ${scotch.style.toLowerCase()} meets the ${ghazal.mood} tone of "${ghazal.title}".`;
-    }
-
-    function youtubeWatchUrl(query) {
-      return `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
-    }
-
-    function youtubeEmbedSearchUrl(query, autoplay = false) {
-      const auto = autoplay ? '1' : '0';
-      return `https://www.youtube-nocookie.com/embed?listType=search&list=${encodeURIComponent(query)}&autoplay=${auto}&playsinline=1`;
-    }
-
-    function playSelectedAudio() {
-      const ghazal = getSelectedGhazal();
-      const src = youtubeEmbedSearchUrl(ghazal.youtubeQuery, true);
-      audioFrameEl.src = src;
-    }
-
-    function stopAudio() {
-      audioFrameEl.src = '';
     }
 
     function renderScotchList() {
@@ -537,10 +590,9 @@
       });
     }
 
-    function renderCenterPane(autoPlayAudio) {
+    function renderCenterPane() {
       const scotch = getSelectedScotch();
       const ghazal = getSelectedGhazal();
-      const watchUrl = youtubeWatchUrl(ghazal.youtubeQuery);
 
       pairBannerEl.textContent = pairingSentence(scotch, ghazal);
 
@@ -566,30 +618,18 @@
           <div class="fact"><div class="fact-k">Mood</div><div class="fact-v">${ghazal.mood}</div></div>
         </div>
         <p class="detail-text"><strong>Meaning:</strong> ${ghazal.meaning}</p>
+        <p class="detail-text"><strong>Song Link:</strong> <a class="yt-link" href="${ghazal.songUrl}" target="_blank" rel="noopener noreferrer">${ghazal.songUrl}</a></p>
+        <p class="detail-text"><strong>Lyrics Excerpt:</strong></p>
         <div class="lyrics">${ghazal.lyrics}</div>
         <div class="audio-box">
           <div class="audio-row">
-            <button id="playAudioBtn" class="btn" type="button">Play Audio</button>
-            <button id="stopAudioBtn" class="btn" type="button">Stop</button>
-            <a class="yt-link" href="${watchUrl}" target="_blank" rel="noopener noreferrer">Open YouTube Search Result</a>
+            <a class="btn yt-link" href="${ghazal.songUrl}" target="_blank" rel="noopener noreferrer">Open Song in New Tab</a>
+            <a class="btn yt-link" href="${ghazal.lyricsUrl}" target="_blank" rel="noopener noreferrer">Find Full Lyrics</a>
           </div>
-          <div class="player-status">Audio-only mode uses a hidden YouTube player. If autoplay is blocked, click Play Audio.</div>
+          <div class="player-status">The song now opens directly on its own YouTube page so playback happens in the next tab.</div>
         </div>
-        <div class="legal-note">Lyrics shown as short excerpts. Use YouTube for full content.</div>
+        <div class="legal-note">The app stores short lyric excerpts only. Use the lyrics link for full text.</div>
       `;
-
-      const playAudioBtn = document.getElementById('playAudioBtn');
-      const stopAudioBtn = document.getElementById('stopAudioBtn');
-      if (playAudioBtn) {
-        playAudioBtn.addEventListener('click', playSelectedAudio);
-      }
-      if (stopAudioBtn) {
-        stopAudioBtn.addEventListener('click', stopAudio);
-      }
-
-      if (autoPlayAudio) {
-        playSelectedAudio();
-      }
     }
 
     function ensureSelectedInFiltered() {
@@ -608,7 +648,7 @@
       ensureSelectedInFiltered();
       renderScotchList();
       renderGhazalList();
-      renderCenterPane(autoPlayAudio);
+      renderCenterPane();
     }
 
     scotchSearchEl.addEventListener('input', () => {
