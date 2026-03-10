@@ -667,6 +667,10 @@
 
     function applyPaneLayout(save = true) {
       if (!appContainer) return;
+      // Never allow both lists to be hidden at the same time.
+      if (leftPaneCollapsed && rightPaneCollapsed) {
+        leftPaneCollapsed = false;
+      }
       appContainer.classList.toggle('left-collapsed', leftPaneCollapsed);
       appContainer.classList.toggle('right-collapsed', rightPaneCollapsed);
       syncPaneButtons();
@@ -685,6 +689,9 @@
         const parsed = JSON.parse(saved);
         leftPaneCollapsed = !!parsed.leftPaneCollapsed;
         rightPaneCollapsed = !!parsed.rightPaneCollapsed;
+        if (leftPaneCollapsed && rightPaneCollapsed) {
+          leftPaneCollapsed = false;
+        }
       } catch (error) {
         console.warn('Invalid saved pane layout');
       }
@@ -913,7 +920,7 @@
           .filter(p => !p.name.includes('-') && p.number <= 1025);
 
         localStorage.setItem(POKEMON_CACHE_KEY, JSON.stringify(allPokemon));
-        setTransferStatus('');
+        setTransferStatus(`Loaded ${allPokemon.length} Pokemon`);
         renderLeftList();
         renderRightList();
       } catch (error) {
