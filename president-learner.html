@@ -547,6 +547,7 @@
         <button type="button" class="transfer-btn" id="exportStudiedBtn" aria-label="Export studied presidents" title="Export studied presidents">⤓</button>
         <button type="button" class="transfer-btn" id="importStudiedBtn" aria-label="Import studied presidents" title="Import studied presidents">⤒</button>
         <button type="button" class="transfer-btn" id="exportSharedStudiedBtn" aria-label="Shared export studied presidents" title="Shared export studied presidents">⇪</button>
+        <button type="button" class="transfer-btn" id="clearSharedStudiedBtn" aria-label="Clear shared studied presidents" title="Clear shared studied presidents">✕</button>
         <button type="button" class="transfer-btn" id="importSharedStudiedBtn" aria-label="Shared import studied presidents" title="Shared import studied presidents">⇩</button>
         <input type="file" id="importStudiedFile" accept="application/json" hidden>
       </div>
@@ -628,6 +629,7 @@
     const exportStudiedBtn = document.getElementById('exportStudiedBtn');
     const importStudiedBtn = document.getElementById('importStudiedBtn');
     const exportSharedStudiedBtn = document.getElementById('exportSharedStudiedBtn');
+    const clearSharedStudiedBtn = document.getElementById('clearSharedStudiedBtn');
     const importSharedStudiedBtn = document.getElementById('importSharedStudiedBtn');
     const importStudiedFile = document.getElementById('importStudiedFile');
     const transferStatus = document.getElementById('transferStatus');
@@ -797,6 +799,38 @@
         setTransferStatus(`Shared import complete (${keyword})`, false);
       } catch (error) {
         setTransferStatus(error.message || 'Shared import failed', true);
+      }
+    }
+
+    async function clearStudiedPresidentsShared() {
+      const keyword = promptSharedKeyword('Clear shared');
+      if (!keyword) return;
+      const key = `president-learner-${keyword}`;
+      const payload = {
+        app: 'president-learner',
+        version: 1,
+        clearedAt: new Date().toISOString(),
+        studiedPresidents: {}
+      };
+      try {
+        let response = await fetch(SETGET_SET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key, content: payload, expireAfter: 60 })
+        });
+        let text = await response.text();
+        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
+          response = await fetch(SETGET_SET_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key, content: payload })
+          });
+          text = await response.text();
+        }
+        if (!response.ok) throw new Error(`Shared clear failed (${response.status})${text ? `: ${text}` : ''}`);
+        setTransferStatus(`Shared key cleared (${keyword})`, false);
+      } catch (error) {
+        setTransferStatus(error.message || 'Shared clear failed', true);
       }
     }
     
@@ -1058,6 +1092,9 @@
     }
     if (exportSharedStudiedBtn) {
       exportSharedStudiedBtn.addEventListener('click', exportStudiedPresidentsShared);
+    }
+    if (clearSharedStudiedBtn) {
+      clearSharedStudiedBtn.addEventListener('click', clearStudiedPresidentsShared);
     }
     if (importSharedStudiedBtn) {
       importSharedStudiedBtn.addEventListener('click', importStudiedPresidentsShared);

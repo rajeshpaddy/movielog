@@ -321,6 +321,7 @@
         <button id="exportBtn" class="transfer-btn" aria-label="Export visited states" title="Export visited states">⤓</button>
         <button id="importBtn" class="transfer-btn" aria-label="Import visited states" title="Import visited states">⤒</button>
         <button id="exportSharedBtn" class="transfer-btn" aria-label="Shared export visited states" title="Shared export visited states">⇪</button>
+        <button id="clearSharedBtn" class="transfer-btn" aria-label="Clear shared visited states" title="Clear shared visited states">✕</button>
         <button id="importSharedBtn" class="transfer-btn" aria-label="Shared import visited states" title="Shared import visited states">⇩</button>
         <input id="importFile" type="file" accept="application/json" hidden>
       </div>
@@ -427,6 +428,7 @@
     const exportBtn = document.getElementById('exportBtn');
     const importBtn = document.getElementById('importBtn');
     const exportSharedBtn = document.getElementById('exportSharedBtn');
+    const clearSharedBtn = document.getElementById('clearSharedBtn');
     const importSharedBtn = document.getElementById('importSharedBtn');
     const importFile = document.getElementById('importFile');
     const transferStatus = document.getElementById('transferStatus');
@@ -806,6 +808,38 @@
       }
     }
 
+    async function clearSharedData() {
+      const keyword = promptSharedKeyword('Clear shared');
+      if (!keyword) return;
+      const key = `usa-state-learner-${keyword}`;
+      const payload = {
+        app: 'usa-state-learner',
+        version: 1,
+        clearedAt: new Date().toISOString(),
+        visited: {}
+      };
+      try {
+        let response = await fetch(SETGET_SET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key, content: payload, expireAfter: 60 })
+        });
+        let text = await response.text();
+        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
+          response = await fetch(SETGET_SET_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key, content: payload })
+          });
+          text = await response.text();
+        }
+        if (!response.ok) throw new Error(`Shared clear failed (${response.status})${text ? `: ${text}` : ''}`);
+        setTransferStatus(`Shared key cleared (${keyword})`, false);
+      } catch (error) {
+        setTransferStatus(error.message || 'Shared clear failed', true);
+      }
+    }
+
     leftSearch.addEventListener('input', e => { leftQuery = e.target.value; renderLists(); });
     rightSearch.addEventListener('input', e => { rightQuery = e.target.value; renderLists(); });
     leftRegionSel.addEventListener('change', e => { leftRegion = e.target.value; renderLists(); });
@@ -826,6 +860,7 @@
       if (file) importData(file);
     });
     exportSharedBtn.addEventListener('click', exportSharedData);
+    clearSharedBtn.addEventListener('click', clearSharedData);
     importSharedBtn.addEventListener('click', importSharedData);
 
     window.addEventListener('resize', scheduleMapRender);

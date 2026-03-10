@@ -317,6 +317,7 @@
           <button id="exportDataBtn" class="btn-secondary" type="button">Export Data</button>
           <button id="importDataBtn" class="btn-secondary" type="button">Import Data</button>
           <button id="exportSharedDataBtn" class="btn-secondary" type="button">Export Shared</button>
+          <button id="clearSharedDataBtn" class="btn-secondary" type="button">Clear Shared</button>
           <button id="importSharedDataBtn" class="btn-secondary" type="button">Import Shared</button>
           <input id="importDataFile" type="file" accept="application/json" hidden>
         </div>
@@ -393,6 +394,7 @@
     const exportDataBtnEl = document.getElementById('exportDataBtn');
     const importDataBtnEl = document.getElementById('importDataBtn');
     const exportSharedDataBtnEl = document.getElementById('exportSharedDataBtn');
+    const clearSharedDataBtnEl = document.getElementById('clearSharedDataBtn');
     const importSharedDataBtnEl = document.getElementById('importSharedDataBtn');
     const importDataFileEl = document.getElementById('importDataFile');
     const searchPanelBodyEl = document.getElementById('searchPanelBody');
@@ -561,6 +563,38 @@
         setStatus(`Shared import complete (${keyword}).`, 'success');
       } catch (error) {
         setStatus(error.message || 'Shared import failed.', 'error');
+      }
+    }
+
+    async function clearAllDataShared() {
+      const keyword = promptSharedKeyword('Clear shared');
+      if (!keyword) return;
+      const key = `book-log-${keyword}`;
+      const payload = {
+        app: 'book-log',
+        version: 1,
+        clearedAt: new Date().toISOString(),
+        shelves: { toRead: [], reading: [], read: [] }
+      };
+      try {
+        let response = await fetch(SETGET_SET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key, content: payload, expireAfter: 60 })
+        });
+        let text = await response.text();
+        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
+          response = await fetch(SETGET_SET_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key, content: payload })
+          });
+          text = await response.text();
+        }
+        if (!response.ok) throw new Error(`Shared clear failed (${response.status})${text ? `: ${text}` : ''}`);
+        setStatus(`Shared key cleared (${keyword}).`, 'success');
+      } catch (error) {
+        setStatus(error.message || 'Shared clear failed.', 'error');
       }
     }
 
@@ -848,6 +882,7 @@
     exportDataBtnEl.addEventListener('click', exportAllData);
     importDataBtnEl.addEventListener('click', () => importDataFileEl.click());
     exportSharedDataBtnEl.addEventListener('click', exportAllDataShared);
+    clearSharedDataBtnEl.addEventListener('click', clearAllDataShared);
     importSharedDataBtnEl.addEventListener('click', importAllDataShared);
     importDataFileEl.addEventListener('change', (e) => {
       const [file] = e.target.files || [];

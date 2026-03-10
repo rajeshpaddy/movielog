@@ -281,8 +281,8 @@
         <button id="exportBtn" class="btn btn-secondary" type="button">Export Ideas</button>
         <button id="importBtn" class="btn btn-secondary" type="button">Import Ideas</button>
         <button id="exportSharedBtn" class="btn btn-secondary" type="button">Export Shared</button>
+        <button id="clearSharedBtn" class="btn btn-secondary" type="button">Clear Shared</button>
         <button id="importSharedBtn" class="btn btn-secondary" type="button">Import Shared</button>
-        <button id="shareBtn" class="btn btn-secondary" type="button">Share</button>
         <input id="importFile" type="file" accept="application/json" hidden>
       </div>
       <div id="status" class="status" aria-live="polite"></div>
@@ -324,8 +324,8 @@
     const exportBtn = document.getElementById('exportBtn');
     const importBtn = document.getElementById('importBtn');
     const exportSharedBtn = document.getElementById('exportSharedBtn');
+    const clearSharedBtn = document.getElementById('clearSharedBtn');
     const importSharedBtn = document.getElementById('importSharedBtn');
-    const shareBtn = document.getElementById('shareBtn');
     const importFile = document.getElementById('importFile');
     const statusEl = document.getElementById('status');
     const sharedLinkEl = document.getElementById('sharedLink');
@@ -493,6 +493,41 @@
         setStatus(`Imported ${incoming.length} ideas for keyword "${keyword}".`, false);
       } catch (error) {
         setStatus(error.message || 'Shared import failed.', true);
+      }
+    }
+
+    async function clearIdeasShared() {
+      const keyword = promptKeyword('Clear Shared');
+      if (!keyword) return;
+      const key = getSetGetKey(keyword);
+      const payload = {
+        app: 'idea-log',
+        version: 1,
+        cleared: true,
+        clearedAt: new Date().toISOString(),
+        ideas: []
+      };
+      try {
+        let response = await fetch(SETGET_SET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key, content: payload, expireAfter: 60 })
+        });
+        let text = await response.text();
+        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
+          response = await fetch(SETGET_SET_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key, content: payload })
+          });
+          text = await response.text();
+        }
+        if (!response.ok) {
+          throw new Error(`Shared clear failed (${response.status})${text ? `: ${text}` : ''}`);
+        }
+        setStatus(`Shared key cleared (${keyword}).`, false);
+      } catch (error) {
+        setStatus(error.message || 'Shared clear failed.', true);
       }
     }
 
@@ -794,8 +829,8 @@
     importBtn.addEventListener('click', () => importFile.click());
     importFile.addEventListener('change', importIdeasFromFile);
     exportSharedBtn.addEventListener('click', exportIdeasShared);
+    clearSharedBtn.addEventListener('click', clearIdeasShared);
     importSharedBtn.addEventListener('click', importIdeasShared);
-    shareBtn.addEventListener('click', shareIdeasAsUrl);
 
     loadIdeas();
     hydrateFromShareUrlIfPresent();

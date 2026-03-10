@@ -601,6 +601,7 @@
         <button type="button" class="transfer-btn" id="exportLearnedBtn" aria-label="Export learned Pokemon" title="Export learned Pokemon">⤓</button>
         <button type="button" class="transfer-btn" id="importLearnedBtn" aria-label="Import learned Pokemon" title="Import learned Pokemon">⤒</button>
         <button type="button" class="transfer-btn" id="exportSharedLearnedBtn" aria-label="Shared export learned Pokemon" title="Shared export learned Pokemon">⇪</button>
+        <button type="button" class="transfer-btn" id="clearSharedLearnedBtn" aria-label="Clear shared learned Pokemon" title="Clear shared learned Pokemon">✕</button>
         <button type="button" class="transfer-btn" id="importSharedLearnedBtn" aria-label="Shared import learned Pokemon" title="Shared import learned Pokemon">⇩</button>
         <input type="file" id="importLearnedFile" accept="application/json" hidden>
       </div>
@@ -679,6 +680,7 @@
     const exportLearnedBtn = document.getElementById('exportLearnedBtn');
     const importLearnedBtn = document.getElementById('importLearnedBtn');
     const exportSharedLearnedBtn = document.getElementById('exportSharedLearnedBtn');
+    const clearSharedLearnedBtn = document.getElementById('clearSharedLearnedBtn');
     const importSharedLearnedBtn = document.getElementById('importSharedLearnedBtn');
     const importLearnedFile = document.getElementById('importLearnedFile');
     const transferStatus = document.getElementById('transferStatus');
@@ -937,6 +939,38 @@
         setTransferStatus(`Shared import complete (${keyword})`, false);
       } catch (error) {
         setTransferStatus(error.message || 'Shared import failed', true);
+      }
+    }
+
+    async function clearLearnedPokemonShared() {
+      const keyword = promptSharedKeyword('Clear shared');
+      if (!keyword) return;
+      const key = `pokemon-learner-${keyword}`;
+      const payload = {
+        app: 'pokemon-learner',
+        version: 1,
+        clearedAt: new Date().toISOString(),
+        learnedPokemon: {}
+      };
+      try {
+        let response = await fetch(SETGET_SET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key, content: payload, expireAfter: 60 })
+        });
+        let text = await response.text();
+        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
+          response = await fetch(SETGET_SET_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key, content: payload })
+          });
+          text = await response.text();
+        }
+        if (!response.ok) throw new Error(`Shared clear failed (${response.status})${text ? `: ${text}` : ''}`);
+        setTransferStatus(`Shared key cleared (${keyword})`, false);
+      } catch (error) {
+        setTransferStatus(error.message || 'Shared clear failed', true);
       }
     }
     
@@ -1309,6 +1343,9 @@
     }
     if (exportSharedLearnedBtn) {
       exportSharedLearnedBtn.addEventListener('click', exportLearnedPokemonShared);
+    }
+    if (clearSharedLearnedBtn) {
+      clearSharedLearnedBtn.addEventListener('click', clearLearnedPokemonShared);
     }
     if (importSharedLearnedBtn) {
       importSharedLearnedBtn.addEventListener('click', importLearnedPokemonShared);

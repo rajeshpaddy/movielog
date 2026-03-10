@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>App Changelog</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+      line-height: 1.45;
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 18px 48px;
+    }
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    h1 {
+      font-size: 28px;
+      margin: 0;
+      color: #7dd3fc;
+    }
+    .subtitle {
+      margin: 0 0 20px;
+      color: #94a3b8;
+      font-size: 14px;
+    }
+    .home-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      border: 1px solid #1e3a5f;
+      color: #cbd5e1;
+      text-decoration: none;
+      padding: 6px 12px;
+      font-size: 13px;
+      background: #111827;
+    }
+    .home-link:hover {
+      border-color: #38bdf8;
+      color: #e0f2fe;
+    }
+    .app-group {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 10px;
+      padding: 14px 14px 8px;
+      margin: 0 0 12px;
+    }
+    .app-group h2 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      color: #bfdbfe;
+    }
+    .app-group ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+    .app-group li {
+      color: #cbd5e1;
+      font-size: 13px;
+      margin-bottom: 4px;
+      word-break: break-word;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <h1>App Changelog</h1>
+      <a class="home-link" href="app-catalog.html">Home</a>
+    </div>
+    <p class="subtitle">Grouped by app in alphabetical order. Entries are sorted newest to oldest by commit date within each app.</p>
+  <section class="app-group">
+    <h2>American Presidents</h2>
+    <ul>
+      <li>2026-03-10 | Add SetGet shared export/import to all exportable catalog apps (a03bd7c)</li>
+      <li>2026-03-10 | Add Home link to all catalog apps (3097296)</li>
+      <li>2026-03-08 | Improve app catalog keyboard nav and president portraits (ee76e62)</li>
+      <li>2026-03-08 | added export and import capability (83d4e36)</li>
+      <li>2026-03-07 | Use stylized portrait with initials as AI caricature style (5ccfcb6)</li>
+      <li>2026-03-07 | Try direct Wikipedia images with ui-avatars fallback (68a404e)</li>
+      <li>2026-03-07 | Use styled portrait placeholder and save last selected to localStorage (f6118d9)</li>
+      <li>2026-03-07 | Add placeholder fallback for president images (563b7c1)</li>
+      <li>2026-03-07 | Fix president images using CORS proxy (2d94e45)</li>
+      <li>2026-03-07 | Add president images, accomplishments, and tenure years (370a3f1)</li>
+      <li>2026-03-07 | Add American Presidents Learner app (b705156)</li>
+    </ul>
+  </section>
+  <section class="app-group">
+    <h2>App Catalog</h2>
+    <ul>
+      <li>2026-03-10 | Harden SetGet export TTL handling and bump Idea Log cache version (70509cf)</li>
+      <li>2026-03-10 | Cache-bust Idea Log URL in app catalog (5f813c3)</li>
+      <li>2026-03-10 | Update app catalog subtitle with desktop/laptop recommendation (c0cee98)</li>
+      <li>2026-03-10 | Add Idea Log app and include it in app catalog (02a8dbc)</li>
+      <li>2026-03-10 | Add catalog stats and improve Book Log ratings and data transfer (f8c484f)</li>
+      <li>2026-03-10 | Add Book Log app with searchable shelves and ratings (ee13804)</li>
+      <li>2026-03-09 | Add CowsNBulls game app and catalog entry (f981f83)</li>
+      <li>2026-03-09 | Add app catalog documentary demo video tile and MP4 (0a73e4d)</li>
+      <li>2026-03-09 | Revert Pokemon Learner icon to large lightning (9b72c2f)</li>
+      <li>2026-03-09 | Increase Pikachu icon size to 63px (f1e81d7)</li>
+      <li>2026-03-09 | Increase Pikachu icon size in app catalog (6cb0b45)</li>
+      <li>2026-03-09 | Use Pikachu sprite icon for Pokemon Learner (093d4f7)</li>
+      <li>2026-03-09 | Update Pokemon Learner icon to Pikachu style (82ecdc0)</li>
+      <li>2026-03-08 | Add FIRE Plans app and catalog entry (b95a586)</li>
+      <li>2026-03-08 | Add USA and India state learner apps with map modes (7c94e0a)</li>
+      <li>2026-03-08 | Improve app catalog keyboard nav and president portraits (ee76e62)</li>
+      <li>2026-03-07 | Add Country Learner to app catalog (cca3695)</li>
+      <li>2026-03-07 | Add American Presidents Learner app (b705156)</li>
+      <li>2026-03-07 | Add Pokemon Learner app - three pane Pokemon learning app with PokeAPI integration (9b6f601)</li>
+      <li>2026-03-01 | Add Tic Tac Toe to app catalog (9af0eb5)</li>
+      <li>2026-02-26 | Add search bar to app catalog for filtering apps (0a448eb)</li>
+      <li>2026-02-26 | Add Scotch &amp; Ghazal app - 5 hours of uninterrupted Jagjit Singh &amp; Ghulam Ali ghazals (1e49a6d)</li>
+      <li>2026-02-26 | Add Time Tracker app - track daily activities with event logging and reports (3ad4e1d)</li>
+      <li>2026-02-26 | Update app-catalog.html (726593e)</li>
+      <li>2026-02-26 | Update app-catalog.html (a588750)</li>
+      <li>2026-02-26 | Update app-catalog.html (3e9bb33)</li>
+      <li>2026-02-26 | Add thanks to Buddy Pats in Food Designer description (f061d9f)</li>
+      <li>2026-02-26 | Add Food Designer app with meal planning and recipe suggestions (c274aa0)</li>
+      <li>2026-02-26 | Add Food Log app with calorie tracking (83c9ad8)</li>
+      <li>2026-02-25 | Update app-catalog to use GitHub Pages URLs (a0a942b)</li>
+      <li>2026-02-25 | Add bill-tracker, ski-tracker, spanish-flashcards, and app-catalog apps (7d2defd)</li>
+    </ul>
+  </section>
+  <section class="app-group">
+    <h2>Bill Tracker</h2>
+    <ul>
+      <li>2026-03-10 | Add Home link to all catalog apps (3097296)</li>
+      <li>2026-02-25 | Add bill-tracker, ski-tracker, spanish-flashcards, and app-catalog apps (7d2defd)</li>
+    </ul>
+  </section>
+  <section class="app-group">
+    <h2>Book Log</h2>
+    <ul>
+      <li>2026-03-10 | Add SetGet shared export/import to all exportable catalog apps (a03bd7c)</li>
+      <li>2026-03-10 | Add Home link to all catalog apps (3097296)</li>
+      <li>2026-03-10 | Remove Book Log cloud sync and keep local-only storage (cf42c6a)</li>
+      <li>2026-03-10 | Add Book Log cloud keyword sync and larger read ratings (a272bfd)</li>
+      <li>2026-03-10 | Add catalog stats and improve Book Log ratings and data transfer (f8c484f)</li>
+      <li>2026-03-10 | Allow unlimited book selection in Book Log (631a867)</li>
+      <li>2026-03-10 | Improve CowsNBulls machine auto-feedback and Book Log UX (bb209f5)</li>
+      <li>2026-03-10 | Add Book Log app with searchable shelves and ratings (ee13804)</li>
+    </ul>
+  </section>
+  <section class="app-group">
+    <h2>Country Learner</h2>
+    <ul>
+      <li>2026-03-10 | Add SetGet shared export/import to all exportable catalog apps (a03bd7c)</li>
+      <li>2026-03-10 | Add Home link to all catalog apps (3097296)</li>
+      <li>2026-03-09 | Hide country list scrollbars while preserving scrolling (e68909c)</li>
+      <li>2026-03-08 | added export and import capability (83d4e36)</li>
+      <li>2026-03-08 | panning feature added (0bcf3e5)</li>
+      <li>2026-03-08 | tweaks (ba11842)</li>
+      <li>2026-03-08 | added detailed map (6a55c0d)</li>
+      <li>2026-03-08 | tweaks (7f7e097)</li>
+      <li>2026-03-08 | alignment (248e29c)</li>
+      <li>2026-03-08 | added (74d0351)</li>
+      <li>2026-03-08 | maps updates (b29c688)</li>
+      <li>2026-03-08 | map update (66a1abb)</li>
+      <li>2026-03-08 | added (efe4c19)</li>
+      <li>2026-03-08 | change (33a9676)</li>
+      <li>2026-03-08 | comit (710b434)</li>
+      <li>2026-03-08 | added missing countries (0dbb000)</li>
+      <li>2026-03-08 | added missing countries (a8f516d)</li>
+      <li>2026-03-08 | changes (e84e778)</li>
+      <li>2026-03-08 | fixes (344428a)</li>
+      <li>2026-03-08 | fixed country bug (1a57469)</li>
+      <li>2026-03-07 | Add complete list of 249 countries with coordinates (31a993c)</li>
+      <li>2026-03-07 | Add travel rating filter to left pane (230ee6b)</li>
+      <li>2026-03-07 | Add world map silhouette to mini-map in country learner app (df7a0ad)</li>
+      <li>2026-03-07 | Move world map to top stats bar with mini map (29c013a)</li>
+      <li>2026-03-07 | Replace SVG with CSS grid for world map (9ac0826)</li>
+      <li>2026-03-07 | Fix world map display and dot positioning (b422187)</li>
+      <li>2026-03-07 | Add world map with red dot for country location (b137dff)</li>
+      <li>2026-03-07 | Add country-learner app - track visited countries (57db050)</li>
+    </ul>
+  </section>
+  <section class="app-group">
+    <h2>CowsNBulls</h2>
+    <ul>
+      <li>2026-03-10 | Add Hybrid mode with manual bulls/cows feedback (8cf5e66)</li>
+      <li>2026-03-10 | Add Home link to all catalog apps (3097296)</li>
+      <li>2026-03-10 | Improve CowsNBulls machine auto-feedback and Book Log UX (bb209f5)</li>
+      <li>2026-03-10 | Fix CowsNBulls modes and replace dropdown with toggle (80bc976)</li>
+      <li>2026-03-10 | Add machine-guess mode to CowsNBulls with turn filtering (91eb211)</li>
+      <li>2026-03-09 | Add CowsNBulls game app and catalog entry (f981f83)</li>
+    </ul>
+  </section>
+  <section class="app-group">
+    <h2>FIRE Plans</h2>
+    <ul>
+      <li>2026-03-10 | Add Home link to all catalog apps (3097296)</li>
+      <li>2026-03-08 | Improve FIRE Plans mobile responsiveness (b86524a)</li>
+      <li>2026-03-08 | Apply FIRE number formula with SWR-based funding status (7539abf)</li>
+      <li>2026-03-08 | Use SWR-based duration model for FIRE longevity (fc09d7d)</li>
+      <li>2026-03-08 | Switch FIRE model back to proportional scaling (8078f68)</li>
+      <li>2026-03-08 | Use literal depletion model for FIRE year funding (14d1648)</li>
+      <li>2026-03-08 | Add FIRE Plans app and catalog entry (b95a586)</li>
+    </ul>
+  </section>
+  <section class="app-group">
+    <h2>Food Designer</h2>
+    <ul>
+      <li>2026-03-10 | Add Home link to all catalog apps (3097296)</li>
+      <li>2026-02-26 | Add thanks to buddy Pats in footer (c33b7d6)</li>
+      <li>2026-02-26 | Add Indian food support with cuisine filter and ingredients (908e400)</li>
+      <li>2026-02-26 | Add Food Designer app with meal planning and recipe suggestions (c274aa0)</li>
+    </ul>
+  </section>
+  <section class="app-group">
+    <h2>Food Log</h2>
+    <ul>
+      <li>2026-03-10 | Add Home link to all catalog apps (3097296)</li>
+      <li>2026-02-26 | Fix quantity parsing for '2 donut' style inputs (33fb3d7)</li>
+      <li>2026-02-26 | Add blur event listeners for calorie calculation on tab out (c6bad9e)</li>
+      <li>2026-02-26 | Add real-time calorie calculation on input with debounce (19967cc)</li>
+      <li>2026-02-26 | Fix quantity parsing for slice, scoop, can, bottle units (ff394c5)</li>
+      <li>2026-02-26 | Add intelligent calorie calculation with API support and quantity parsing (e35d430)</li>
+      <li>2026-02-26 | Add smart calorie modifiers (no sugar, light butter, etc.) (3020592)</li>
+      <li>2026-02-26 | Add Food Log app with calorie tracking (83c9ad8)</li>
+    </ul>
+  </section>
+  <section class="app-group">
+    <h2>Idea Log</h2>
+    <ul>
+      <li>2026-03-10 | Hide shared URL display after Idea Log shared export (19304d0)</li>
+      <li>2026-03-10 | Harden SetGet export TTL handling and bump Idea Log cache version (70509cf)</li>
+      <li>2026-03-10 | Fix SetGet shared export TTL to 7-day max (d247733)</li>
+      <li>2026-03-10 | Integrate setget.io keyword-based shared export/import in Idea Log (22aa047)</li>
+      <li>2026-03-10 | Add portable share fallback when cloud shared sync fails (57fc93e)</li>
+      <li>2026-03-10 | Switch Idea Log shared sync to jsonblob keyword index (547665c)</li>
+      <li>2026-03-10 | Use valid kvdb bucket for Idea Log shared export/import (7f7e654)</li>
+      <li>2026-03-10 | Add shared storage provider fallback for Idea Log sync (9f646bd)</li>
+      <li>2026-03-10 | Fix Idea Log shared sync endpoint and fetch error handling (f2d4cfc)</li>
+      <li>2026-03-10 | Show shared storage URL after Idea Log shared sync (fdbb670)</li>
+      <li>2026-03-10 | Add keyword-based shared export/import for Idea Log (542b016)</li>
+      <li>2026-03-10 | Add visual icons to Idea Log header and state columns (af9cb5a)</li>
+      <li>2026-03-10 | Fix Idea Log add flow by resolving script syntax error (895d0a6)</li>
+      <li>2026-03-10 | Add Idea Log app and include it in app catalog (02a8dbc)</li>
+    </ul>
+  </section>
+  <section class="app-group">
+    <h2>India States & UT Learner</h2>
+    <ul>
+      <li>2026-03-10 | Add SetGet shared export/import to all exportable catalog apps (a03bd7c)</li>
+      <li>2026-03-10 | Add Home link to all catalog apps (3097296)</li>
+      <li>2026-03-09 | Fix India accurate map toggle with live GeoJSON sources (895ec67)</li>
+      <li>2026-03-09 | Improve India accurate map loading with fallback sources (ac1683b)</li>
+      <li>2026-03-09 | Fix India accurate map and hide side list scrollbars (20f95d6)</li>
+      <li>2026-03-08 | Fix India learner map rendering fallbacks (f15786c)</li>
+      <li>2026-03-08 | Add USA and India state learner apps with map modes (7c94e0a)</li>
+    </ul>
+  </section>
+  <section class="app-group">
+    <h2>Movie Log</h2>
+    <ul>
+      <li>2026-03-10 | Add SetGet shared export/import to all exportable catalog apps (a03bd7c)</li>
+      <li>2026-03-10 | Adjust MovieLog Home button to avoid overlap (9bd8377)</li>
+      <li>2026-03-10 | Fix MovieLog UI hangs and nav handler robustness (d62ffa0)</li>
+      <li>2026-03-10 | Fix MovieLog startup when storage is unavailable (340f250)</li>
+      <li>2026-03-10 | Add Home link to all catalog apps (3097296)</li>
+      <li>2026-02-25 | Add export/import functionality for movies (8e3cfb3)</li>
+      <li>2026-02-25 | Add MovieLog app (ee1d060)</li>
+    </ul>
+  </section>
+  <section class="app-group">
+    <h2>Pokemon Learner</h2>
+    <ul>
+      <li>2026-03-10 | Add SetGet shared export/import to all exportable catalog apps (a03bd7c)</li>
+      <li>2026-03-10 | Add Home link to all catalog apps (3097296)</li>
+      <li>2026-03-10 | Fix Pokemon learner list loading reliability (bb36323)</li>
+      <li>2026-03-10 | Prevent hidden panes and show Pokemon load status (2bc9b9f)</li>
+      <li>2026-03-10 | Fix Pokemon learner list loading fallback (dbb1518)</li>
+      <li>2026-03-10 | Add icon theme toggle for Pokemon learner images (b1bf51e)</li>
+      <li>2026-03-10 | Pad Pokemon anniversary image numbers to 4 digits (c5bab6c)</li>
+      <li>2026-03-10 | Use Pokemon 30th anniversary images across learner panes (0ab567e)</li>
+      <li>2026-03-09 | Hide list scrollbars while keeping scroll behavior (d243aae)</li>
+      <li>2026-03-09 | Add collapsible side panes for Pokemon learner (2fb35b4)</li>
+      <li>2026-03-09 | Show Pokemon region in center pane details (740005e)</li>
+      <li>2026-03-09 | Add region search support to Pokemon learner panes (27e1824)</li>
+      <li>2026-03-08 | added export and import capability (83d4e36)</li>
+      <li>2026-03-07 | Remove Unlearned stat from top bar (2dd9deb)</li>
+      <li>2026-03-07 | Increase font sizes and add mobile responsiveness (6fe25e3)</li>
+      <li>2026-03-07 | Filter out Pokemon with hyphens in name (67bf343)</li>
+      <li>2026-03-07 | Fix arrow key navigation in list panes (d02f21c)</li>
+      <li>2026-03-07 | Auto-remove failed Pokemon from unlearned list (855cf99)</li>
+      <li>2026-03-07 | Add keyboard shortcuts overlay with Ctrl+/ (6058a87)</li>
+      <li>2026-03-07 | Make Pokemon Learner fully keyboard friendly (fd74a11)</li>
+      <li>2026-03-07 | Add tab cycling and space bar for select button (fff4688)</li>
+      <li>2026-03-07 | Select Pokemon on Tab and arrow key navigation (4dd5162)</li>
+      <li>2026-03-07 | Add keyboard navigation to Pokemon lists (81a864d)</li>
+      <li>2026-03-07 | Add statistics tracking to Pokemon Learner app (ad40e83)</li>
+      <li>2026-03-07 | Fix: Load all Pokemon (1300+), fix event listener bug (c8e430d)</li>
+      <li>2026-03-07 | Add Pokemon Learner app - three pane Pokemon learning app with PokeAPI integration (9b6f601)</li>
+    </ul>
+  </section>
+  <section class="app-group">
+    <h2>Scotch & Ghazal</h2>
+    <ul>
+      <li>2026-03-10 | Add Home link to all catalog apps (3097296)</li>
+      <li>2026-02-26 | Add Clear All button to delete playlist (213f438)</li>
+      <li>2026-02-26 | Restore localStorage persistence for user-added ghazals (94400ed)</li>
+      <li>2026-02-26 | Clear localStorage on load to remove preloaded playlist (040ba1d)</li>
+      <li>2026-02-26 | Scotch &amp; Ghazal: Remove preloaded list, allow custom YouTube URLs (da87123)</li>
+      <li>2026-02-26 | Fix: Use real YouTube URLs and auto-reload for broken playlist (8cf2f42)</li>
+      <li>2026-02-26 | Fix YouTube audio playback in Scotch &amp; Ghazal app (197543e)</li>
+      <li>2026-02-26 | Add 100 pre-loaded Jagjit Singh and Ghulam Ali ghazals (148858f)</li>
+      <li>2026-02-26 | Add Scotch &amp; Ghazal app - 5 hours of uninterrupted Jagjit Singh &amp; Ghulam Ali ghazals (1e49a6d)</li>
+    </ul>
+  </section>
+  <section class="app-group">
+    <h2>Ski Tracker</h2>
+    <ul>
+      <li>2026-03-10 | Add Home link to all catalog apps (3097296)</li>
+      <li>2026-02-25 | Add bill-tracker, ski-tracker, spanish-flashcards, and app-catalog apps (7d2defd)</li>
+    </ul>
+  </section>
+  <section class="app-group">
+    <h2>Spanish Flash Cards</h2>
+    <ul>
+      <li>2026-03-10 | Add Home link to all catalog apps (3097296)</li>
+      <li>2026-02-25 | Add bill-tracker, ski-tracker, spanish-flashcards, and app-catalog apps (7d2defd)</li>
+    </ul>
+  </section>
+  <section class="app-group">
+    <h2>Tic Tac Toe</h2>
+    <ul>
+      <li>2026-03-10 | Add Home link to all catalog apps (3097296)</li>
+      <li>2026-03-01 | Add Tic Tac Toe game (d895ea9)</li>
+    </ul>
+  </section>
+  <section class="app-group">
+    <h2>Time Tracker</h2>
+    <ul>
+      <li>2026-03-10 | Add Home link to all catalog apps (3097296)</li>
+      <li>2026-02-26 | Add Time Tracker app - track daily activities with event logging and reports (3ad4e1d)</li>
+    </ul>
+  </section>
+  <section class="app-group">
+    <h2>USA State Learner</h2>
+    <ul>
+      <li>2026-03-10 | Add SetGet shared export/import to all exportable catalog apps (a03bd7c)</li>
+      <li>2026-03-10 | Add Home link to all catalog apps (3097296)</li>
+      <li>2026-03-09 | Fix India accurate map and hide side list scrollbars (20f95d6)</li>
+      <li>2026-03-08 | Add USA and India state learner apps with map modes (7c94e0a)</li>
+    </ul>
+  </section>
+  </div>
+</body>
+</html>

@@ -1075,6 +1075,7 @@
         <button type="button" class="transfer-btn" id="exportVisitedBtn" aria-label="Export visited countries" title="Export visited countries">⤓</button>
         <button type="button" class="transfer-btn" id="importVisitedBtn" aria-label="Import visited countries" title="Import visited countries">⤒</button>
         <button type="button" class="transfer-btn" id="exportSharedVisitedBtn" aria-label="Shared export visited countries" title="Shared export visited countries">⇪</button>
+        <button type="button" class="transfer-btn" id="clearSharedVisitedBtn" aria-label="Clear shared visited countries" title="Clear shared visited countries">✕</button>
         <button type="button" class="transfer-btn" id="importSharedVisitedBtn" aria-label="Shared import visited countries" title="Shared import visited countries">⇩</button>
         <input type="file" id="importVisitedFile" accept="application/json" hidden>
       </div>
@@ -1347,6 +1348,7 @@
     const exportVisitedBtn = document.getElementById('exportVisitedBtn');
     const importVisitedBtn = document.getElementById('importVisitedBtn');
     const exportSharedVisitedBtn = document.getElementById('exportSharedVisitedBtn');
+    const clearSharedVisitedBtn = document.getElementById('clearSharedVisitedBtn');
     const importSharedVisitedBtn = document.getElementById('importSharedVisitedBtn');
     const importVisitedFile = document.getElementById('importVisitedFile');
     const transferStatus = document.getElementById('transferStatus');
@@ -1758,6 +1760,38 @@
       }
     }
 
+    async function clearVisitedCountriesShared() {
+      const keyword = promptSharedKeyword('Clear shared');
+      if (!keyword) return;
+      const key = `country-learner-${keyword}`;
+      const payload = {
+        app: 'country-learner',
+        version: 1,
+        clearedAt: new Date().toISOString(),
+        visitedCountries: {}
+      };
+      try {
+        let response = await fetch(SETGET_SET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key, content: payload, expireAfter: 60 })
+        });
+        let text = await response.text();
+        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
+          response = await fetch(SETGET_SET_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key, content: payload })
+          });
+          text = await response.text();
+        }
+        if (!response.ok) throw new Error(`Shared clear failed (${response.status})${text ? `: ${text}` : ''}`);
+        setTransferStatus(`Shared key cleared (${keyword})`, false);
+      } catch (error) {
+        setTransferStatus(error.message || 'Shared clear failed', true);
+      }
+    }
+
     function calculateStats() {
       const total = COUNTRIES.length;
       const visitedCount = Object.keys(visitedCountries).length;
@@ -2071,6 +2105,9 @@
     }
     if (exportSharedVisitedBtn) {
       exportSharedVisitedBtn.addEventListener('click', exportVisitedCountriesShared);
+    }
+    if (clearSharedVisitedBtn) {
+      clearSharedVisitedBtn.addEventListener('click', clearVisitedCountriesShared);
     }
     if (importSharedVisitedBtn) {
       importSharedVisitedBtn.addEventListener('click', importVisitedCountriesShared);
