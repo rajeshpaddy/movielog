@@ -561,6 +561,7 @@
       <div class="pane-toggle-controls">
         <button type="button" class="pane-toggle-btn" id="toggleLeftPaneBtn" aria-label="Toggle left pane">Hide Left Pane</button>
         <button type="button" class="pane-toggle-btn" id="toggleRightPaneBtn" aria-label="Toggle right pane">Hide Right Pane</button>
+        <button type="button" class="pane-toggle-btn" id="toggleImageThemeBtn" aria-label="Toggle Pokemon icon theme">Icon Theme: 30th</button>
       </div>
       <div class="center-content" id="centerContent">
         <div class="empty-state">Click a Pokemon to learn about it!</div>
@@ -584,6 +585,13 @@
     const POKEMON_API = 'https://pokeapi.co/api/v2';
     const TOTAL_POKEMON = 1300;
     const ANNIVERSARY_IMAGE_TEMPLATE = 'https://www.pokemon.co.jp/ex/30th_logo/assets/img/download/{num}.png';
+    const POKEMON_SPRITE_TEMPLATE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{num}.png';
+    const POKEMON_ARTWORK_TEMPLATE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{num}.png';
+    const IMAGE_THEME_KEY = 'pokemonLearnerImageTheme';
+    const IMAGE_THEMES = {
+      NORMAL: 'normal',
+      ANNIVERSARY: '30th'
+    };
     
     const REGIONS = [
       { name: 'Kanto', start: 1, end: 151 },
@@ -613,6 +621,7 @@
     const centerContent = document.getElementById('centerContent');
     const toggleLeftPaneBtn = document.getElementById('toggleLeftPaneBtn');
     const toggleRightPaneBtn = document.getElementById('toggleRightPaneBtn');
+    const toggleImageThemeBtn = document.getElementById('toggleImageThemeBtn');
     const statsBar = document.getElementById('statsBar');
     const regionStats = document.getElementById('regionStats');
     const shortcutsOverlay = document.getElementById('shortcutsOverlay');
@@ -622,6 +631,17 @@
     const transferStatus = document.getElementById('transferStatus');
     let leftPaneCollapsed = false;
     let rightPaneCollapsed = false;
+    let imageTheme = localStorage.getItem(IMAGE_THEME_KEY) === IMAGE_THEMES.NORMAL
+      ? IMAGE_THEMES.NORMAL
+      : IMAGE_THEMES.ANNIVERSARY;
+
+    function getPokemonSpriteUrl(number) {
+      return POKEMON_SPRITE_TEMPLATE.replace('{num}', String(number));
+    }
+
+    function getPokemonArtworkUrl(number) {
+      return POKEMON_ARTWORK_TEMPLATE.replace('{num}', String(number));
+    }
 
     function getPrimarySearchTarget() {
       if (!leftPaneCollapsed) return leftSearch;
@@ -793,8 +813,33 @@
       return 'Other';
     }
 
-    function getPokemonImageUrl(number) {
-      return ANNIVERSARY_IMAGE_TEMPLATE.replace('{num}', String(number).padStart(4, '0'));
+    function getPokemonImageUrl(number, variant = 'list') {
+      if (imageTheme === IMAGE_THEMES.ANNIVERSARY) {
+        return ANNIVERSARY_IMAGE_TEMPLATE.replace('{num}', String(number).padStart(4, '0'));
+      }
+      return variant === 'showcase' ? getPokemonArtworkUrl(number) : getPokemonSpriteUrl(number);
+    }
+
+    function syncImageThemeButton() {
+      if (!toggleImageThemeBtn) return;
+      toggleImageThemeBtn.textContent = `Icon Theme: ${imageTheme === IMAGE_THEMES.ANNIVERSARY ? '30th' : 'Normal'}`;
+    }
+
+    function applyImageTheme(save = true) {
+      if (save) {
+        localStorage.setItem(IMAGE_THEME_KEY, imageTheme);
+      }
+      syncImageThemeButton();
+      renderLeftList();
+      renderRightList();
+      if (selectedPokemon) {
+        showPokemonDetails(selectedPokemon);
+      }
+    }
+
+    function toggleImageTheme() {
+      imageTheme = imageTheme === IMAGE_THEMES.ANNIVERSARY ? IMAGE_THEMES.NORMAL : IMAGE_THEMES.ANNIVERSARY;
+      applyImageTheme();
     }
 
     function matchesPokemonSearch(pokemon, query) {
@@ -885,7 +930,7 @@
       
       leftList.innerHTML = unlearned.map((p, i) => `
         <div class="pokemon-item ${selectedPokemon?.number === p.number && !selectedFromRight ? 'selected' : ''} ${i === leftFocusedIndex ? 'focused' : ''}" data-number="${p.number}" data-index="${i}" tabindex="0">
-          <img src="${getPokemonImageUrl(p.number)}" alt="${p.name}">
+          <img src="${getPokemonImageUrl(p.number)}" alt="${p.name}" onerror="this.src='${getPokemonSpriteUrl(p.number)}'">
           <div>
             <div class="name">${p.name}</div>
             <div class="number">#${String(p.number).padStart(3, '0')}</div>
@@ -904,7 +949,7 @@
       
       rightList.innerHTML = learned.map((p, i) => `
         <div class="pokemon-item ${selectedPokemon?.number === p.number && selectedFromRight ? 'selected' : ''} ${i === rightFocusedIndex ? 'focused' : ''}" data-number="${p.number}" data-index="${i}" tabindex="0">
-          <img src="${getPokemonImageUrl(p.number)}" alt="${p.name}">
+          <img src="${getPokemonImageUrl(p.number)}" alt="${p.name}" onerror="this.src='${getPokemonSpriteUrl(p.number)}'">
           <div>
             <div class="name">${p.name}</div>
             <div class="number">#${String(p.number).padStart(3, '0')}</div>
@@ -961,7 +1006,7 @@
           </button>
           
           <div class="showcase">
-            <img class="showcase-image" src="${getPokemonImageUrl(pokemon.number)}" alt="${pokemon.name}">
+            <img class="showcase-image" src="${getPokemonImageUrl(pokemon.number, 'showcase')}" alt="${pokemon.name}" onerror="this.src='${getPokemonSpriteUrl(pokemon.number)}'">
             <div class="showcase-name">${pokemon.name}</div>
             <div class="showcase-region">Region: ${region}</div>
             <div class="showcase-types">
@@ -1034,7 +1079,7 @@
       
       chainHtml.push(`
         <div class="evolution-item" data-number="${num}" tabindex="0">
-          <img src="${getPokemonImageUrl(num)}" alt="${chain.species.name}">
+          <img src="${getPokemonImageUrl(num)}" alt="${chain.species.name}" onerror="this.src='${getPokemonSpriteUrl(num)}'">
           <div class="name">${chain.species.name}</div>
           ${trigger ? `<div class="evolution-trigger">${trigger}</div>` : ''}
         </div>
@@ -1092,6 +1137,9 @@
     }
     if (toggleRightPaneBtn) {
       toggleRightPaneBtn.addEventListener('click', () => togglePane('right'));
+    }
+    if (toggleImageThemeBtn) {
+      toggleImageThemeBtn.addEventListener('click', toggleImageTheme);
     }
     
     document.addEventListener('keydown', (e) => {
@@ -1309,6 +1357,7 @@
     loadLearnedPokemon();
     loadPaneLayout();
     applyPaneLayout(false);
+    applyImageTheme(false);
     calculateStats();
     fetchAllPokemon();
   </script>
