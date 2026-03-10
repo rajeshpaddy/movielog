@@ -255,20 +255,29 @@
         { label: 'Last 365d', limit: 365 * dayMs }
       ];
 
-      const counts = windows.map(win => {
-        if (win.limit === Infinity) return apps.length;
-        return apps.filter(app => {
+      const stats = windows.map(win => {
+        if (win.limit === Infinity) {
+          return { label: win.label, value: apps.length };
+        }
+        const value = apps.filter(app => {
           const publishedAt = new Date(`${app.date}T00:00:00`).getTime();
           if (Number.isNaN(publishedAt)) return false;
           const age = now - publishedAt;
           return age >= 0 && age <= win.limit;
         }).length;
+        return { label: win.label, value };
       });
 
-      catalogStats.innerHTML = windows.map((win, idx) => `
+      const lastUpdatedAt = new Date(document.lastModified).getTime();
+      const minutesSinceUpdate = Number.isFinite(lastUpdatedAt) && !Number.isNaN(lastUpdatedAt) && now >= lastUpdatedAt
+        ? Math.floor((now - lastUpdatedAt) / (60 * 1000))
+        : '-';
+      stats.push({ label: 'Mins Since Update', value: minutesSinceUpdate });
+
+      catalogStats.innerHTML = stats.map(stat => `
         <div class="catalog-stat">
-          <div class="catalog-stat-label">${win.label}</div>
-          <div class="catalog-stat-value">${counts[idx]}</div>
+          <div class="catalog-stat-label">${stat.label}</div>
+          <div class="catalog-stat-value">${stat.value}</div>
         </div>
       `).join('');
     }
