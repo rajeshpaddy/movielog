@@ -269,6 +269,8 @@
       <div class="toolbar" style="margin-top:10px;">
         <button id="exportBtn" class="btn btn-secondary" type="button">Export Ideas</button>
         <button id="importBtn" class="btn btn-secondary" type="button">Import Ideas</button>
+        <button id="exportSharedBtn" class="btn btn-secondary" type="button">Export Shared</button>
+        <button id="importSharedBtn" class="btn btn-secondary" type="button">Import Shared</button>
         <input id="importFile" type="file" accept="application/json" hidden>
       </div>
       <div id="status" class="status" aria-live="polite"></div>
@@ -283,6 +285,7 @@
 
   <script>
     const STORAGE_KEY = 'ideaLogEntriesV1';
+    const SHARED_STORE_BASE = 'https://www.jsonstore.io';
     const STATES = {
       EXPERIMENTING: 'experimenting',
       DISCARDED: 'discarded',
@@ -305,6 +308,8 @@
     const addIdeaBtn = document.getElementById('addIdeaBtn');
     const exportBtn = document.getElementById('exportBtn');
     const importBtn = document.getElementById('importBtn');
+    const exportSharedBtn = document.getElementById('exportSharedBtn');
+    const importSharedBtn = document.getElementById('importSharedBtn');
     const importFile = document.getElementById('importFile');
     const statusEl = document.getElementById('status');
     const statsGrid = document.getElementById('statsGrid');
@@ -483,6 +488,78 @@
       reader.readAsText(file);
     }
 
+    function promptKeyword(actionLabel) {
+      const raw = prompt(`${actionLabel}: enter a keyword`, '');
+      if (raw == null) return null;
+      const keyword = raw.trim().toLowerCase();
+      if (!keyword) {
+        setStatus('Keyword is required.', true);
+        return null;
+      }
+      return keyword.replaceAll(/\s+/g, '-').replaceAll(/[^a-z0-9-_]/g, '');
+    }
+
+    function getSharedKey(keyword) {
+      return `idea-log-${keyword}`;
+    }
+
+    async function exportIdeasShared() {
+      const keyword = promptKeyword('Export to shared storage');
+      if (!keyword) return;
+      const payload = {
+        app: 'idea-log',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        keyword,
+        ideas
+      };
+      const key = getSharedKey(keyword);
+      try {
+        const response = await fetch(`${SHARED_STORE_BASE}/${encodeURIComponent(key)}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error(`Shared export failed (${response.status})`);
+        setStatus(`Shared export completed with keyword "${keyword}".`, false);
+      } catch (error) {
+        setStatus(error.message || 'Shared export failed.', true);
+      }
+    }
+
+    function extractSharedPayload(raw) {
+      if (!raw || typeof raw !== 'object') return null;
+      if (Array.isArray(raw.ideas)) return raw;
+      if (raw.result && typeof raw.result === 'object' && Array.isArray(raw.result.ideas)) return raw.result;
+      if (raw.data && typeof raw.data === 'object' && Array.isArray(raw.data.ideas)) return raw.data;
+      if (raw.result && raw.result.value && Array.isArray(raw.result.value.ideas)) return raw.result.value;
+      return null;
+    }
+
+    async function importIdeasShared() {
+      const keyword = promptKeyword('Import from shared storage');
+      if (!keyword) return;
+      const key = getSharedKey(keyword);
+      try {
+        const response = await fetch(`${SHARED_STORE_BASE}/${encodeURIComponent(key)}`);
+        if (!response.ok) throw new Error(`No shared data found for keyword "${keyword}".`);
+        const parsed = await response.json();
+        const payload = extractSharedPayload(parsed);
+        if (!payload || !Array.isArray(payload.ideas)) {
+          throw new Error('Shared data format is invalid.');
+        }
+        const incoming = payload.ideas.map(normalizeIdea).filter(Boolean);
+        const byId = new Map(ideas.map(i => [i.id, i]));
+        incoming.forEach(item => byId.set(item.id, item));
+        ideas = Array.from(byId.values()).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        saveIdeas();
+        renderAll();
+        setStatus(`Imported ${incoming.length} ideas from shared storage using "${keyword}".`, false);
+      } catch (error) {
+        setStatus(error.message || 'Shared import failed.', true);
+      }
+    }
+
     function renderStats() {
       const now = Date.now();
       const day = 24 * 60 * 60 * 1000;
@@ -571,6 +648,8 @@
     exportBtn.addEventListener('click', exportIdeas);
     importBtn.addEventListener('click', () => importFile.click());
     importFile.addEventListener('change', importIdeasFromFile);
+    exportSharedBtn.addEventListener('click', exportIdeasShared);
+    importSharedBtn.addEventListener('click', importIdeasShared);
 
     loadIdeas();
     renderAll();
