@@ -583,6 +583,7 @@
   <script>
     const POKEMON_API = 'https://pokeapi.co/api/v2';
     const TOTAL_POKEMON = 1300;
+    const ANNIVERSARY_IMAGE_TEMPLATE = 'https://www.pokemon.co.jp/ex/30th_logo/assets/img/download/{num}.png';
     
     const REGIONS = [
       { name: 'Kanto', start: 1, end: 151 },
@@ -792,6 +793,10 @@
       return 'Other';
     }
 
+    function getPokemonImageUrl(number) {
+      return ANNIVERSARY_IMAGE_TEMPLATE.replace('{num}', String(number));
+    }
+
     function matchesPokemonSearch(pokemon, query) {
       const normalizedQuery = query.trim().toLowerCase();
       if (!normalizedQuery) return true;
@@ -880,7 +885,7 @@
       
       leftList.innerHTML = unlearned.map((p, i) => `
         <div class="pokemon-item ${selectedPokemon?.number === p.number && !selectedFromRight ? 'selected' : ''} ${i === leftFocusedIndex ? 'focused' : ''}" data-number="${p.number}" data-index="${i}" tabindex="0">
-          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.number}.png" alt="${p.name}">
+          <img src="${getPokemonImageUrl(p.number)}" alt="${p.name}">
           <div>
             <div class="name">${p.name}</div>
             <div class="number">#${String(p.number).padStart(3, '0')}</div>
@@ -899,7 +904,7 @@
       
       rightList.innerHTML = learned.map((p, i) => `
         <div class="pokemon-item ${selectedPokemon?.number === p.number && selectedFromRight ? 'selected' : ''} ${i === rightFocusedIndex ? 'focused' : ''}" data-number="${p.number}" data-index="${i}" tabindex="0">
-          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.number}.png" alt="${p.name}">
+          <img src="${getPokemonImageUrl(p.number)}" alt="${p.name}">
           <div>
             <div class="name">${p.name}</div>
             <div class="number">#${String(p.number).padStart(3, '0')}</div>
@@ -956,7 +961,7 @@
           </button>
           
           <div class="showcase">
-            <img class="showcase-image" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.number}.png" alt="${pokemon.name}" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.number}.png'">
+            <img class="showcase-image" src="${getPokemonImageUrl(pokemon.number)}" alt="${pokemon.name}">
             <div class="showcase-name">${pokemon.name}</div>
             <div class="showcase-region">Region: ${region}</div>
             <div class="showcase-types">
@@ -1029,7 +1034,7 @@
       
       chainHtml.push(`
         <div class="evolution-item" data-number="${num}" tabindex="0">
-          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png" alt="${chain.species.name}">
+          <img src="${getPokemonImageUrl(num)}" alt="${chain.species.name}">
           <div class="name">${chain.species.name}</div>
           ${trigger ? `<div class="evolution-trigger">${trigger}</div>` : ''}
         </div>
