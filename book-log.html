@@ -48,23 +48,6 @@
       gap: 8px;
       flex-wrap: wrap;
     }
-    .cloud-toggle {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      border: 1px solid #334155;
-      border-radius: 9px;
-      background: #0b1220;
-      color: #cbd5e1;
-      font-size: 12px;
-      padding: 6px 8px;
-      cursor: pointer;
-      user-select: none;
-    }
-    .cloud-toggle input {
-      accent-color: #60a5fa;
-      cursor: pointer;
-    }
     .panel-body { display: block; }
     .panel.collapsed .panel-body { display: none; }
     .search-row {
@@ -302,7 +285,6 @@
       <div class="panel-head">
         <div class="panel-title">Book Search</div>
         <div class="panel-actions">
-          <label class="cloud-toggle"><input id="cloudModeToggle" type="checkbox">Store in Cloud</label>
           <button id="clearSearchBtn" class="btn-secondary" type="button">Clear Search</button>
           <button id="toggleSearchPaneBtn" class="btn-secondary" type="button">Collapse Search</button>
           <button id="exportDataBtn" class="btn-secondary" type="button">Export Data</button>
@@ -357,7 +339,6 @@
 
   <script>
     const STORAGE_KEY = 'bookLogShelves';
-    const BOOK_LOG_CLOUD_INDEX_URL = 'https://jsonblob.com/api/jsonBlob/019cd81a-392f-704f-a88f-b404703fdc1d';
     const state = {
       results: [],
       selected: new Set(),
@@ -376,7 +357,6 @@
     const searchTypeEl = document.getElementById('searchType');
     const searchInputEl = document.getElementById('searchInput');
     const searchBtnEl = document.getElementById('searchBtn');
-    const cloudModeToggleEl = document.getElementById('cloudModeToggle');
     const clearSearchBtnEl = document.getElementById('clearSearchBtn');
     const toggleSearchPaneBtnEl = document.getElementById('toggleSearchPaneBtn');
     const exportDataBtnEl = document.getElementById('exportDataBtn');
@@ -423,19 +403,6 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state.shelves));
     }
 
-    function normalizeKeyword(value) {
-      return String(value || '').trim().toLowerCase();
-    }
-
-    function promptKeyword(actionText) {
-      const input = window.prompt(`${actionText}: enter a keyword`, '');
-      const keyword = normalizeKeyword(input);
-      if (!keyword) {
-        throw new Error('Keyword is required.');
-      }
-      return keyword;
-    }
-
     function exportAllData() {
       const payload = {
         app: 'book-log',
@@ -454,43 +421,6 @@
       anchor.remove();
       URL.revokeObjectURL(url);
       setStatus('Exported To Read, Reading, and Read lists.', 'success');
-    }
-
-    async function fetchCloudIndex() {
-      const response = await fetch(BOOK_LOG_CLOUD_INDEX_URL, { method: 'GET' });
-      if (!response.ok) throw new Error('Cloud index unavailable.');
-      const parsed = await response.json();
-      if (!parsed || typeof parsed !== 'object') {
-        return { app: 'book-log-cloud-index', entries: {} };
-      }
-      if (!parsed.entries || typeof parsed.entries !== 'object' || Array.isArray(parsed.entries)) {
-        parsed.entries = {};
-      }
-      return parsed;
-    }
-
-    async function saveCloudIndex(indexPayload) {
-      const response = await fetch(BOOK_LOG_CLOUD_INDEX_URL, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(indexPayload)
-      });
-      if (!response.ok) throw new Error('Cloud save failed.');
-    }
-
-    async function exportCloudDataByKeyword() {
-      const keyword = promptKeyword('Export to cloud');
-      const indexPayload = await fetchCloudIndex();
-      const snapshot = {
-        keyword,
-        savedAt: new Date().toISOString(),
-        shelves: state.shelves
-      };
-
-      const existing = Array.isArray(indexPayload.entries[keyword]) ? indexPayload.entries[keyword] : [];
-      indexPayload.entries[keyword] = [snapshot, ...existing].slice(0, 25);
-      await saveCloudIndex(indexPayload);
-      setStatus(`Cloud export completed for keyword "${keyword}".`, 'success');
     }
 
     function normalizeImportedShelves(parsedData) {
@@ -541,23 +471,6 @@
       reader.readAsText(file);
     }
 
-    async function importCloudDataByKeyword() {
-      const keyword = promptKeyword('Import from cloud');
-      const indexPayload = await fetchCloudIndex();
-      const snapshots = Array.isArray(indexPayload.entries[keyword]) ? indexPayload.entries[keyword] : [];
-      if (snapshots.length === 0) {
-        throw new Error(`No cloud data found for keyword "${keyword}".`);
-      }
-
-      const latest = snapshots
-        .slice()
-        .sort((a, b) => new Date(b.savedAt || 0).getTime() - new Date(a.savedAt || 0).getTime())[0];
-
-      state.shelves = normalizeImportedShelves({ shelves: latest.shelves });
-      saveShelves();
-      renderShelves();
-      setStatus(`Imported latest cloud data for keyword "${keyword}".`, 'success');
-    }
 
     function escapeHtml(value) {
       return String(value || '')
@@ -839,28 +752,8 @@
       const nextCollapsed = !searchPanelEl.classList.contains('collapsed');
       setSearchPanelCollapsed(nextCollapsed);
     });
-    exportDataBtnEl.addEventListener('click', async () => {
-      if (!cloudModeToggleEl.checked) {
-        exportAllData();
-        return;
-      }
-      try {
-        await exportCloudDataByKeyword();
-      } catch (error) {
-        setStatus(error.message || 'Cloud export failed.', 'error');
-      }
-    });
-    importDataBtnEl.addEventListener('click', async () => {
-      if (!cloudModeToggleEl.checked) {
-        importDataFileEl.click();
-        return;
-      }
-      try {
-        await importCloudDataByKeyword();
-      } catch (error) {
-        setStatus(error.message || 'Cloud import failed.', 'error');
-      }
-    });
+    exportDataBtnEl.addEventListener('click', exportAllData);
+    importDataBtnEl.addEventListener('click', () => importDataFileEl.click());
     importDataFileEl.addEventListener('change', (e) => {
       const [file] = e.target.files || [];
       if (file) importAllData(file);
