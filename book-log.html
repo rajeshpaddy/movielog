@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book Log</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container { max-width: 1260px; margin: 0 auto; }
+    h1 {
+      color: #60a5fa;
+      margin-bottom: 8px;
+      font-size: 32px;
+    }
+    .subtitle {
+      color: #94a3b8;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    .panel {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+    .search-row {
+      display: grid;
+      grid-template-columns: 170px 1fr 140px;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .input, .select {
+      border: 1px solid #334155;
+      border-radius: 10px;
+      background: #020617;
+      color: #e2e8f0;
+      padding: 10px 12px;
+      font-size: 14px;
+      outline: none;
+    }
+    .input:focus, .select:focus { border-color: #60a5fa; }
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+      background: #2563eb;
+      color: #fff;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .btn-secondary {
+      border: 1px solid #334155;
+      border-radius: 9px;
+      background: #1e293b;
+      color: #e2e8f0;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 9px 11px;
+      cursor: pointer;
+    }
+    .status {
+      min-height: 20px;
+      color: #93c5fd;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+    .status.error { color: #fca5a5; }
+    .status.success { color: #86efac; }
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 10px;
+    }
+    .book-card {
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      background: #0b1220;
+      padding: 10px;
+      display: grid;
+      grid-template-columns: 70px 1fr;
+      gap: 10px;
+      align-items: start;
+      position: relative;
+    }
+    .book-card.selected {
+      border-color: #60a5fa;
+      box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.5);
+    }
+    .cover {
+      width: 70px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 8px;
+      background: #1f2937;
+    }
+    .meta-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-right: 26px;
+      margin-bottom: 4px;
+      line-height: 1.35;
+    }
+    .meta-row {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-bottom: 3px;
+      line-height: 1.3;
+      word-break: break-word;
+    }
+    .rating {
+      color: #fbbf24;
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+    .pick {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .shelves {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .shelf {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 14px;
+      padding: 12px;
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
+    }
+    .shelf h2 {
+      color: #93c5fd;
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+    .shelf-search { margin-bottom: 8px; }
+    .shelf-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+      max-height: 60vh;
+      padding-right: 2px;
+    }
+    .shelf-item {
+      border: 1px solid #263244;
+      border-radius: 10px;
+      background: #0b1220;
+      padding: 9px;
+      display: grid;
+      grid-template-columns: 46px 1fr;
+      gap: 8px;
+    }
+    .shelf-cover {
+      width: 46px;
+      height: 66px;
+      object-fit: cover;
+      border-radius: 6px;
+      background: #1f2937;
+    }
+    .shelf-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 3px;
+      line-height: 1.35;
+    }
+    .shelf-text {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-bottom: 4px;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+    .item-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .mini-btn {
+      border: 1px solid #374151;
+      border-radius: 7px;
+      background: #1e293b;
+      color: #e2e8f0;
+      font-size: 11px;
+      padding: 5px 8px;
+      cursor: pointer;
+    }
+    .mini-select, .mini-input {
+      border: 1px solid #334155;
+      border-radius: 7px;
+      background: #020617;
+      color: #e2e8f0;
+      font-size: 11px;
+      padding: 5px 7px;
+      min-height: 28px;
+    }
+    .mini-input { flex: 1; min-width: 120px; }
+    .empty {
+      padding: 18px 8px;
+      text-align: center;
+      color: #64748b;
+      font-size: 13px;
+    }
+
+    @media (max-width: 1020px) {
+      .search-row { grid-template-columns: 1fr; }
+      .shelves { grid-template-columns: 1fr; }
+      .shelf-list { max-height: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Book Log</h1>
+    <p class="subtitle">Search books by title, author, ISBN, or publisher. Select up to 2 books and add them to <strong>To Read</strong>, <strong>Reading</strong>, or <strong>Read</strong>. In Read list, add your star rating and one-line comment.</p>
+
+    <section class="panel">
+      <div class="search-row">
+        <select id="searchType" class="select" aria-label="Search type">
+          <option value="all">All Fields</option>
+          <option value="title">Title</option>
+          <option value="author">Author</option>
+          <option value="isbn">ISBN</option>
+          <option value="publisher">Publisher</option>
+        </select>
+        <input id="searchInput" class="input" type="text" placeholder="Search books..." />
+        <button id="searchBtn" class="btn" type="button">Search</button>
+      </div>
+
+      <div class="actions">
+        <button id="addToReadBtn" class="btn-secondary" type="button">Add to To Read</button>
+        <button id="addReadingBtn" class="btn-secondary" type="button">Add to Reading</button>
+        <button id="addReadBtn" class="btn-secondary" type="button">Add to Read</button>
+      </div>
+
+      <div id="status" class="status">Search to start. You can select up to 2 books per add action.</div>
+      <div id="results" class="results-grid"></div>
+    </section>
+
+    <section class="shelves">
+      <div class="shelf">
+        <h2>To Read</h2>
+        <input id="toReadSearch" class="input shelf-search" type="text" placeholder="Search To Read list..." />
+        <div id="toReadList" class="shelf-list"></div>
+      </div>
+
+      <div class="shelf">
+        <h2>Reading</h2>
+        <input id="readingSearch" class="input shelf-search" type="text" placeholder="Search Reading list..." />
+        <div id="readingList" class="shelf-list"></div>
+      </div>
+
+      <div class="shelf">
+        <h2>Read</h2>
+        <input id="readSearch" class="input shelf-search" type="text" placeholder="Search Read list..." />
+        <div id="readList" class="shelf-list"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'bookLogShelves';
+    const MAX_SELECT = 2;
+
+    const state = {
+      results: [],
+      selected: new Set(),
+      shelves: {
+        toRead: [],
+        reading: [],
+        read: []
+      },
+      shelfSearch: {
+        toRead: '',
+        reading: '',
+        read: ''
+      }
+    };
+
+    const searchTypeEl = document.getElementById('searchType');
+    const searchInputEl = document.getElementById('searchInput');
+    const searchBtnEl = document.getElementById('searchBtn');
+    const statusEl = document.getElementById('status');
+    const resultsEl = document.getElementById('results');
+
+    const addToReadBtn = document.getElementById('addToReadBtn');
+    const addReadingBtn = document.getElementById('addReadingBtn');
+    const addReadBtn = document.getElementById('addReadBtn');
+
+    const toReadSearchEl = document.getElementById('toReadSearch');
+    const readingSearchEl = document.getElementById('readingSearch');
+    const readSearchEl = document.getElementById('readSearch');
+
+    const toReadListEl = document.getElementById('toReadList');
+    const readingListEl = document.getElementById('readingList');
+    const readListEl = document.getElementById('readList');
+
+    function setStatus(message, type) {
+      statusEl.textContent = message;
+      statusEl.classList.remove('error', 'success');
+      if (type) statusEl.classList.add(type);
+    }
+
+    function loadShelves() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        if (!parsed || typeof parsed !== 'object') return;
+        ['toRead', 'reading', 'read'].forEach((key) => {
+          if (Array.isArray(parsed[key])) {
+            state.shelves[key] = parsed[key];
+          }
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    function saveShelves() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.shelves));
+    }
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function mapBook(item) {
+      const info = item.volumeInfo || {};
+      const title = info.title || 'Untitled';
+      const authors = Array.isArray(info.authors) ? info.authors.join(', ') : 'Unknown';
+      const publisher = info.publisher || 'Unknown';
+      const isbn = Array.isArray(info.industryIdentifiers)
+        ? (info.industryIdentifiers.find((id) => id.type === 'ISBN_13') || info.industryIdentifiers[0] || {}).identifier || '-'
+        : '-';
+      const image = (info.imageLinks && (info.imageLinks.thumbnail || info.imageLinks.smallThumbnail))
+        ? (info.imageLinks.thumbnail || info.imageLinks.smallThumbnail).replace('http://', 'https://')
+        : 'https://via.placeholder.com/70x100?text=Book';
+      const rating = typeof info.averageRating === 'number' ? info.averageRating : null;
+
+      return {
+        id: item.id,
+        title,
+        authors,
+        publisher,
+        isbn,
+        image,
+        apiRating: rating,
+        myRating: 0,
+        comment: ''
+      };
+    }
+
+    function resultMatchesSelectionLimit(nextChecked) {
+      if (nextChecked) return state.selected.size < MAX_SELECT;
+      return true;
+    }
+
+    function renderResults() {
+      if (state.results.length === 0) {
+        resultsEl.innerHTML = '<div class="empty">No books to show.</div>';
+        return;
+      }
+
+      resultsEl.innerHTML = state.results.map((book) => {
+        const checked = state.selected.has(book.id);
+        const apiRating = book.apiRating == null ? 'No rating' : `${book.apiRating.toFixed(1)} / 5`;
+        return `
+          <article class="book-card ${checked ? 'selected' : ''}">
+            <input class="pick" type="checkbox" data-id="${escapeHtml(book.id)}" ${checked ? 'checked' : ''} aria-label="Select ${escapeHtml(book.title)}">
+            <img class="cover" src="${escapeHtml(book.image)}" alt="${escapeHtml(book.title)} cover" loading="lazy">
+            <div>
+              <div class="meta-title">${escapeHtml(book.title)}</div>
+              <div class="meta-row">Author: ${escapeHtml(book.authors)}</div>
+              <div class="meta-row">Publisher: ${escapeHtml(book.publisher)}</div>
+              <div class="meta-row">ISBN: ${escapeHtml(book.isbn)}</div>
+              <div class="rating">API Rating: ${escapeHtml(apiRating)}</div>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      resultsEl.querySelectorAll('.pick').forEach((checkbox) => {
+        checkbox.addEventListener('change', (e) => {
+          const id = e.target.dataset.id;
+          const checked = e.target.checked;
+          if (!resultMatchesSelectionLimit(checked)) {
+            e.target.checked = false;
+            setStatus('You can select maximum 2 books at a time.', 'error');
+            return;
+          }
+          if (checked) state.selected.add(id);
+          else state.selected.delete(id);
+          renderResults();
+        });
+      });
+    }
+
+    function buildQuery(type, text) {
+      const q = text.trim();
+      if (!q) return '';
+      if (type === 'title') return `intitle:${q}`;
+      if (type === 'author') return `inauthor:${q}`;
+      if (type === 'isbn') return `isbn:${q}`;
+      if (type === 'publisher') return `inpublisher:${q}`;
+      return q;
+    }
+
+    async function searchBooks() {
+      const query = buildQuery(searchTypeEl.value, searchInputEl.value);
+      if (!query) {
+        setStatus('Enter search text first.', 'error');
+        return;
+      }
+      setStatus('Searching books...');
+      state.selected.clear();
+      try {
+        const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=20&printType=books`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Search failed');
+        const data = await res.json();
+        const items = Array.isArray(data.items) ? data.items : [];
+        state.results = items.map(mapBook);
+        renderResults();
+        if (state.results.length === 0) {
+          setStatus('No books found. Try different search terms.', 'error');
+        } else {
+          setStatus(`Found ${state.results.length} books. Select up to 2 and add to a list.`, 'success');
+        }
+      } catch (error) {
+        console.error(error);
+        state.results = [];
+        renderResults();
+        setStatus('Unable to fetch books right now. Please try again.', 'error');
+      }
+    }
+
+    function bookInAnyShelf(id) {
+      return ['toRead', 'reading', 'read'].some((listName) => state.shelves[listName].some((b) => b.id === id));
+    }
+
+    function cloneForShelf(book) {
+      return {
+        id: book.id,
+        title: book.title,
+        authors: book.authors,
+        publisher: book.publisher,
+        isbn: book.isbn,
+        image: book.image,
+        apiRating: book.apiRating,
+        myRating: 0,
+        comment: ''
+      };
+    }
+
+    function moveBooksToShelf(targetShelf) {
+      const selectedBooks = state.results.filter((b) => state.selected.has(b.id));
+      if (selectedBooks.length === 0) {
+        setStatus('Select one or two books first.', 'error');
+        return;
+      }
+      if (selectedBooks.length > MAX_SELECT) {
+        setStatus('Please select only one or two books.', 'error');
+        return;
+      }
+
+      let added = 0;
+      selectedBooks.forEach((book) => {
+        if (bookInAnyShelf(book.id)) {
+          ['toRead', 'reading', 'read'].forEach((name) => {
+            state.shelves[name] = state.shelves[name].filter((item) => item.id !== book.id);
+          });
+        }
+        const next = cloneForShelf(book);
+        if (targetShelf === 'read') {
+          next.myRating = 0;
+          next.comment = '';
+        }
+        state.shelves[targetShelf].unshift(next);
+        added += 1;
+      });
+
+      saveShelves();
+      renderShelves();
+      state.selected.clear();
+      renderResults();
+      setStatus(`${added} book(s) added to ${targetShelf === 'toRead' ? 'To Read' : targetShelf === 'reading' ? 'Reading' : 'Read'} list.`, 'success');
+    }
+
+    function removeFromShelf(shelfName, id) {
+      state.shelves[shelfName] = state.shelves[shelfName].filter((b) => b.id !== id);
+      saveShelves();
+      renderShelves();
+    }
+
+    function updateReadMeta(id, rating, comment) {
+      const index = state.shelves.read.findIndex((b) => b.id === id);
+      if (index === -1) return;
+      state.shelves.read[index].myRating = rating;
+      state.shelves.read[index].comment = comment.slice(0, 160);
+      saveShelves();
+    }
+
+    function shelfFilter(listName, item) {
+      const q = state.shelfSearch[listName].trim().toLowerCase();
+      if (!q) return true;
+      return (
+        item.title.toLowerCase().includes(q) ||
+        item.authors.toLowerCase().includes(q) ||
+        item.publisher.toLowerCase().includes(q) ||
+        String(item.isbn).toLowerCase().includes(q)
+      );
+    }
+
+    function renderShelf(listName, targetEl) {
+      const items = state.shelves[listName].filter((item) => shelfFilter(listName, item));
+      if (items.length === 0) {
+        targetEl.innerHTML = '<div class="empty">No books in this list.</div>';
+        return;
+      }
+
+      targetEl.innerHTML = items.map((item) => {
+        const apiRating = item.apiRating == null ? 'No API rating' : `API ${item.apiRating.toFixed(1)} / 5`;
+        const readControls = listName === 'read'
+          ? `
+            <div class="item-actions">
+              <label class="shelf-text" for="rate-${escapeHtml(item.id)}">My Rating</label>
+              <select id="rate-${escapeHtml(item.id)}" class="mini-select read-rating" data-id="${escapeHtml(item.id)}">
+                <option value="0" ${item.myRating === 0 ? 'selected' : ''}>0</option>
+                <option value="1" ${item.myRating === 1 ? 'selected' : ''}>1</option>
+                <option value="2" ${item.myRating === 2 ? 'selected' : ''}>2</option>
+                <option value="3" ${item.myRating === 3 ? 'selected' : ''}>3</option>
+                <option value="4" ${item.myRating === 4 ? 'selected' : ''}>4</option>
+                <option value="5" ${item.myRating === 5 ? 'selected' : ''}>5</option>
+              </select>
+            </div>
+            <div class="item-actions">
+              <input class="mini-input read-comment" data-id="${escapeHtml(item.id)}" type="text" maxlength="160" placeholder="One-line comment" value="${escapeHtml(item.comment || '')}">
+            </div>
+          `
+          : '';
+
+        return `
+          <article class="shelf-item">
+            <img class="shelf-cover" src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)} cover" loading="lazy">
+            <div>
+              <div class="shelf-title">${escapeHtml(item.title)}</div>
+              <div class="shelf-text">${escapeHtml(item.authors)}</div>
+              <div class="shelf-text">${escapeHtml(item.publisher)} • ISBN ${escapeHtml(item.isbn)}</div>
+              <div class="shelf-text">${escapeHtml(apiRating)}</div>
+              ${readControls}
+              <div class="item-actions">
+                <button class="mini-btn remove-book" data-list="${listName}" data-id="${escapeHtml(item.id)}" type="button">Remove</button>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      targetEl.querySelectorAll('.remove-book').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          removeFromShelf(btn.dataset.list, btn.dataset.id);
+        });
+      });
+
+      if (listName === 'read') {
+        targetEl.querySelectorAll('.read-rating').forEach((select) => {
+          select.addEventListener('change', (e) => {
+            const id = e.target.dataset.id;
+            const rating = Number(e.target.value) || 0;
+            const commentInput = targetEl.querySelector(`.read-comment[data-id="${CSS.escape(id)}"]`);
+            const comment = commentInput ? commentInput.value : '';
+            updateReadMeta(id, rating, comment);
+          });
+        });
+        targetEl.querySelectorAll('.read-comment').forEach((input) => {
+          input.addEventListener('input', (e) => {
+            const id = e.target.dataset.id;
+            const ratingSelect = targetEl.querySelector(`.read-rating[data-id="${CSS.escape(id)}"]`);
+            const rating = ratingSelect ? Number(ratingSelect.value) || 0 : 0;
+            updateReadMeta(id, rating, e.target.value);
+          });
+        });
+      }
+    }
+
+    function renderShelves() {
+      renderShelf('toRead', toReadListEl);
+      renderShelf('reading', readingListEl);
+      renderShelf('read', readListEl);
+    }
+
+    searchBtnEl.addEventListener('click', searchBooks);
+    searchInputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        searchBooks();
+      }
+    });
+
+    addToReadBtn.addEventListener('click', () => moveBooksToShelf('toRead'));
+    addReadingBtn.addEventListener('click', () => moveBooksToShelf('reading'));
+    addReadBtn.addEventListener('click', () => moveBooksToShelf('read'));
+
+    toReadSearchEl.addEventListener('input', (e) => {
+      state.shelfSearch.toRead = e.target.value;
+      renderShelves();
+    });
+    readingSearchEl.addEventListener('input', (e) => {
+      state.shelfSearch.reading = e.target.value;
+      renderShelves();
+    });
+    readSearchEl.addEventListener('input', (e) => {
+      state.shelfSearch.read = e.target.value;
+      renderShelves();
+    });
+
+    loadShelves();
+    renderShelves();
+    renderResults();
+  </script>
+</body>
+</html>
