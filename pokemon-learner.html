@@ -583,11 +583,12 @@
 
   <script>
     const POKEMON_API = 'https://pokeapi.co/api/v2';
-    const TOTAL_POKEMON = 1300;
+    const TOTAL_POKEMON = 1025;
     const ANNIVERSARY_IMAGE_TEMPLATE = 'https://www.pokemon.co.jp/ex/30th_logo/assets/img/download/{num}.png';
     const POKEMON_SPRITE_TEMPLATE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{num}.png';
     const POKEMON_ARTWORK_TEMPLATE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{num}.png';
     const IMAGE_THEME_KEY = 'pokemonLearnerImageTheme';
+    const POKEMON_CACHE_KEY = 'pokemonLearnerAllPokemonCache';
     const IMAGE_THEMES = {
       NORMAL: 'normal',
       ANNIVERSARY: '30th'
@@ -899,17 +900,52 @@
     }
     
     async function fetchAllPokemon() {
-      const response = await fetch(`${POKEMON_API}/pokemon?limit=${TOTAL_POKEMON}`);
-      const data = await response.json();
-      allPokemon = data.results
-        .map((p, i) => ({
-          name: p.name,
-          number: i + 1,
-          url: p.url
-        }))
-        .filter(p => !p.name.includes('-') && p.number <= 1025);
-      renderLeftList();
-      renderRightList();
+      try {
+        const response = await fetch(`${POKEMON_API}/pokemon?limit=${TOTAL_POKEMON}`);
+        if (!response.ok) throw new Error('Pokemon API request failed');
+        const data = await response.json();
+        allPokemon = data.results
+          .map((p, i) => ({
+            name: p.name,
+            number: i + 1,
+            url: p.url
+          }))
+          .filter(p => !p.name.includes('-') && p.number <= 1025);
+
+        localStorage.setItem(POKEMON_CACHE_KEY, JSON.stringify(allPokemon));
+        setTransferStatus('');
+        renderLeftList();
+        renderRightList();
+      } catch (error) {
+        const cached = localStorage.getItem(POKEMON_CACHE_KEY);
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              allPokemon = parsed;
+              setTransferStatus('Using cached Pokemon list (offline fallback).', true);
+              renderLeftList();
+              renderRightList();
+              return;
+            }
+          } catch (parseError) {
+            console.error(parseError);
+          }
+        }
+
+        allPokemon = Array.from({ length: 1025 }, (_, idx) => {
+          const number = idx + 1;
+          return {
+            name: `pokemon-${String(number).padStart(4, '0')}`,
+            number,
+            url: `${POKEMON_API}/pokemon/${number}`
+          };
+        });
+        setTransferStatus('Using offline fallback list. Details may load slower until network recovers.', true);
+        renderLeftList();
+        renderRightList();
+        console.error(error);
+      }
     }
     
     async function fetchPokemonDetails(url) {
