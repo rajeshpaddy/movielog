@@ -526,7 +526,7 @@
   <div class="app-container">
     <div class="pane left-pane">
       <div class="pane-title">Unlearned Pokemon</div>
-      <input type="text" class="search-box" id="leftSearch" placeholder="Search Pokemon...">
+      <input type="text" class="search-box" id="leftSearch" placeholder="Search Pokemon or region...">
       <div class="pokemon-list" id="leftList"></div>
     </div>
     
@@ -544,7 +544,7 @@
         <input type="file" id="importLearnedFile" accept="application/json" hidden>
       </div>
       <div class="transfer-status" id="transferStatus" aria-live="polite"></div>
-      <input type="text" class="search-box" id="rightSearch" placeholder="Search learned...">
+      <input type="text" class="search-box" id="rightSearch" placeholder="Search learned or region...">
       <div class="pokemon-list" id="rightList"></div>
     </div>
   </div>
@@ -696,6 +696,13 @@
       }
       return 'Other';
     }
+
+    function matchesPokemonSearch(pokemon, query) {
+      const normalizedQuery = query.trim().toLowerCase();
+      if (!normalizedQuery) return true;
+      const regionName = getRegion(pokemon.number).toLowerCase();
+      return pokemon.name.includes(normalizedQuery) || regionName.includes(normalizedQuery);
+    }
     
     function calculateStats() {
       const now = Date.now();
@@ -771,8 +778,10 @@
     }
     
     function renderLeftList() {
-      const query = leftSearch.value.toLowerCase();
-      const unlearned = allPokemon.filter(p => !learnedPokemon[p.number] && !failedPokemon.has(p.number) && p.name.includes(query));
+      const query = leftSearch.value;
+      const unlearned = allPokemon.filter(
+        p => !learnedPokemon[p.number] && !failedPokemon.has(p.number) && matchesPokemonSearch(p, query)
+      );
       
       leftList.innerHTML = unlearned.map((p, i) => `
         <div class="pokemon-item ${selectedPokemon?.number === p.number && !selectedFromRight ? 'selected' : ''} ${i === leftFocusedIndex ? 'focused' : ''}" data-number="${p.number}" data-index="${i}" tabindex="0">
@@ -790,8 +799,8 @@
     }
     
     function renderRightList() {
-      const query = rightSearch.value.toLowerCase();
-      const learned = allPokemon.filter(p => learnedPokemon[p.number] && p.name.includes(query));
+      const query = rightSearch.value;
+      const learned = allPokemon.filter(p => learnedPokemon[p.number] && matchesPokemonSearch(p, query));
       
       rightList.innerHTML = learned.map((p, i) => `
         <div class="pokemon-item ${selectedPokemon?.number === p.number && selectedFromRight ? 'selected' : ''} ${i === rightFocusedIndex ? 'focused' : ''}" data-number="${p.number}" data-index="${i}" tabindex="0">
