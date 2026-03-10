@@ -297,7 +297,8 @@
 
   <script>
     const STORAGE_KEY = 'ideaLogEntriesV1';
-    const SHARED_STORE_BASE = 'https://www.jsonstore.io';
+    const SHARED_STORE_BASE = 'https://kvdb.io';
+    const SHARED_BUCKET_ID = '8f6f4f9a-2e10-4d6f-9f52-b5f3996e7c11';
     const STATES = {
       EXPERIMENTING: 'experimenting',
       DISCARDED: 'discarded',
@@ -518,11 +519,20 @@
         setStatus('Keyword is required.', true);
         return null;
       }
-      return keyword.replaceAll(/\s+/g, '-').replaceAll(/[^a-z0-9-_]/g, '');
+      const normalized = keyword.replaceAll(/\s+/g, '-').replaceAll(/[^a-z0-9-_]/g, '');
+      if (!normalized) {
+        setStatus('Keyword must include letters or numbers.', true);
+        return null;
+      }
+      return normalized;
     }
 
     function getSharedKey(keyword) {
       return `idea-log-${keyword}`;
+    }
+
+    function getSharedUrlForKey(key) {
+      return `${SHARED_STORE_BASE}/${SHARED_BUCKET_ID}/${encodeURIComponent(key)}`;
     }
 
     async function exportIdeasShared() {
@@ -536,14 +546,17 @@
         ideas
       };
       const key = getSharedKey(keyword);
-      const sharedUrl = `${SHARED_STORE_BASE}/${encodeURIComponent(key)}`;
+      const sharedUrl = getSharedUrlForKey(key);
       try {
         const response = await fetch(sharedUrl, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        if (!response.ok) throw new Error(`Shared export failed (${response.status})`);
+        if (!response.ok) {
+          const detail = await response.text().catch(() => '');
+          throw new Error(`Shared export failed (${response.status})${detail ? `: ${detail}` : ''}`);
+        }
         setStatus(`Shared export completed with keyword "${keyword}".`, false);
         setSharedLink(sharedUrl);
       } catch (error) {
@@ -564,11 +577,15 @@
       const keyword = promptKeyword('Import from shared storage');
       if (!keyword) return;
       const key = getSharedKey(keyword);
-      const sharedUrl = `${SHARED_STORE_BASE}/${encodeURIComponent(key)}`;
+      const sharedUrl = getSharedUrlForKey(key);
       try {
         const response = await fetch(sharedUrl);
-        if (!response.ok) throw new Error(`No shared data found for keyword "${keyword}".`);
-        const parsed = await response.json();
+        if (!response.ok) {
+          const detail = await response.text().catch(() => '');
+          throw new Error(`No shared data found for keyword "${keyword}" (${response.status})${detail ? `: ${detail}` : ''}`);
+        }
+        const rawText = await response.text();
+        const parsed = JSON.parse(rawText);
         const payload = extractSharedPayload(parsed);
         if (!payload || !Array.isArray(payload.ideas)) {
           throw new Error('Shared data format is invalid.');
