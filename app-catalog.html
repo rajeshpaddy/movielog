@@ -272,7 +272,7 @@
       const minutesSinceUpdate = Number.isFinite(lastUpdatedAt) && !Number.isNaN(lastUpdatedAt) && now >= lastUpdatedAt
         ? Math.floor((now - lastUpdatedAt) / (60 * 1000))
         : '-';
-      stats.push({ label: 'Mins Since Update', value: minutesSinceUpdate });
+      stats.push({ label: 'Minutes since last update', value: minutesSinceUpdate });
 
       catalogStats.innerHTML = stats.map(stat => `
         <div class="catalog-stat">
