@@ -459,7 +459,7 @@
           throw new Error(`Shared export failed (${response.status})${responseText ? `: ${responseText}` : ''}`);
         }
         const sharedUrl = `${SETGET_GET_BASE}/${encodeURIComponent(key)}`;
-        setSharedLink(sharedUrl);
+        setSharedLink('');
         setStatus(`Shared export complete for keyword "${keyword}".`, false);
       } catch (error) {
         setStatus(error.message || 'Shared export failed.', true);
