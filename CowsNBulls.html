@@ -173,14 +173,14 @@
       align-items: center;
       flex-wrap: wrap;
     }
-    .machine-feedback input {
-      width: 80px;
-      border: 1px solid #475569;
+    .machine-feedback-badge {
+      border: 1px solid #334155;
+      border-radius: 999px;
       background: #0b1220;
-      color: #fff;
-      border-radius: 8px;
-      padding: 8px;
-      font-size: 14px;
+      color: #e2e8f0;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 700;
     }
     .guess-input {
       flex: 1;
@@ -364,16 +364,14 @@
 
       <div id="machineSection" class="machine-section">
         <div class="machine-setup">
-          <input id="machineSecretInput" class="machine-secret" type="password" inputmode="numeric" maxlength="4" placeholder="Your hidden 4-digit number">
+          <input id="machineSecretInput" class="machine-secret" type="text" inputmode="numeric" maxlength="4" placeholder="Your 4-digit number">
           <button id="machineStartBtn" class="btn-secondary" type="button">Start Machine Game</button>
         </div>
         <div class="machine-turn">
           <div class="machine-guess">Machine Guess: <span id="machineGuessValue" class="machine-guess-code">----</span></div>
           <div class="machine-feedback">
-            <label for="machineBulls">Bulls</label>
-            <input id="machineBulls" type="number" min="0" max="4" value="0">
-            <label for="machineCows">Cows</label>
-            <input id="machineCows" type="number" min="0" max="4" value="0">
+            <span id="machineBullsValue" class="machine-feedback-badge">Bulls: 0</span>
+            <span id="machineCowsValue" class="machine-feedback-badge">Cows: 0</span>
             <button id="machineNextBtn" class="btn" type="button">Next Turn</button>
           </div>
         </div>
@@ -444,6 +442,9 @@
     let machineStarted = false;
     let machineCandidates = [];
     let machineCurrentGuess = '';
+    let machineSecret = '';
+    let machineCurrentBulls = 0;
+    let machineCurrentCows = 0;
 
     const statusEl = document.getElementById('status');
     const modeSwitch = document.getElementById('modeSwitch');
@@ -455,8 +456,8 @@
     const machineSecretInput = document.getElementById('machineSecretInput');
     const machineStartBtn = document.getElementById('machineStartBtn');
     const machineGuessValue = document.getElementById('machineGuessValue');
-    const machineBulls = document.getElementById('machineBulls');
-    const machineCows = document.getElementById('machineCows');
+    const machineBullsValue = document.getElementById('machineBullsValue');
+    const machineCowsValue = document.getElementById('machineCowsValue');
     const machineNextBtn = document.getElementById('machineNextBtn');
     const newGameBtn = document.getElementById('newGameBtn');
     const attemptNote = document.getElementById('attemptNote');
@@ -652,9 +653,12 @@
     }
 
     function setMachineControlsEnabled(enabled) {
-      machineBulls.disabled = !enabled;
-      machineCows.disabled = !enabled;
       machineNextBtn.disabled = !enabled;
+    }
+
+    function updateMachineFeedbackDisplay() {
+      machineBullsValue.textContent = `Bulls: ${machineCurrentBulls}`;
+      machineCowsValue.textContent = `Cows: ${machineCurrentCows}`;
     }
 
     function updateMachineGuessDisplay() {
@@ -668,6 +672,9 @@
       machineStarted = false;
       machineCandidates = [];
       machineCurrentGuess = '';
+      machineSecret = '';
+      machineCurrentBulls = 0;
+      machineCurrentCows = 0;
       gameMode = MODE_MACHINE;
       modeSwitch.checked = true;
       modeHint.textContent = 'Machine guesses your hidden number.';
@@ -675,12 +682,11 @@
       machineSection.style.display = 'block';
       setMachineControlsEnabled(false);
       machineSecretInput.value = '';
-      machineBulls.value = '0';
-      machineCows.value = '0';
       updateMachineGuessDisplay();
+      updateMachineFeedbackDisplay();
       updateAttemptNote();
       renderTurns();
-      setStatus('Machine Guess mode: Enter your hidden 4-digit number and click Start Machine Game.');
+      setStatus('Machine Guess mode: Enter your 4-digit number and click Start Machine Game.');
       machineSecretInput.focus();
     }
 
@@ -695,27 +701,24 @@
       turns = [];
       gameOver = false;
       machineStarted = true;
+      machineSecret = valid.value;
       machineCandidates = getAllValidNumbers();
       machineCurrentGuess = machineCandidates[0];
+      const firstResult = evaluateGuess(machineCurrentGuess, machineSecret);
+      machineCurrentBulls = firstResult.bulls;
+      machineCurrentCows = firstResult.cows;
       updateMachineGuessDisplay();
+      updateMachineFeedbackDisplay();
       setMachineControlsEnabled(true);
-      machineBulls.value = '0';
-      machineCows.value = '0';
       updateAttemptNote();
       renderTurns();
-      setStatus(`Machine Turn 1 guess is ${machineCurrentGuess}. Enter Bulls/Cows feedback and click Next Turn.`);
-      machineBulls.focus();
+      setStatus(`Machine Turn 1 guess is ${machineCurrentGuess}. Bulls: ${machineCurrentBulls}, Cows: ${machineCurrentCows}. Press Next Turn.`);
     }
 
     function handleMachineNextTurn() {
       if (gameMode !== MODE_MACHINE || !machineStarted || gameOver) return;
-
-      const bulls = Number(machineBulls.value);
-      const cows = Number(machineCows.value);
-      if (!Number.isInteger(bulls) || !Number.isInteger(cows) || bulls < 0 || cows < 0 || bulls > 4 || cows > 4 || bulls + cows > 4) {
-        setStatus('Feedback must be valid integers where Bulls + Cows <= 4.', 'loss');
-        return;
-      }
+      const bulls = machineCurrentBulls;
+      const cows = machineCurrentCows;
 
       attempts += 1;
       machineCandidates = machineCandidates.filter(candidate => {
@@ -757,11 +760,12 @@
       }
 
       machineCurrentGuess = machineCandidates[0];
+      const nextResult = evaluateGuess(machineCurrentGuess, machineSecret);
+      machineCurrentBulls = nextResult.bulls;
+      machineCurrentCows = nextResult.cows;
       updateMachineGuessDisplay();
-      machineBulls.value = '0';
-      machineCows.value = '0';
-      setStatus(`Machine Turn ${attempts + 1} guess is ${machineCurrentGuess}. Enter Bulls/Cows and click Next Turn.`);
-      machineBulls.focus();
+      updateMachineFeedbackDisplay();
+      setStatus(`Machine Turn ${attempts + 1} guess is ${machineCurrentGuess}. Bulls: ${machineCurrentBulls}, Cows: ${machineCurrentCows}. Press Next Turn.`);
     }
 
     function handleGuessSubmit(event) {

@@ -31,6 +31,25 @@
       padding: 14px;
       margin-bottom: 16px;
     }
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .panel-title {
+      color: #93c5fd;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .panel-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .panel-body { display: block; }
+    .panel.collapsed .panel-body { display: none; }
     .search-row {
       display: grid;
       grid-template-columns: 170px 1fr 140px;
@@ -213,7 +232,7 @@
       padding: 5px 8px;
       cursor: pointer;
     }
-    .mini-select, .mini-input {
+    .mini-input {
       border: 1px solid #334155;
       border-radius: 7px;
       background: #020617;
@@ -223,6 +242,26 @@
       min-height: 28px;
     }
     .mini-input { flex: 1; min-width: 120px; }
+    .star-row {
+      display: inline-flex;
+      gap: 2px;
+      align-items: center;
+    }
+    .star-btn {
+      border: none;
+      background: transparent;
+      color: #475569;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 2px;
+    }
+    .star-btn.active { color: #fbbf24; }
+    .star-label {
+      color: #94a3b8;
+      font-size: 11px;
+      margin-right: 4px;
+    }
     .empty {
       padding: 18px 8px;
       text-align: center;
@@ -243,26 +282,35 @@
     <p class="subtitle">Search books by title, author, ISBN, or publisher. Select up to 2 books and add them to <strong>To Read</strong>, <strong>Reading</strong>, or <strong>Read</strong>. In Read list, add your star rating and one-line comment.</p>
 
     <section class="panel">
-      <div class="search-row">
-        <select id="searchType" class="select" aria-label="Search type">
-          <option value="all">All Fields</option>
-          <option value="title">Title</option>
-          <option value="author">Author</option>
-          <option value="isbn">ISBN</option>
-          <option value="publisher">Publisher</option>
-        </select>
-        <input id="searchInput" class="input" type="text" placeholder="Search books..." />
-        <button id="searchBtn" class="btn" type="button">Search</button>
+      <div class="panel-head">
+        <div class="panel-title">Book Search</div>
+        <div class="panel-actions">
+          <button id="clearSearchBtn" class="btn-secondary" type="button">Clear Search</button>
+          <button id="toggleSearchPaneBtn" class="btn-secondary" type="button">Collapse Search</button>
+        </div>
       </div>
+      <div id="searchPanelBody" class="panel-body">
+        <div class="search-row">
+          <select id="searchType" class="select" aria-label="Search type">
+            <option value="all">All Fields</option>
+            <option value="title">Title</option>
+            <option value="author">Author</option>
+            <option value="isbn">ISBN</option>
+            <option value="publisher">Publisher</option>
+          </select>
+          <input id="searchInput" class="input" type="text" placeholder="Search books..." />
+          <button id="searchBtn" class="btn" type="button">Search</button>
+        </div>
 
-      <div class="actions">
-        <button id="addToReadBtn" class="btn-secondary" type="button">Add to To Read</button>
-        <button id="addReadingBtn" class="btn-secondary" type="button">Add to Reading</button>
-        <button id="addReadBtn" class="btn-secondary" type="button">Add to Read</button>
+        <div class="actions">
+          <button id="addToReadBtn" class="btn-secondary" type="button">Add to To Read</button>
+          <button id="addReadingBtn" class="btn-secondary" type="button">Add to Reading</button>
+          <button id="addReadBtn" class="btn-secondary" type="button">Add to Read</button>
+        </div>
+
+        <div id="status" class="status">Search to start. You can select up to 2 books per add action.</div>
+        <div id="results" class="results-grid"></div>
       </div>
-
-      <div id="status" class="status">Search to start. You can select up to 2 books per add action.</div>
-      <div id="results" class="results-grid"></div>
     </section>
 
     <section class="shelves">
@@ -308,6 +356,10 @@
     const searchTypeEl = document.getElementById('searchType');
     const searchInputEl = document.getElementById('searchInput');
     const searchBtnEl = document.getElementById('searchBtn');
+    const clearSearchBtnEl = document.getElementById('clearSearchBtn');
+    const toggleSearchPaneBtnEl = document.getElementById('toggleSearchPaneBtn');
+    const searchPanelBodyEl = document.getElementById('searchPanelBody');
+    const searchPanelEl = searchPanelBodyEl ? searchPanelBodyEl.closest('.panel') : null;
     const statusEl = document.getElementById('status');
     const resultsEl = document.getElementById('results');
 
@@ -425,6 +477,20 @@
           renderResults();
         });
       });
+    }
+
+    function clearSearchResults() {
+      searchInputEl.value = '';
+      state.results = [];
+      state.selected.clear();
+      renderResults();
+      setStatus('Search cleared. Your shelf lists stay unchanged.', 'success');
+    }
+
+    function setSearchPanelCollapsed(collapsed) {
+      if (!searchPanelEl) return;
+      searchPanelEl.classList.toggle('collapsed', collapsed);
+      toggleSearchPaneBtnEl.textContent = collapsed ? 'Expand Search' : 'Collapse Search';
     }
 
     function buildQuery(type, text) {
@@ -555,15 +621,14 @@
         const readControls = listName === 'read'
           ? `
             <div class="item-actions">
-              <label class="shelf-text" for="rate-${escapeHtml(item.id)}">My Rating</label>
-              <select id="rate-${escapeHtml(item.id)}" class="mini-select read-rating" data-id="${escapeHtml(item.id)}">
-                <option value="0" ${item.myRating === 0 ? 'selected' : ''}>0</option>
-                <option value="1" ${item.myRating === 1 ? 'selected' : ''}>1</option>
-                <option value="2" ${item.myRating === 2 ? 'selected' : ''}>2</option>
-                <option value="3" ${item.myRating === 3 ? 'selected' : ''}>3</option>
-                <option value="4" ${item.myRating === 4 ? 'selected' : ''}>4</option>
-                <option value="5" ${item.myRating === 5 ? 'selected' : ''}>5</option>
-              </select>
+              <span class="star-label">My Rating</span>
+              <div class="star-row">
+                <button class="star-btn read-star ${item.myRating >= 1 ? 'active' : ''}" data-id="${escapeHtml(item.id)}" data-value="1" type="button">★</button>
+                <button class="star-btn read-star ${item.myRating >= 2 ? 'active' : ''}" data-id="${escapeHtml(item.id)}" data-value="2" type="button">★</button>
+                <button class="star-btn read-star ${item.myRating >= 3 ? 'active' : ''}" data-id="${escapeHtml(item.id)}" data-value="3" type="button">★</button>
+                <button class="star-btn read-star ${item.myRating >= 4 ? 'active' : ''}" data-id="${escapeHtml(item.id)}" data-value="4" type="button">★</button>
+                <button class="star-btn read-star ${item.myRating >= 5 ? 'active' : ''}" data-id="${escapeHtml(item.id)}" data-value="5" type="button">★</button>
+              </div>
             </div>
             <div class="item-actions">
               <input class="mini-input read-comment" data-id="${escapeHtml(item.id)}" type="text" maxlength="160" placeholder="One-line comment" value="${escapeHtml(item.comment || '')}">
@@ -595,20 +660,21 @@
       });
 
       if (listName === 'read') {
-        targetEl.querySelectorAll('.read-rating').forEach((select) => {
-          select.addEventListener('change', (e) => {
-            const id = e.target.dataset.id;
-            const rating = Number(e.target.value) || 0;
+        targetEl.querySelectorAll('.read-star').forEach((starBtn) => {
+          starBtn.addEventListener('click', (e) => {
+            const id = e.currentTarget.dataset.id;
+            const rating = Number(e.currentTarget.dataset.value) || 0;
             const commentInput = targetEl.querySelector(`.read-comment[data-id="${CSS.escape(id)}"]`);
             const comment = commentInput ? commentInput.value : '';
             updateReadMeta(id, rating, comment);
+            renderShelves();
           });
         });
         targetEl.querySelectorAll('.read-comment').forEach((input) => {
           input.addEventListener('input', (e) => {
             const id = e.target.dataset.id;
-            const ratingSelect = targetEl.querySelector(`.read-rating[data-id="${CSS.escape(id)}"]`);
-            const rating = ratingSelect ? Number(ratingSelect.value) || 0 : 0;
+            const rowStars = targetEl.querySelectorAll(`.read-star[data-id="${CSS.escape(id)}"]`);
+            const rating = rowStars.length ? Math.max(...Array.from(rowStars).filter((b) => b.classList.contains('active')).map((b) => Number(b.dataset.value) || 0), 0) : 0;
             updateReadMeta(id, rating, e.target.value);
           });
         });
@@ -622,6 +688,11 @@
     }
 
     searchBtnEl.addEventListener('click', searchBooks);
+    clearSearchBtnEl.addEventListener('click', clearSearchResults);
+    toggleSearchPaneBtnEl.addEventListener('click', () => {
+      const nextCollapsed = !searchPanelEl.classList.contains('collapsed');
+      setSearchPanelCollapsed(nextCollapsed);
+    });
     searchInputEl.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -649,6 +720,7 @@
     loadShelves();
     renderShelves();
     renderResults();
+    setSearchPanelCollapsed(false);
   </script>
 </body>
 </html>
