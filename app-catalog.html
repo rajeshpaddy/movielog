@@ -10,6 +10,23 @@
     .container { max-width: 800px; margin: 0 auto; }
     h1 { text-align: center; margin-bottom: 10px; color: #00d9ff; }
     .subtitle { text-align: center; color: #888; margin-bottom: 30px; }
+    .video-tile {
+      display: block;
+      background: linear-gradient(135deg, #0f3460, #16213e);
+      border: 1px solid #00d9ff;
+      border-radius: 15px;
+      padding: 18px 20px;
+      margin-bottom: 18px;
+      text-decoration: none;
+      color: #fff;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .video-tile:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(0, 217, 255, 0.2);
+    }
+    .video-tile-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .video-tile-desc { font-size: 14px; color: #b6dfff; }
     .app-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
     .app-card { background: #16213e; border-radius: 15px; padding: 25px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; text-align: center; }
     .app-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0, 217, 255, 0.2); }
@@ -33,6 +50,11 @@
   <div class="container">
     <h1>📱 App Catalog</h1>
     <p class="subtitle">Your personal app collection, all data is saved in your browsers local storage and no data leaves your device.</p>
+
+    <a class="video-tile" href="https://rajeshpaddy.github.io/movielog/demo-video/ai-app-catalog-documentary-demo.mp4" target="_blank" rel="noopener noreferrer">
+      <div class="video-tile-title">🎬 Documentary Demo Video</div>
+      <div class="video-tile-desc">Watch a full under-5-minute guided tour of all apps in this catalog.</div>
+    </a>
     
     <div class="search-container">
       <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search apps...">
