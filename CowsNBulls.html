@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CowsNBulls</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #111827;
+      color: #e5e7eb;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .app {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.35fr 0.75fr;
+      gap: 18px;
+    }
+    .panel {
+      background: #1f2937;
+      border: 1px solid #374151;
+      border-radius: 16px;
+      padding: 18px;
+    }
+    .title {
+      font-size: 32px;
+      font-weight: 700;
+      color: #fbbf24;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: #9ca3af;
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+    .rules {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .rule {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 13px;
+      color: #cbd5e1;
+      line-height: 1.4;
+    }
+    .rule strong { color: #fbbf24; }
+    .status {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 14px;
+      margin-bottom: 12px;
+      color: #d1d5db;
+      min-height: 44px;
+      line-height: 1.4;
+    }
+    .status.win { border-color: #16a34a; color: #bbf7d0; }
+    .status.loss { border-color: #dc2626; color: #fecaca; }
+    .guess-form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .guess-input {
+      flex: 1;
+      border: 1px solid #fbbf24;
+      background: #0b1220;
+      color: #fff;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 26px;
+      letter-spacing: 8px;
+      text-align: center;
+      outline: none;
+    }
+    .guess-input:focus {
+      box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.35);
+    }
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 0 16px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #111827;
+      background: #fbbf24;
+      min-width: 120px;
+    }
+    .btn:hover { filter: brightness(1.05); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .btn-secondary {
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px solid #475569;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .attempt-note {
+      color: #9ca3af;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+    .table-wrap {
+      border: 1px solid #334155;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #0f172a;
+      min-height: 260px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid #1f2937;
+    }
+    th {
+      background: #111827;
+      color: #fbbf24;
+      font-weight: 700;
+    }
+    tr:last-child td { border-bottom: none; }
+    .empty {
+      padding: 22px;
+      color: #9ca3af;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .score-title {
+      font-size: 22px;
+      color: #fbbf24;
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+    .score-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .stat-card {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 10px;
+    }
+    .stat-label {
+      color: #94a3b8;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .stat-value {
+      margin-top: 2px;
+      font-size: 20px;
+      color: #f8fafc;
+      font-weight: 700;
+    }
+    .history-wrap {
+      border: 1px solid #334155;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #0f172a;
+      max-height: 520px;
+      overflow-y: auto;
+    }
+    .history-item {
+      border-bottom: 1px solid #1f2937;
+      padding: 10px 12px;
+    }
+    .history-item:last-child { border-bottom: none; }
+    .history-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    .history-date { color: #cbd5e1; }
+    .history-result {
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+    }
+    .history-result.win { background: rgba(22, 163, 74, 0.2); color: #86efac; }
+    .history-result.loss { background: rgba(220, 38, 38, 0.2); color: #fca5a5; }
+    .history-meta { color: #94a3b8; font-size: 12px; }
+
+    @media (max-width: 960px) {
+      .app { grid-template-columns: 1fr; }
+      .rules { grid-template-columns: 1fr; }
+      .guess-form { flex-direction: column; }
+      .btn { min-height: 46px; }
+      .guess-input { letter-spacing: 6px; }
+      .history-wrap { max-height: 360px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="panel">
+      <h1 class="title">CowsNBulls</h1>
+      <p class="subtitle">Guess the secret 4-digit number. Every turn tells you how many <strong>Bulls</strong> and <strong>Cows</strong> you got.</p>
+
+      <div class="rules">
+        <div class="rule"><strong>1 Bull</strong><br>Right digit in the exact position.</div>
+        <div class="rule"><strong>1 Cow</strong><br>Right digit but in the wrong position.</div>
+        <div class="rule"><strong>Win / Reset</strong><br>Get 4 Bulls to win. After 10 tries, answer is revealed.</div>
+      </div>
+
+      <div id="status" class="status">New game started. Enter a 4-digit guess.</div>
+
+      <form id="guessForm" class="guess-form" autocomplete="off">
+        <input id="guessInput" class="guess-input" type="text" inputmode="numeric" maxlength="4" placeholder="1234" aria-label="4 digit guess">
+        <button id="guessBtn" class="btn" type="submit">Submit Guess</button>
+      </form>
+
+      <div class="controls">
+        <button id="newGameBtn" class="btn-secondary" type="button">New Game</button>
+      </div>
+
+      <div id="attemptNote" class="attempt-note">Attempts: 0 / 10</div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 80px;">Turn</th>
+              <th style="width: 120px;">Guess</th>
+              <th style="width: 100px;">Bulls</th>
+              <th style="width: 100px;">Cows</th>
+            </tr>
+          </thead>
+          <tbody id="historyTable"></tbody>
+        </table>
+        <div id="emptyTurns" class="empty">No guesses yet. Start guessing.</div>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <h2 class="score-title">Score Card</h2>
+
+      <div class="score-stats">
+        <div class="stat-card">
+          <div class="stat-label">Games</div>
+          <div id="gamesCount" class="stat-value">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Wins</div>
+          <div id="winsCount" class="stat-value">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Losses</div>
+          <div id="lossesCount" class="stat-value">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Best Win</div>
+          <div id="bestCount" class="stat-value">-</div>
+        </div>
+      </div>
+
+      <div id="scoreHistory" class="history-wrap">
+        <div class="empty">No completed games yet.</div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    const MAX_ATTEMPTS = 10;
+    const SCORE_KEY = 'cowsNBullsScoreHistory';
+
+    let secret = '';
+    let attempts = 0;
+    let turns = [];
+    let gameOver = false;
+
+    const statusEl = document.getElementById('status');
+    const guessForm = document.getElementById('guessForm');
+    const guessInput = document.getElementById('guessInput');
+    const guessBtn = document.getElementById('guessBtn');
+    const newGameBtn = document.getElementById('newGameBtn');
+    const attemptNote = document.getElementById('attemptNote');
+    const historyTable = document.getElementById('historyTable');
+    const emptyTurns = document.getElementById('emptyTurns');
+
+    const gamesCount = document.getElementById('gamesCount');
+    const winsCount = document.getElementById('winsCount');
+    const lossesCount = document.getElementById('lossesCount');
+    const bestCount = document.getElementById('bestCount');
+    const scoreHistory = document.getElementById('scoreHistory');
+
+    function generateSecret() {
+      const digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+      for (let i = digits.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = digits[i];
+        digits[i] = digits[j];
+        digits[j] = temp;
+      }
+      if (digits[0] === '0') {
+        const swapIdx = digits.findIndex(d => d !== '0');
+        const temp = digits[0];
+        digits[0] = digits[swapIdx];
+        digits[swapIdx] = temp;
+      }
+      return digits.slice(0, 4).join('');
+    }
+
+    function getScores() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(SCORE_KEY) || '[]');
+        if (!Array.isArray(parsed)) return [];
+        return parsed;
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function saveScores(scores) {
+      localStorage.setItem(SCORE_KEY, JSON.stringify(scores));
+    }
+
+    function addScore(result, usedAttempts, answer) {
+      const scores = getScores();
+      scores.unshift({
+        result,
+        attempts: usedAttempts,
+        answer,
+        playedAt: new Date().toISOString()
+      });
+      saveScores(scores.slice(0, 100));
+      renderScoreCard();
+    }
+
+    function formatDate(iso) {
+      const d = new Date(iso);
+      return d.toLocaleString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function renderScoreCard() {
+      const scores = getScores();
+      const wins = scores.filter(s => s.result === 'WIN');
+      const losses = scores.filter(s => s.result === 'LOSS');
+      const best = wins.length > 0 ? Math.min(...wins.map(s => s.attempts)) : null;
+
+      gamesCount.textContent = String(scores.length);
+      winsCount.textContent = String(wins.length);
+      lossesCount.textContent = String(losses.length);
+      bestCount.textContent = best == null ? '-' : String(best);
+
+      if (scores.length === 0) {
+        scoreHistory.innerHTML = '<div class="empty">No completed games yet.</div>';
+        return;
+      }
+
+      scoreHistory.innerHTML = scores.map(score => {
+        const resultClass = score.result === 'WIN' ? 'win' : 'loss';
+        const resultText = score.result === 'WIN' ? 'Winner' : 'Try Again';
+        return `
+          <div class="history-item">
+            <div class="history-top">
+              <span class="history-date">${formatDate(score.playedAt)}</span>
+              <span class="history-result ${resultClass}">${resultText}</span>
+            </div>
+            <div class="history-meta">Attempts: ${score.attempts} / ${MAX_ATTEMPTS} • Answer: ${score.answer}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function setStatus(message, type) {
+      statusEl.textContent = message;
+      statusEl.classList.remove('win', 'loss');
+      if (type === 'win') statusEl.classList.add('win');
+      if (type === 'loss') statusEl.classList.add('loss');
+    }
+
+    function updateAttemptNote() {
+      attemptNote.textContent = `Attempts: ${attempts} / ${MAX_ATTEMPTS}`;
+    }
+
+    function renderTurns() {
+      if (turns.length === 0) {
+        historyTable.innerHTML = '';
+        emptyTurns.style.display = 'block';
+        return;
+      }
+      emptyTurns.style.display = 'none';
+      historyTable.innerHTML = turns.map(turn => `
+        <tr>
+          <td>${turn.turn}</td>
+          <td>${turn.guess}</td>
+          <td>${turn.bulls}</td>
+          <td>${turn.cows}</td>
+        </tr>
+      `).join('');
+    }
+
+    function setGameInputEnabled(enabled) {
+      guessInput.disabled = !enabled;
+      guessBtn.disabled = !enabled;
+    }
+
+    function startNewGame() {
+      secret = generateSecret();
+      attempts = 0;
+      turns = [];
+      gameOver = false;
+      setStatus('New game started. Enter a 4-digit guess.');
+      updateAttemptNote();
+      renderTurns();
+      setGameInputEnabled(true);
+      guessInput.value = '';
+      guessInput.focus();
+    }
+
+    function evaluateGuess(guess) {
+      let bulls = 0;
+      let cows = 0;
+      for (let i = 0; i < 4; i += 1) {
+        if (guess[i] === secret[i]) {
+          bulls += 1;
+        } else if (secret.includes(guess[i])) {
+          cows += 1;
+        }
+      }
+      return { bulls, cows };
+    }
+
+    function handleGuessSubmit(event) {
+      event.preventDefault();
+      if (gameOver) return;
+
+      const raw = guessInput.value.trim();
+      if (!/^\d{4}$/.test(raw)) {
+        setStatus('Enter exactly 4 digits.', 'loss');
+        return;
+      }
+      if (raw[0] === '0') {
+        setStatus('First digit cannot be 0.', 'loss');
+        return;
+      }
+      if (new Set(raw.split('')).size !== 4) {
+        setStatus('Use 4 different digits (no repeats).', 'loss');
+        return;
+      }
+
+      attempts += 1;
+      const result = evaluateGuess(raw);
+      turns.unshift({
+        turn: attempts,
+        guess: raw,
+        bulls: result.bulls,
+        cows: result.cows
+      });
+
+      renderTurns();
+      updateAttemptNote();
+
+      if (result.bulls === 4) {
+        gameOver = true;
+        setGameInputEnabled(false);
+        setStatus(`You are a winner! You cracked ${secret} in ${attempts} attempts.`, 'win');
+        addScore('WIN', attempts, secret);
+        return;
+      }
+
+      if (attempts >= MAX_ATTEMPTS) {
+        gameOver = true;
+        setGameInputEnabled(false);
+        setStatus(`No more attempts left. The number was ${secret}. Try again with a new game.`, 'loss');
+        addScore('LOSS', attempts, secret);
+        return;
+      }
+
+      setStatus(`Turn ${attempts}: ${result.bulls} Bull(s), ${result.cows} Cow(s). Keep guessing.`);
+      guessInput.value = '';
+      guessInput.focus();
+    }
+
+    guessForm.addEventListener('submit', handleGuessSubmit);
+    newGameBtn.addEventListener('click', startNewGame);
+
+    renderScoreCard();
+    startNewGame();
+  </script>
+</body>
+</html>
