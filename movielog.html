@@ -963,7 +963,39 @@
     </div>
 
     <script>
-        let movies = JSON.parse(localStorage.getItem('movielog_movies') || '[]');
+        function safeStorageGet(key) {
+            try {
+                return localStorage.getItem(key);
+            } catch (error) {
+                console.warn('Storage read failed for', key, error);
+                return null;
+            }
+        }
+
+        function safeStorageSet(key, value) {
+            try {
+                localStorage.setItem(key, value);
+                return true;
+            } catch (error) {
+                console.warn('Storage write failed for', key, error);
+                return false;
+            }
+        }
+
+        function loadMoviesFromStorage() {
+            const saved = safeStorageGet('movielog_movies');
+            if (!saved) return [];
+            try {
+                const parsed = JSON.parse(saved);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (error) {
+                console.warn('Invalid movielog_movies JSON. Resetting to empty list.');
+                safeStorageSet('movielog_movies', '[]');
+                return [];
+            }
+        }
+
+        let movies = loadMoviesFromStorage();
         let selectedRating = 0;
         let selectedMovie = null;
         let autocompleteTimeout = null;
@@ -986,7 +1018,7 @@
         watchDateInput.valueAsDate = new Date();
 
         function saveMovies() {
-            localStorage.setItem('movielog_movies', JSON.stringify(movies));
+            safeStorageSet('movielog_movies', JSON.stringify(movies));
         }
 
         async function fetchAutocompleteSuggestions(query) {
