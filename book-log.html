@@ -279,7 +279,7 @@
 <body>
   <div class="container">
     <h1>Book Log</h1>
-    <p class="subtitle">Search books by title, author, ISBN, or publisher. Select up to 2 books and add them to <strong>To Read</strong>, <strong>Reading</strong>, or <strong>Read</strong>. In Read list, add your star rating and one-line comment.</p>
+    <p class="subtitle">Search books by title, author, ISBN, or publisher. Select any number of books and add them to <strong>To Read</strong>, <strong>Reading</strong>, or <strong>Read</strong>. In Read list, add your star rating and one-line comment.</p>
 
     <section class="panel">
       <div class="panel-head">
@@ -308,7 +308,7 @@
           <button id="addReadBtn" class="btn-secondary" type="button">Add to Read</button>
         </div>
 
-        <div id="status" class="status">Search to start. You can select up to 2 books per add action.</div>
+        <div id="status" class="status">Search to start. You can select any number of books per add action.</div>
         <div id="results" class="results-grid"></div>
       </div>
     </section>
@@ -336,8 +336,6 @@
 
   <script>
     const STORAGE_KEY = 'bookLogShelves';
-    const MAX_SELECT = 2;
-
     const state = {
       results: [],
       selected: new Set(),
@@ -434,11 +432,6 @@
       };
     }
 
-    function resultMatchesSelectionLimit(nextChecked) {
-      if (nextChecked) return state.selected.size < MAX_SELECT;
-      return true;
-    }
-
     function renderResults() {
       if (state.results.length === 0) {
         resultsEl.innerHTML = '<div class="empty">No books to show.</div>';
@@ -467,11 +460,6 @@
         checkbox.addEventListener('change', (e) => {
           const id = e.target.dataset.id;
           const checked = e.target.checked;
-          if (!resultMatchesSelectionLimit(checked)) {
-            e.target.checked = false;
-            setStatus('You can select maximum 2 books at a time.', 'error');
-            return;
-          }
           if (checked) state.selected.add(id);
           else state.selected.delete(id);
           renderResults();
@@ -522,7 +510,7 @@
         if (state.results.length === 0) {
           setStatus('No books found. Try different search terms.', 'error');
         } else {
-          setStatus(`Found ${state.results.length} books. Select up to 2 and add to a list.`, 'success');
+          setStatus(`Found ${state.results.length} books. Select any number and add to a list.`, 'success');
         }
       } catch (error) {
         console.error(error);
@@ -553,11 +541,7 @@
     function moveBooksToShelf(targetShelf) {
       const selectedBooks = state.results.filter((b) => state.selected.has(b.id));
       if (selectedBooks.length === 0) {
-        setStatus('Select one or two books first.', 'error');
-        return;
-      }
-      if (selectedBooks.length > MAX_SELECT) {
-        setStatus('Please select only one or two books.', 'error');
+        setStatus('Select one or more books first.', 'error');
         return;
       }
 
