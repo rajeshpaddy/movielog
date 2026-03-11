@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>American Idioms Learner</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      min-height: 100vh;
+      color: #f7f0de;
+      background:
+        radial-gradient(circle at top left, rgba(203, 163, 86, 0.16), transparent 28%),
+        linear-gradient(180deg, #1f2430 0%, #121822 100%);
+    }
+    .app-home-link {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 20;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(250, 204, 21, 0.35);
+      background: rgba(15, 23, 42, 0.9);
+      color: #fde68a;
+      text-decoration: none;
+      font: 600 14px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .shell {
+      height: 100vh;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 12px;
+      padding: 16px;
+      padding-top: 56px;
+    }
+    .hero {
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(42, 51, 66, 0.96), rgba(25, 31, 44, 0.96));
+      border: 1px solid rgba(250, 204, 21, 0.14);
+      padding: 22px 24px;
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.25);
+    }
+    .eyebrow {
+      color: #fbbf24;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      font: 700 12px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin-bottom: 10px;
+    }
+    h1 {
+      font-size: clamp(32px, 4vw, 50px);
+      line-height: 0.94;
+      margin-bottom: 10px;
+    }
+    .hero-copy {
+      max-width: 980px;
+      color: #d3dae6;
+      font: 500 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .stat-card {
+      background: rgba(19, 25, 36, 0.88);
+      border: 1px solid rgba(250, 204, 21, 0.12);
+      border-radius: 18px;
+      padding: 14px;
+    }
+    .stat-label {
+      color: #9fb1c9;
+      font: 700 11px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+    .stat-number {
+      margin-top: 6px;
+      font-size: 28px;
+      color: #fde68a;
+      font-weight: 700;
+    }
+    .workspace {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 330px minmax(0, 1fr) 330px;
+      gap: 12px;
+    }
+    .pane {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(180deg, rgba(24, 31, 44, 0.98), rgba(17, 22, 33, 0.98));
+      border-radius: 24px;
+      border: 1px solid rgba(250, 204, 21, 0.12);
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+    }
+    .pane-head {
+      padding: 18px 18px 12px;
+      border-bottom: 1px solid rgba(250, 204, 21, 0.08);
+      background: linear-gradient(180deg, rgba(250, 204, 21, 0.08), rgba(250, 204, 21, 0));
+    }
+    .pane-title {
+      font-size: 24px;
+      color: #fcd34d;
+      margin-bottom: 8px;
+    }
+    .pane-note {
+      color: #9fb1c9;
+      font: 500 12px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .search-box {
+      width: 100%;
+      margin-top: 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(250, 204, 21, 0.22);
+      background: #0f172a;
+      color: #fff;
+      padding: 12px 16px;
+      font-size: 15px;
+    }
+    .search-box:focus {
+      outline: none;
+      border-color: rgba(250, 204, 21, 0.6);
+      box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.14);
+    }
+    .transfer-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .transfer-btn {
+      flex: 1;
+      border: 1px solid rgba(250, 204, 21, 0.26);
+      background: #132033;
+      color: #fde68a;
+      padding: 10px 8px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .transfer-btn:hover { background: #1a2d47; }
+    .transfer-status {
+      min-height: 16px;
+      color: #c9d7ea;
+      font: 500 11px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      text-align: center;
+      padding: 8px 12px 0;
+    }
+    .transfer-status.error { color: #fca5a5; }
+    .item-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .idiom-item {
+      border: 1px solid transparent;
+      background: #0f172a;
+      border-radius: 16px;
+      padding: 14px;
+      cursor: pointer;
+      transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+    }
+    .idiom-item:hover {
+      transform: translateX(4px);
+      border-color: rgba(250, 204, 21, 0.22);
+      background: #162033;
+    }
+    .idiom-item.selected {
+      background: linear-gradient(135deg, #fcd34d, #f59e0b);
+      color: #1f2937;
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+    .item-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .item-rank {
+      color: #fbbf24;
+      font: 700 12px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+    .idiom-item.selected .item-rank { color: #92400e; }
+    .item-title {
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.15;
+    }
+    .item-meta {
+      color: #94a3b8;
+      font: 500 12px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .idiom-item.selected .item-meta { color: rgba(31, 41, 55, 0.8); }
+    .center-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .empty-state {
+      border: 1px dashed rgba(250, 204, 21, 0.18);
+      border-radius: 18px;
+      padding: 30px;
+      text-align: center;
+      color: #9fb1c9;
+      font: 500 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .hero-card {
+      background: linear-gradient(135deg, rgba(252, 211, 77, 0.16), rgba(245, 158, 11, 0.1));
+      border: 1px solid rgba(252, 211, 77, 0.2);
+      border-radius: 24px;
+      padding: 24px;
+    }
+    .hero-card-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: start;
+    }
+    .hero-card-rank {
+      font: 700 12px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #fbbf24;
+      margin-bottom: 8px;
+    }
+    .hero-card-title {
+      font-size: clamp(28px, 3vw, 42px);
+      line-height: 0.95;
+      margin-bottom: 8px;
+    }
+    .hero-card-tags {
+      color: #c9d7ea;
+      font: 500 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .learn-btn {
+      border: none;
+      border-radius: 999px;
+      padding: 14px 20px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      background: linear-gradient(135deg, #fcd34d, #f59e0b);
+      color: #1f2937;
+      min-width: 150px;
+    }
+    .learn-btn.unlearn {
+      background: linear-gradient(135deg, #fb7185, #e11d48);
+      color: #fff;
+    }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .detail-card {
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid rgba(250, 204, 21, 0.1);
+      border-radius: 18px;
+      padding: 16px;
+    }
+    .detail-card.wide { grid-column: 1 / -1; }
+    .detail-label {
+      color: #fbbf24;
+      font: 700 12px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+      margin-bottom: 10px;
+    }
+    .detail-text {
+      color: #e5e7eb;
+      font: 500 15px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .detail-example {
+      color: #dbeafe;
+      font-style: italic;
+    }
+    .pane-footer {
+      padding: 12px 16px 16px;
+      color: #9fb1c9;
+      font: 500 11px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      border-top: 1px solid rgba(250, 204, 21, 0.08);
+    }
+    @media (max-width: 1200px) {
+      .workspace { grid-template-columns: 1fr; }
+      .stats-bar { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .pane { min-height: 320px; }
+    }
+    @media (max-width: 720px) {
+      .shell { padding: 10px; padding-top: 54px; }
+      .stats-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .detail-grid { grid-template-columns: 1fr; }
+      .hero-card-top { flex-direction: column; }
+      .learn-btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <a class="app-home-link" href="app-catalog.html" title="Back to App Catalog">Home</a>
+
+  <div class="shell">
+    <section class="hero">
+      <div class="eyebrow">Language Learner</div>
+      <h1>American Idioms Learner</h1>
+      <p class="hero-copy">
+        Browse a curated list of common American idioms ranked by approximate everyday familiarity. Select an idiom from the left to learn it,
+        study its meaning, origin, and usage in the center, and keep your learned set in the right pane with export and import support.
+      </p>
+    </section>
+
+    <section class="stats-bar" id="statsBar"></section>
+
+    <main class="workspace">
+      <section class="pane">
+        <div class="pane-head">
+          <h2 class="pane-title">Popular Idioms</h2>
+          <p class="pane-note">Selecting an idiom here marks it as learned and moves it to the right pane.</p>
+          <input id="leftSearch" class="search-box" type="text" placeholder="Search unlearned idioms...">
+          <div class="transfer-actions">
+            <button type="button" class="transfer-btn" id="exportLearnedBtn" aria-label="Export learned idioms" title="Export learned idioms">⤓</button>
+            <button type="button" class="transfer-btn" id="importLearnedBtn" aria-label="Import learned idioms" title="Import learned idioms">⤒</button>
+            <button type="button" class="transfer-btn" id="exportSharedLearnedBtn" aria-label="Shared export learned idioms" title="Shared export learned idioms">⇪</button>
+            <button type="button" class="transfer-btn" id="clearSharedLearnedBtn" aria-label="Clear shared learned idioms" title="Clear shared learned idioms">✕</button>
+            <button type="button" class="transfer-btn" id="importSharedLearnedBtn" aria-label="Shared import learned idioms" title="Shared import learned idioms">⇩</button>
+          </div>
+          <div id="transferStatus" class="transfer-status" aria-live="polite"></div>
+          <input id="importLearnedFile" type="file" accept="application/json" hidden>
+        </div>
+        <div id="leftList" class="item-list"></div>
+        <div class="pane-footer">Ordered by approximate common usage, from most familiar upward.</div>
+      </section>
+
+      <section class="pane">
+        <div class="pane-head">
+          <h2 class="pane-title">Idiom Details</h2>
+          <p class="pane-note">Meaning, likely origin, usage note, and a natural example sentence.</p>
+        </div>
+        <div id="centerContent" class="center-scroll"></div>
+      </section>
+
+      <section class="pane">
+        <div class="pane-head">
+          <h2 class="pane-title">Learned Idioms</h2>
+          <p class="pane-note">Click any learned idiom to revisit it. The list is ordered by most recently learned.</p>
+          <input id="rightSearch" class="search-box" type="text" placeholder="Search learned idioms...">
+        </div>
+        <div id="rightList" class="item-list"></div>
+        <div class="pane-footer">Your learned list is stored locally unless you choose shared export.</div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'learnedAmericanIdioms';
+    const LAST_SELECTED_KEY = 'lastSelectedAmericanIdiom';
+    const SETGET_SET_URL = 'https://setget.io/api/set';
+    const SETGET_GET_BASE = 'https://setget.io/api/get';
+
+    const IDIOMS = [
+      { id: 'break-the-ice', rank: 1, idiom: 'Break the ice', category: 'conversation', meaning: 'To ease tension and make people feel more comfortable in a social setting.', origin: 'The phrase likely comes from ships literally breaking ice to open a path, then shifted into social use for opening communication.', usage: 'Use it when someone says or does the first thing that gets an awkward group talking.', example: 'Her joke at the start of the meeting really broke the ice.' },
+      { id: 'hit-the-nail-on-the-head', rank: 2, idiom: 'Hit the nail on the head', category: 'accuracy', meaning: 'To describe something exactly right.', origin: 'It comes from carpentry: when you strike the nail squarely on the head, you do the job precisely.', usage: 'Use it when someone identifies the real issue without extra noise.', example: 'You hit the nail on the head when you said timing was the real problem.' },
+      { id: 'under-the-weather', rank: 3, idiom: 'Under the weather', category: 'health', meaning: 'Feeling slightly sick or not at your best.', origin: 'One explanation traces it to sailors going below deck when rough weather made them feel ill.', usage: 'Common for mild illness, fatigue, or generally feeling off.', example: 'I am a little under the weather today, so I am staying home.' },
+      { id: 'piece-of-cake', rank: 4, idiom: 'Piece of cake', category: 'difficulty', meaning: 'Something very easy to do.', origin: 'The phrase grew in twentieth-century American English as a casual way to describe an easy win or task.', usage: 'Use it for work that feels simple or familiar.', example: 'Once you know the shortcut, the report is a piece of cake.' },
+      { id: 'once-in-a-blue-moon', rank: 5, idiom: 'Once in a blue moon', category: 'frequency', meaning: 'Something that happens very rarely.', origin: 'It refers to the uncommon event of an extra full moon in a season or month.', usage: 'Use it to emphasize that something almost never happens.', example: 'We only all get together like this once in a blue moon.' },
+      { id: 'costs-an-arm-and-a-leg', rank: 6, idiom: 'Costs an arm and a leg', category: 'money', meaning: 'To be extremely expensive.', origin: 'The exact origin is uncertain, but the phrase became common in the twentieth century as a dramatic way to describe painful cost.', usage: 'Use it for anything that feels much more expensive than expected.', example: 'That downtown parking garage costs an arm and a leg.' },
+      { id: 'ball-is-in-your-court', rank: 7, idiom: 'The ball is in your court', category: 'decision', meaning: 'It is now your turn to decide or act.', origin: 'It comes from tennis, where the next move depends on whose side the ball lands on.', usage: 'Use it when responsibility shifts to another person.', example: 'I sent the contract draft, so now the ball is in your court.' },
+      { id: 'spill-the-beans', rank: 8, idiom: 'Spill the beans', category: 'secrets', meaning: 'To reveal a secret, often by accident.', origin: 'A common theory links it to ancient voting beans being knocked over and exposing results, though the origin is not certain.', usage: 'Use it when private information comes out too early.', example: 'Do not spill the beans about the surprise party.' },
+      { id: 'beat-around-the-bush', rank: 9, idiom: 'Beat around the bush', category: 'communication', meaning: 'To avoid saying something directly.', origin: 'It likely grew from hunting language, where people beat bushes to flush birds without getting to the point immediately.', usage: 'Use it when someone avoids the real issue.', example: 'Stop beating around the bush and tell me what happened.' },
+      { id: 'call-it-a-day', rank: 10, idiom: 'Call it a day', category: 'work', meaning: 'To stop working on something for now.', origin: 'It emerged from ordinary workday language as a way to officially decide that enough has been done.', usage: 'Use it when effort has reached a natural stopping point.', example: 'We fixed the main bug, so let us call it a day.' },
+      { id: 'on-the-same-page', rank: 11, idiom: 'On the same page', category: 'teamwork', meaning: 'To share the same understanding or plan.', origin: 'The phrase comes from reading and working from the same text or document.', usage: 'Use it when alignment matters across a team or relationship.', example: 'Before we present this, I want to make sure we are on the same page.' },
+      { id: 'pull-someones-leg', rank: 12, idiom: "Pull someone's leg", category: 'humor', meaning: 'To joke with someone by telling them something untrue in a playful way.', origin: 'The exact origin is unclear, but it became a common playful phrase in English in the nineteenth century.', usage: 'Use it for teasing that is meant to be harmless.', example: 'Relax, I was just pulling your leg.' },
+      { id: 'bite-the-bullet', rank: 13, idiom: 'Bite the bullet', category: 'courage', meaning: 'To face something painful or difficult with determination.', origin: 'It is often connected to old battlefield stories of patients biting bullets during painful treatment, though the history is partly legendary.', usage: 'Use it when someone finally does something unpleasant but necessary.', example: 'I finally bit the bullet and filed the paperwork.' },
+      { id: 'let-the-cat-out-of-the-bag', rank: 14, idiom: 'Let the cat out of the bag', category: 'secrets', meaning: 'To reveal a secret earlier than planned.', origin: 'One theory traces it to market fraud where a bag was opened and the wrong animal was exposed, though the origin is debated.', usage: 'Use it when confidential news slips out.', example: 'He let the cat out of the bag about the promotion.' },
+      { id: 'burn-the-midnight-oil', rank: 15, idiom: 'Burn the midnight oil', category: 'work', meaning: 'To stay up late working or studying.', origin: 'It comes from the time when lamps burned oil, so late-night labor literally required more oil.', usage: 'Use it for intense late-night effort.', example: 'She burned the midnight oil to finish the grant application.' },
+      { id: 'back-to-square-one', rank: 16, idiom: 'Back to square one', category: 'progress', meaning: 'Forced to start over from the beginning.', origin: 'Its exact origin is debated, with theories involving radio sports commentary and board games.', usage: 'Use it after a plan fails and you have to reset.', example: 'The server rollback put us back to square one.' },
+      { id: 'up-in-the-air', rank: 17, idiom: 'Up in the air', category: 'uncertainty', meaning: 'Still undecided or unresolved.', origin: 'The image suggests something floating without a stable place yet.', usage: 'Use it when plans are not settled.', example: 'Our summer trip is still up in the air.' },
+      { id: 'miss-the-boat', rank: 18, idiom: 'Miss the boat', category: 'timing', meaning: 'To miss an opportunity by being too late.', origin: 'It likely comes from literally failing to catch a departing boat.', usage: 'Use it when timing matters and the chance has passed.', example: 'We missed the boat on those early concert tickets.' },
+      { id: 'on-thin-ice', rank: 19, idiom: 'On thin ice', category: 'risk', meaning: 'In a risky or dangerous position.', origin: 'The image comes from standing on ice that may break at any moment.', usage: 'Use it when someone is close to trouble or failure.', example: 'After that second warning, he is on thin ice.' },
+      { id: 'cut-corners', rank: 20, idiom: 'Cut corners', category: 'quality', meaning: 'To do something cheaply or carelessly by skipping important steps.', origin: 'It may come from taking a shorter route instead of following the proper path.', usage: 'Use it when quality drops because someone wants speed or savings.', example: 'Do not cut corners on the safety checks.' },
+      { id: 'hit-the-sack', rank: 21, idiom: 'Hit the sack', category: 'sleep', meaning: 'To go to bed.', origin: 'It comes from the time when mattresses and sleeping gear were often sack-like.', usage: 'A casual way to say you are turning in for the night.', example: 'I am exhausted, so I am going to hit the sack.' },
+      { id: 'hang-in-there', rank: 22, idiom: 'Hang in there', category: 'encouragement', meaning: 'To stay patient and keep going through a difficult stretch.', origin: 'The phrase developed in modern conversational English as a simple encouragement to endure.', usage: 'Use it to support someone who is struggling but still moving forward.', example: 'Hang in there, you are almost through finals week.' },
+      { id: 'get-out-of-hand', rank: 23, idiom: 'Get out of hand', category: 'control', meaning: 'To become hard to control.', origin: 'The image suggests something slipping beyond your physical grasp.', usage: 'Use it when a situation becomes too chaotic or extreme.', example: 'The meeting got out of hand once everyone started arguing.' },
+      { id: 'throw-in-the-towel', rank: 24, idiom: 'Throw in the towel', category: 'quitting', meaning: 'To give up or admit defeat.', origin: 'It comes from boxing, where a trainer throws a towel into the ring to stop the fight.', usage: 'Use it when someone stops trying because the situation is no longer worth fighting.', example: 'After three failed attempts, they threw in the towel.' },
+      { id: 'jump-the-gun', rank: 25, idiom: 'Jump the gun', category: 'timing', meaning: 'To act too early.', origin: 'It comes from racing, where starting before the gun goes off is a false start.', usage: 'Use it when someone moves before the right moment.', example: 'We jumped the gun and announced the feature before it was ready.' },
+      { id: 'kill-two-birds-with-one-stone', rank: 26, idiom: 'Kill two birds with one stone', category: 'efficiency', meaning: 'To solve two problems with one action.', origin: 'The phrase is old and metaphorical, using hunting imagery to describe maximum efficiency.', usage: 'Use it when one move gives multiple benefits.', example: 'Walking to the store lets me exercise and pick up groceries, so it kills two birds with one stone.' },
+      { id: 'bark-up-the-wrong-tree', rank: 27, idiom: 'Bark up the wrong tree', category: 'mistakes', meaning: 'To pursue the wrong idea or blame the wrong person.', origin: 'It comes from hunting dogs barking at the wrong tree after losing track of prey.', usage: 'Use it when someone has the wrong explanation or target.', example: 'If you think finance caused this delay, you are barking up the wrong tree.' },
+      { id: 'sit-tight', rank: 28, idiom: 'Sit tight', category: 'patience', meaning: 'To wait calmly without acting yet.', origin: 'The phrase uses the image of staying firmly seated and steady.', usage: 'Use it when waiting is better than reacting too soon.', example: 'Sit tight while I check the reservation.' },
+      { id: 'wrap-your-head-around', rank: 29, idiom: 'Wrap your head around', category: 'understanding', meaning: 'To fully understand something complicated.', origin: 'A modern figurative phrase that imagines the mind enclosing a difficult idea.', usage: 'Use it for concepts that take time to absorb.', example: 'It took me a week to wrap my head around the new pricing model.' },
+      { id: 'through-thick-and-thin', rank: 30, idiom: 'Through thick and thin', category: 'loyalty', meaning: 'During both good times and bad times.', origin: 'The wording is old and reflects moving through all kinds of conditions without giving up.', usage: 'Use it to describe enduring loyalty.', example: 'They have supported each other through thick and thin.' },
+      { id: 'go-the-extra-mile', rank: 31, idiom: 'Go the extra mile', category: 'effort', meaning: 'To do more than what is strictly required.', origin: 'The phrase echoes older moral teachings about willingly doing more than asked.', usage: 'Use it for standout effort or service.', example: 'She always goes the extra mile for her clients.' },
+      { id: 'take-a-rain-check', rank: 32, idiom: 'Take a rain check', category: 'plans', meaning: 'To politely postpone something until later.', origin: 'It comes from baseball tickets that were honored later if a game was rained out.', usage: 'Use it when you want to decline now but keep the option open.', example: 'I cannot do dinner tonight, but I will take a rain check.' },
+      { id: 'hit-the-road', rank: 33, idiom: 'Hit the road', category: 'travel', meaning: 'To leave or begin a trip.', origin: 'It grew from automobile travel language in American English.', usage: 'Use it when it is time to go.', example: 'If we want to beat traffic, we should hit the road now.' },
+      { id: 'no-brainer', rank: 34, idiom: 'No-brainer', category: 'decisions', meaning: 'An obvious or very easy choice.', origin: 'It emerged in American slang to describe something needing little thought.', usage: 'Use it when one option clearly wins.', example: 'At that price, upgrading was a no-brainer.' },
+      { id: 'down-to-earth', rank: 35, idiom: 'Down-to-earth', category: 'personality', meaning: 'Practical, realistic, and easy to relate to.', origin: 'The image suggests being grounded rather than lofty or artificial.', usage: 'Often used to describe approachable people.', example: 'Despite her title, she is very down-to-earth.' },
+      { id: 'whole-nine-yards', rank: 36, idiom: 'The whole nine yards', category: 'completeness', meaning: 'Everything possible; the full amount.', origin: 'Its exact origin is famously uncertain despite many theories.', usage: 'Use it when something includes every part or effort.', example: 'For the launch, they did the whole nine yards: video, social, and live demo.' },
+      { id: 'break-a-leg', rank: 37, idiom: 'Break a leg', category: 'performance', meaning: 'Good luck, especially before a performance.', origin: 'The theater world adopted it as a superstitious way to wish luck without saying it directly.', usage: 'Use it before someone goes on stage or gives a big presentation.', example: 'Break a leg at your audition tonight.' },
+      { id: 'by-the-book', rank: 38, idiom: 'By the book', category: 'rules', meaning: 'Exactly according to the rules or procedure.', origin: 'It refers to following what is written in an official book or manual.', usage: 'Use it when strict compliance matters.', example: 'The inspector wants everything done by the book.' },
+      { id: 'in-hot-water', rank: 39, idiom: 'In hot water', category: 'trouble', meaning: 'In trouble or facing criticism.', origin: 'The image suggests discomfort and danger rather than literal heat.', usage: 'Use it when someone is under pressure after doing something wrong.', example: 'He is in hot water after missing the deadline again.' },
+      { id: 'in-the-long-run', rank: 40, idiom: 'In the long run', category: 'time', meaning: 'Over a long period of time.', origin: 'The phrase uses the contrast between short-term and long-term outcomes.', usage: 'Use it when discussing lasting results.', example: 'This approach costs more now but saves money in the long run.' },
+      { id: 'when-pigs-fly', rank: 41, idiom: 'When pigs fly', category: 'impossibility', meaning: 'Something will never happen.', origin: 'It uses an absurd image to emphasize impossibility.', usage: 'Use it jokingly for highly unrealistic events.', example: 'He will clean the garage on time when pigs fly.' },
+      { id: 'pull-yourself-together', rank: 42, idiom: 'Pull yourself together', category: 'emotion', meaning: 'To calm down and regain control of yourself.', origin: 'The phrase suggests gathering scattered emotions back into order.', usage: 'Use it when someone needs to refocus emotionally.', example: 'Take a breath and pull yourself together before the interview.' },
+      { id: 'on-cloud-nine', rank: 43, idiom: 'On cloud nine', category: 'emotion', meaning: 'Extremely happy.', origin: 'The number nine has long carried connotations of something high or ideal, though the exact phrase history is mixed.', usage: 'Use it for excited happiness.', example: 'She was on cloud nine after hearing the news.' },
+      { id: 'rock-the-boat', rank: 44, idiom: 'Rock the boat', category: 'conflict', meaning: 'To cause trouble in a stable situation.', origin: 'It comes from the danger of upsetting a boat by shaking it unnecessarily.', usage: 'Use it when someone disrupts a delicate balance.', example: 'Nobody wanted to rock the boat before the merger closed.' },
+      { id: 'on-the-fence', rank: 45, idiom: 'On the fence', category: 'decisions', meaning: 'Undecided between options.', origin: 'The image suggests sitting on a fence between two sides.', usage: 'Use it when someone has not chosen yet.', example: 'I am still on the fence about which laptop to buy.' },
+      { id: 'out-of-the-blue', rank: 46, idiom: 'Out of the blue', category: 'surprise', meaning: 'Unexpectedly and without warning.', origin: 'The image comes from something suddenly appearing from a clear blue sky.', usage: 'Use it for surprise events or messages.', example: 'She called me out of the blue after ten years.' },
+      { id: 'a-dime-a-dozen', rank: 47, idiom: 'A dime a dozen', category: 'value', meaning: 'Very common and not special.', origin: 'It uses old low-price language to show abundance and low rarity.', usage: 'Use it when something is easy to find.', example: 'Tourist T-shirts are a dime a dozen around here.' },
+      { id: 'add-insult-to-injury', rank: 48, idiom: 'Add insult to injury', category: 'frustration', meaning: 'To make a bad situation even worse.', origin: 'The phrase is old and was used in classical writing long before modern English popularized it.', usage: 'Use it when one setback is followed by another annoyance.', example: 'Missing the flight was bad, and losing my bag added insult to injury.' },
+      { id: 'burn-bridges', rank: 49, idiom: 'Burn bridges', category: 'relationships', meaning: 'To damage a relationship or option so badly that you cannot return to it.', origin: 'It comes from military strategy where destroying a bridge removes the path back.', usage: 'Use it for irreversible professional or personal fallout.', example: 'Be honest, but do not burn bridges when you resign.' },
+      { id: 'taste-of-your-own-medicine', rank: 50, idiom: 'Get a taste of your own medicine', category: 'justice', meaning: 'To experience the same unpleasant treatment you gave someone else.', origin: 'The phrase compares behavior to medicine being returned to its giver.', usage: 'Use it when consequences mirror someone’s earlier actions.', example: 'He finally got a taste of his own medicine when his prank was turned on him.' },
+      { id: 'keep-your-chin-up', rank: 51, idiom: 'Keep your chin up', category: 'encouragement', meaning: 'Stay positive and do not lose confidence.', origin: 'The body posture image implies confidence even in difficulty.', usage: 'Use it as encouragement after a disappointment.', example: 'Keep your chin up; one rejection does not define your work.' },
+      { id: 'leave-no-stone-unturned', rank: 52, idiom: 'Leave no stone unturned', category: 'effort', meaning: 'To try every possible method.', origin: 'The phrase is ancient and evokes searching so thoroughly that even stones are turned over.', usage: 'Use it when total effort or investigation is required.', example: 'We left no stone unturned in the hiring search.' },
+      { id: 'make-ends-meet', rank: 53, idiom: 'Make ends meet', category: 'money', meaning: 'To manage financially with limited resources.', origin: 'The image suggests bringing two ends together successfully.', usage: 'Use it for budgeting and financial strain.', example: 'They worked extra shifts just to make ends meet.' },
+      { id: 'off-the-hook', rank: 54, idiom: 'Off the hook', category: 'relief', meaning: 'No longer responsible or in trouble.', origin: 'The image likely comes from fish slipping off a hook and escaping.', usage: 'Use it when pressure or obligation is removed.', example: 'Once the backup arrived, I was off the hook for the weekend shift.' },
+      { id: 'penny-for-your-thoughts', rank: 55, idiom: 'A penny for your thoughts', category: 'conversation', meaning: 'Tell me what you are thinking.', origin: 'The phrase has been in English for centuries as a polite prompt for someone’s thoughts.', usage: 'Use it when someone looks deep in thought.', example: 'You have been quiet all night. A penny for your thoughts?' },
+      { id: 'speak-of-the-devil', rank: 56, idiom: 'Speak of the devil', category: 'coincidence', meaning: 'The person we were just talking about has suddenly appeared.', origin: 'It shortens an older superstition-laced saying warning that mentioning someone may summon them.', usage: 'Use it lightly when a discussed person arrives.', example: 'Speak of the devil, here comes Marcus now.' },
+      { id: 'grain-of-salt', rank: 57, idiom: 'Take it with a grain of salt', category: 'skepticism', meaning: 'Treat something skeptically; do not accept it fully without question.', origin: 'The exact pathway is debated, but it has long suggested softening or reducing the force of a claim.', usage: 'Use it with rumors, predictions, or unverified stories.', example: 'Take that review with a grain of salt because it was sponsored.' },
+      { id: 'tip-of-the-iceberg', rank: 58, idiom: 'The tip of the iceberg', category: 'scale', meaning: 'Only the small visible part of a much larger issue.', origin: 'It comes from the fact that most of an iceberg remains underwater.', usage: 'Use it when the visible problem is only the beginning.', example: 'Those invoices are just the tip of the iceberg.' },
+      { id: 'throw-caution-to-the-wind', rank: 59, idiom: 'Throw caution to the wind', category: 'risk', meaning: 'To act recklessly without much concern for consequences.', origin: 'The image suggests physically discarding caution and moving impulsively.', usage: 'Use it when someone stops being careful.', example: 'They threw caution to the wind and booked the trip the same day.' },
+      { id: 'twist-someones-arm', rank: 60, idiom: "Twist someone's arm", category: 'persuasion', meaning: 'To persuade someone strongly, often playfully rather than literally.', origin: 'It uses an exaggerated physical image to describe pressure.', usage: 'Use it when someone needs a push to agree.', example: 'I did not need to twist her arm to come to brunch.' },
+      { id: 'under-your-nose', rank: 61, idiom: 'Under your nose', category: 'attention', meaning: 'In an obvious place that you somehow failed to notice.', origin: 'The phrase stresses that something was extremely close and visible.', usage: 'Use it when the answer was clearly present all along.', example: 'Your keys were under your nose the whole time.' },
+      { id: 'walk-on-eggshells', rank: 62, idiom: 'Walk on eggshells', category: 'relationships', meaning: 'To act very carefully to avoid upsetting someone.', origin: 'The image suggests fragile movement where one wrong step causes breakage.', usage: 'Use it in tense emotional environments.', example: 'Everyone was walking on eggshells around the new manager.' },
+      { id: 'your-guess-is-as-good-as-mine', rank: 63, idiom: 'Your guess is as good as mine', category: 'uncertainty', meaning: 'I do not know either.', origin: 'The phrase frames both people as equally uninformed.', usage: 'Use it when there is no better answer available.', example: 'Why did the site crash? Your guess is as good as mine.' },
+      { id: 'hit-the-hay', rank: 64, idiom: 'Hit the hay', category: 'sleep', meaning: 'To go to bed.', origin: 'It reflects an older time when straw or hay was common bedding.', usage: 'A casual nighttime expression.', example: 'I have an early flight, so I am going to hit the hay.' },
+      { id: 'rule-of-thumb', rank: 65, idiom: 'Rule of thumb', category: 'guidance', meaning: 'A practical general guideline rather than a precise rule.', origin: 'Its exact history is disputed, but modern usage means a rough working principle.', usage: 'Use it for useful shortcuts that are not exact formulas.', example: 'As a rule of thumb, leave earlier on Fridays.' },
+      { id: 'save-for-a-rainy-day', rank: 66, idiom: 'Save for a rainy day', category: 'money', meaning: 'To set money aside for future trouble or need.', origin: 'Rainy weather has long symbolized difficult times or interruptions.', usage: 'Use it for emergency savings advice.', example: 'My grandmother always told me to save for a rainy day.' },
+      { id: 'see-eye-to-eye', rank: 67, idiom: 'See eye to eye', category: 'agreement', meaning: 'To fully agree.', origin: 'The image suggests people viewing something from exactly the same angle.', usage: 'Use it for complete alignment.', example: 'We do not always see eye to eye on budget priorities.' },
+      { id: 'steal-someones-thunder', rank: 68, idiom: "Steal someone's thunder", category: 'credit', meaning: 'To take attention or credit that should have gone to someone else.', origin: 'It likely originated in theater after a playwright complained his sound effect idea was reused.', usage: 'Use it when someone undercuts another person’s moment.', example: 'Announcing your news at her party stole her thunder.' },
+      { id: 'take-the-plunge', rank: 69, idiom: 'Take the plunge', category: 'decisions', meaning: 'To commit to a big action after hesitation.', origin: 'The image comes from diving or jumping into water.', usage: 'Use it when someone finally commits to something major.', example: 'After months of comparing homes, they took the plunge and bought one.' },
+      { id: 'last-straw', rank: 70, idiom: 'The last straw', category: 'frustration', meaning: 'The final small problem that makes a person lose patience.', origin: 'It comes from the old image of the final straw that breaks the camel’s back.', usage: 'Use it when tolerance ends.', example: 'The surprise fee was the last straw for many customers.' },
+      { id: 'turn-over-a-new-leaf', rank: 71, idiom: 'Turn over a new leaf', category: 'change', meaning: 'To start behaving better or begin a new phase.', origin: 'It likely comes from turning to a fresh page in a book.', usage: 'Use it for sincere improvement or reset.', example: 'He promised to turn over a new leaf after the warning.' },
+      { id: 'up-to-speed', rank: 72, idiom: 'Up to speed', category: 'knowledge', meaning: 'Fully informed and able to function at the needed level.', origin: 'The phrase comes from machines and vehicles reaching proper operating speed.', usage: 'Use it for onboarding or catching up.', example: 'Give Maya a quick recap so she is up to speed.' }
+    ];
+
+    let learnedIdioms = {};
+    let selectedIdiom = null;
+    let selectedFromRight = false;
+
+    const statsBar = document.getElementById('statsBar');
+    const leftSearch = document.getElementById('leftSearch');
+    const rightSearch = document.getElementById('rightSearch');
+    const leftList = document.getElementById('leftList');
+    const rightList = document.getElementById('rightList');
+    const centerContent = document.getElementById('centerContent');
+    const exportLearnedBtn = document.getElementById('exportLearnedBtn');
+    const importLearnedBtn = document.getElementById('importLearnedBtn');
+    const exportSharedLearnedBtn = document.getElementById('exportSharedLearnedBtn');
+    const clearSharedLearnedBtn = document.getElementById('clearSharedLearnedBtn');
+    const importSharedLearnedBtn = document.getElementById('importSharedLearnedBtn');
+    const importLearnedFile = document.getElementById('importLearnedFile');
+    const transferStatus = document.getElementById('transferStatus');
+
+    function loadLearnedIdioms() {
+      try {
+        learnedIdioms = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      } catch (error) {
+        learnedIdioms = {};
+      }
+    }
+
+    function saveLearnedIdioms() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(learnedIdioms));
+    }
+
+    function setTransferStatus(message, isError = false) {
+      transferStatus.textContent = message;
+      transferStatus.classList.toggle('error', !!isError);
+    }
+
+    function normalizeImportedLearnedData(parsedData) {
+      const source = parsedData?.learnedIdioms ?? parsedData;
+      if (!source || typeof source !== 'object' || Array.isArray(source)) {
+        throw new Error('Invalid file format');
+      }
+
+      const validIds = new Set(IDIOMS.map(item => item.id));
+      const normalized = {};
+      Object.entries(source).forEach(([idiomId, value]) => {
+        if (!validIds.has(idiomId)) return;
+        let learnedAt = null;
+        if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+          learnedAt = Math.floor(value);
+        } else if (typeof value === 'string' && value.trim()) {
+          const parsed = Number(value);
+          if (Number.isFinite(parsed) && parsed > 0) learnedAt = Math.floor(parsed);
+        } else if (value === true) {
+          learnedAt = Date.now();
+        }
+        if (learnedAt) normalized[idiomId] = learnedAt;
+      });
+
+      if (Object.keys(normalized).length === 0) {
+        throw new Error('No valid learned idioms found in file');
+      }
+      return normalized;
+    }
+
+    function exportLearnedIdiomsData() {
+      const payload = {
+        app: 'american-idioms-learner',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        learnedIdioms
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `american-idioms-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+      setTransferStatus(`Exported ${Object.keys(learnedIdioms).length} idioms`);
+    }
+
+    function importLearnedIdiomsData(event) {
+      const [file] = event.target.files || [];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          learnedIdioms = normalizeImportedLearnedData(parsed);
+          saveLearnedIdioms();
+          renderAll();
+          setTransferStatus(`Imported ${Object.keys(learnedIdioms).length} idioms`);
+        } catch (error) {
+          setTransferStatus(error.message || 'Import failed', true);
+        } finally {
+          importLearnedFile.value = '';
+        }
+      };
+      reader.onerror = () => {
+        setTransferStatus('Unable to read file', true);
+        importLearnedFile.value = '';
+      };
+      reader.readAsText(file);
+    }
+
+    function promptSharedKeyword(label) {
+      const raw = prompt(`${label}: enter a keyword`, '');
+      if (raw == null) return '';
+      const normalized = String(raw).trim().toLowerCase().replaceAll(/\s+/g, '-').replaceAll(/[^a-z0-9-_]/g, '');
+      if (!normalized) {
+        setTransferStatus('Keyword is required for shared transfer.', true);
+      }
+      return normalized;
+    }
+
+    async function exportLearnedIdiomsShared() {
+      const keyword = promptSharedKeyword('Shared export');
+      if (!keyword) return;
+      const key = `american-idioms-learner-${keyword}`;
+      const payload = {
+        app: 'american-idioms-learner',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        learnedIdioms
+      };
+      try {
+        let response = await fetch(SETGET_SET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key, content: payload, expireAfter: 604800 })
+        });
+        let text = await response.text();
+        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
+          response = await fetch(SETGET_SET_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key, content: payload })
+          });
+          text = await response.text();
+        }
+        if (!response.ok) throw new Error(`Shared export failed (${response.status})${text ? `: ${text}` : ''}`);
+        setTransferStatus(`Shared export complete (${keyword})`);
+      } catch (error) {
+        setTransferStatus(error.message || 'Shared export failed', true);
+      }
+    }
+
+    async function importLearnedIdiomsShared() {
+      const keyword = promptSharedKeyword('Shared import');
+      if (!keyword) return;
+      const key = `american-idioms-learner-${keyword}`;
+      try {
+        const response = await fetch(`${SETGET_GET_BASE}/${encodeURIComponent(key)}`);
+        const text = await response.text();
+        if (!response.ok) throw new Error(`Shared import failed (${response.status})${text ? `: ${text}` : ''}`);
+        const parsed = JSON.parse(text);
+        learnedIdioms = normalizeImportedLearnedData(parsed?.content ?? parsed);
+        saveLearnedIdioms();
+        renderAll();
+        setTransferStatus(`Shared import complete (${keyword})`);
+      } catch (error) {
+        setTransferStatus(error.message || 'Shared import failed', true);
+      }
+    }
+
+    async function clearLearnedIdiomsShared() {
+      const keyword = promptSharedKeyword('Clear shared');
+      if (!keyword) return;
+      const key = `american-idioms-learner-${keyword}`;
+      const payload = {
+        app: 'american-idioms-learner',
+        version: 1,
+        clearedAt: new Date().toISOString(),
+        learnedIdioms: {}
+      };
+      try {
+        let response = await fetch(SETGET_SET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key, content: payload, expireAfter: 60 })
+        });
+        let text = await response.text();
+        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
+          response = await fetch(SETGET_SET_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key, content: payload })
+          });
+          text = await response.text();
+        }
+        if (!response.ok) throw new Error(`Shared clear failed (${response.status})${text ? `: ${text}` : ''}`);
+        setTransferStatus(`Shared key cleared (${keyword})`);
+      } catch (error) {
+        setTransferStatus(error.message || 'Shared clear failed', true);
+      }
+    }
+
+    function calculateStats() {
+      const total = IDIOMS.length;
+      const learnedCount = Object.keys(learnedIdioms).length;
+      const remaining = total - learnedCount;
+      const now = Date.now();
+      const day = 24 * 60 * 60 * 1000;
+      const last24h = Object.values(learnedIdioms).filter(ts => now - ts < day).length;
+      const last7d = Object.values(learnedIdioms).filter(ts => now - ts < 7 * day).length;
+
+      statsBar.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-label">Total Idioms</div>
+          <div class="stat-number">${total}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Learned</div>
+          <div class="stat-number">${learnedCount}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Remaining</div>
+          <div class="stat-number">${remaining}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Last 24h</div>
+          <div class="stat-number">${last24h}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Last 7d</div>
+          <div class="stat-number">${last7d}</div>
+        </div>
+      `;
+    }
+
+    function filterIdioms(query, learned) {
+      const q = String(query || '').trim().toLowerCase();
+      return IDIOMS.filter(item => {
+        const matchesLearned = learned ? !!learnedIdioms[item.id] : !learnedIdioms[item.id];
+        if (!matchesLearned) return false;
+        if (!q) return true;
+        return [item.idiom, item.meaning, item.origin, item.category]
+          .some(value => value.toLowerCase().includes(q));
+      });
+    }
+
+    function renderLeftList() {
+      const items = filterIdioms(leftSearch.value, false).sort((a, b) => a.rank - b.rank);
+      leftList.innerHTML = items.length ? items.map(item => `
+        <div class="idiom-item ${selectedIdiom?.id === item.id && !selectedFromRight ? 'selected' : ''}" data-id="${item.id}">
+          <div class="item-top">
+            <div class="item-rank">Rank ${item.rank}</div>
+            <div class="item-meta">${item.category}</div>
+          </div>
+          <div class="item-title">${item.idiom}</div>
+          <div class="item-meta">${item.meaning}</div>
+        </div>
+      `).join('') : '<div class="empty-state">No matching unlearned idioms.</div>';
+
+      leftList.querySelectorAll('.idiom-item').forEach(itemEl => {
+        itemEl.addEventListener('click', () => selectIdiom(itemEl.dataset.id, false));
+      });
+    }
+
+    function renderRightList() {
+      const items = filterIdioms(rightSearch.value, true)
+        .sort((a, b) => (learnedIdioms[b.id] || 0) - (learnedIdioms[a.id] || 0));
+      rightList.innerHTML = items.length ? items.map(item => `
+        <div class="idiom-item ${selectedIdiom?.id === item.id && selectedFromRight ? 'selected' : ''}" data-id="${item.id}">
+          <div class="item-top">
+            <div class="item-rank">Learned</div>
+            <div class="item-meta">Rank ${item.rank}</div>
+          </div>
+          <div class="item-title">${item.idiom}</div>
+          <div class="item-meta">${new Date(learnedIdioms[item.id]).toLocaleDateString()}</div>
+        </div>
+      `).join('') : '<div class="empty-state">No learned idioms yet.</div>';
+
+      rightList.querySelectorAll('.idiom-item').forEach(itemEl => {
+        itemEl.addEventListener('click', () => selectIdiom(itemEl.dataset.id, true));
+      });
+    }
+
+    function selectIdiom(id, fromRight) {
+      const item = IDIOMS.find(entry => entry.id === id);
+      if (!item) return;
+      selectedIdiom = item;
+      selectedFromRight = fromRight;
+      if (!fromRight && !learnedIdioms[id]) {
+        learnedIdioms[id] = Date.now();
+        selectedFromRight = true;
+        saveLearnedIdioms();
+      }
+      localStorage.setItem(LAST_SELECTED_KEY, id);
+      calculateStats();
+      renderLeftList();
+      renderRightList();
+      renderCenter();
+    }
+
+    function toggleLearned() {
+      if (!selectedIdiom) return;
+      if (learnedIdioms[selectedIdiom.id]) {
+        delete learnedIdioms[selectedIdiom.id];
+        selectedFromRight = false;
+      } else {
+        learnedIdioms[selectedIdiom.id] = Date.now();
+        selectedFromRight = true;
+      }
+      saveLearnedIdioms();
+      calculateStats();
+      renderLeftList();
+      renderRightList();
+      renderCenter();
+    }
+
+    function renderCenter() {
+      if (!selectedIdiom) {
+        centerContent.innerHTML = `
+          <div class="empty-state">
+            Choose an idiom from the left pane to learn it. Once selected, it will move into the learned pane on the right.
+          </div>
+        `;
+        return;
+      }
+
+      const learned = !!learnedIdioms[selectedIdiom.id];
+      centerContent.innerHTML = `
+        <div class="hero-card">
+          <div class="hero-card-top">
+            <div>
+              <div class="hero-card-rank">Popular Rank ${selectedIdiom.rank}</div>
+              <div class="hero-card-title">${selectedIdiom.idiom}</div>
+              <div class="hero-card-tags">Category: ${selectedIdiom.category} · ${learned ? 'Learned' : 'Not learned yet'}</div>
+            </div>
+            <button id="learnBtn" class="learn-btn ${learned ? 'unlearn' : ''}" type="button">
+              ${learned ? 'Remove From Learned' : 'Mark As Learned'}
+            </button>
+          </div>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-card">
+            <div class="detail-label">Meaning</div>
+            <div class="detail-text">${selectedIdiom.meaning}</div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">Usage</div>
+            <div class="detail-text">${selectedIdiom.usage}</div>
+          </div>
+          <div class="detail-card wide">
+            <div class="detail-label">Likely Origin</div>
+            <div class="detail-text">${selectedIdiom.origin}</div>
+          </div>
+          <div class="detail-card wide">
+            <div class="detail-label">Example</div>
+            <div class="detail-text detail-example">"${selectedIdiom.example}"</div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('learnBtn').addEventListener('click', toggleLearned);
+    }
+
+    function renderAll() {
+      calculateStats();
+      renderLeftList();
+      renderRightList();
+      renderCenter();
+    }
+
+    leftSearch.addEventListener('input', renderLeftList);
+    rightSearch.addEventListener('input', renderRightList);
+    exportLearnedBtn.addEventListener('click', exportLearnedIdiomsData);
+    importLearnedBtn.addEventListener('click', () => importLearnedFile.click());
+    importLearnedFile.addEventListener('change', importLearnedIdiomsData);
+    exportSharedLearnedBtn.addEventListener('click', exportLearnedIdiomsShared);
+    clearSharedLearnedBtn.addEventListener('click', clearLearnedIdiomsShared);
+    importSharedLearnedBtn.addEventListener('click', importLearnedIdiomsShared);
+
+    loadLearnedIdioms();
+    const lastSelected = localStorage.getItem(LAST_SELECTED_KEY);
+    if (lastSelected) {
+      selectedIdiom = IDIOMS.find(item => item.id === lastSelected) || null;
+      selectedFromRight = !!(selectedIdiom && learnedIdioms[selectedIdiom.id]);
+    }
+    renderAll();
+  </script>
+</body>
+</html>
