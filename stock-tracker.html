@@ -489,12 +489,12 @@
             <label>
               Data Provider
               <select class="select" id="providerSelect">
+                <option value="massive">Massive (API Key)</option>
                 <option value="stooq">Stooq (No Key)</option>
-                <option value="alphavantage">Alpha Vantage (API Key)</option>
               </select>
             </label>
             <label>
-              Alpha Vantage API Key
+              API Key
               <input class="input" id="apiKeyInput" type="password" placeholder="Enter your API key">
             </label>
             <label>
@@ -524,7 +524,7 @@
           </div>
 
           <div class="hint">
-            Stooq no-key mode works without setup but is better treated as delayed or end-of-day data. Alpha Vantage needs a key, but usually gives better quote coverage. This app stores your symbols, provider choice, and optional API key only in this browser.
+            Massive uses one keyed request per symbol and returns the 3 month daily window used for price, chart, average, high, and low calculations. Stooq no-key mode works without setup but is better treated as delayed or end-of-day data. This app stores your symbols, provider choice, and optional API key only in this browser.
           </div>
 
           <div id="status" class="status" aria-live="polite"></div>
@@ -562,17 +562,16 @@
     const STORAGE_PROVIDER_KEY = 'stock-tracker-provider';
     const STORAGE_REFRESH_MS = 'stock-tracker-refresh-ms';
     const THREE_MONTH_TRADING_DAYS = 66;
-    const ALPHA_VANTAGE_MIN_INTERVAL_MS = 1000;
+    const MASSIVE_BASE_URL = 'https://api.massive.com';
 
     const state = {
       symbols: [],
       apiKey: '',
-      provider: 'stooq',
+      provider: 'massive',
       refreshMs: 60000,
       stocks: {},
       refreshTimer: null,
-      isRefreshing: false,
-      lastAlphaVantageRequestAt: 0
+      isRefreshing: false
     };
 
     const apiKeyInput = document.getElementById('apiKeyInput');
@@ -650,14 +649,14 @@
         state.symbols = [];
       }
       state.apiKey = localStorage.getItem(STORAGE_API_KEY) || '';
-      state.provider = localStorage.getItem(STORAGE_PROVIDER_KEY) || 'stooq';
+      state.provider = localStorage.getItem(STORAGE_PROVIDER_KEY) || 'massive';
       state.refreshMs = Number(localStorage.getItem(STORAGE_REFRESH_MS) || 60000) || 0;
     }
 
     function renderProviderState() {
-      const usingAlphaVantage = state.provider === 'alphavantage';
-      apiKeyInput.disabled = !usingAlphaVantage;
-      apiKeyInput.placeholder = usingAlphaVantage ? 'Enter your API key' : 'Not needed for Stooq';
+      const usingMassive = state.provider === 'massive';
+      apiKeyInput.disabled = !usingMassive;
+      apiKeyInput.placeholder = usingMassive ? 'Enter your Massive API key' : 'Not needed for Stooq';
     }
 
     function upsertSymbols(nextSymbols) {
@@ -857,81 +856,12 @@
       }).join('');
     }
 
-    function parseHistoricalPayload(symbol, payload) {
-      const series = payload['Time Series (Daily)'];
-      if (!series) {
-        if (payload.Note) throw new Error(payload.Note);
-        if (payload.Information) throw new Error(payload.Information);
-        if (payload['Error Message']) throw new Error(`Symbol ${symbol} was not recognized.`);
-        throw new Error('Historical data was unavailable.');
-      }
-
-      const entries = Object.entries(series)
-        .map(([date, values]) => ({
-          date,
-          open: Number(values['1. open']),
-          high: Number(values['2. high']),
-          low: Number(values['3. low']),
-          close: Number(values['4. close'])
-        }))
-        .filter(item => Number.isFinite(item.close))
-        .sort((a, b) => a.date.localeCompare(b.date));
-
-      return entries.slice(-THREE_MONTH_TRADING_DAYS);
-    }
-
-    function parseQuotePayload(symbol, payload, historicalPoints) {
-      const quote = payload['Global Quote'];
-      const fallbackLatest = historicalPoints[historicalPoints.length - 1];
-      const fallbackPrev = historicalPoints[historicalPoints.length - 2];
-
-      if (!quote || Object.keys(quote).length === 0) {
-        if (!fallbackLatest) {
-          if (payload.Note) throw new Error(payload.Note);
-          if (payload.Information) throw new Error(payload.Information);
-          if (payload['Error Message']) throw new Error(`Symbol ${symbol} was not recognized.`);
-          throw new Error('Quote data was unavailable.');
-        }
-
-        const fallbackChange = fallbackPrev ? fallbackLatest.close - fallbackPrev.close : 0;
-        const fallbackPercent = fallbackPrev && fallbackPrev.close !== 0 ? (fallbackChange / fallbackPrev.close) * 100 : 0;
-
-        return {
-          price: fallbackLatest.close,
-          change: fallbackChange,
-          changePercent: fallbackPercent,
-          latestTradingDay: fallbackLatest.date
-        };
-      }
-
-      return {
-        price: Number(quote['05. price']),
-        change: Number(quote['09. change']),
-        changePercent: Number(String(quote['10. change percent'] || '').replace('%', '')),
-        latestTradingDay: quote['07. latest trading day'] || (fallbackLatest ? fallbackLatest.date : '')
-      };
-    }
-
     async function fetchJson(url) {
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`Request failed (${response.status})`);
       }
       return response.json();
-    }
-
-    function sleep(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    async function fetchAlphaVantageJson(url) {
-      const now = Date.now();
-      const waitMs = Math.max(0, ALPHA_VANTAGE_MIN_INTERVAL_MS - (now - state.lastAlphaVantageRequestAt));
-      if (waitMs > 0) {
-        await sleep(waitMs);
-      }
-      state.lastAlphaVantageRequestAt = Date.now();
-      return fetchJson(url);
     }
 
     async function fetchText(url) {
@@ -991,39 +921,69 @@
       };
     }
 
-    async function fetchAlphaVantageSymbolData(symbol) {
-      const encodedKey = encodeURIComponent(state.apiKey);
-      const encodedSymbol = encodeURIComponent(symbol);
-      const dailyUrl = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${encodedSymbol}&outputsize=compact&apikey=${encodedKey}`;
-      const quoteUrl = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${encodedSymbol}&apikey=${encodedKey}`;
+    function formatDateKey(date) {
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(date.getUTCDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
 
-      const dailyPayload = await fetchAlphaVantageJson(dailyUrl);
-      const quotePayload = await fetchAlphaVantageJson(quoteUrl);
-
-      const points = parseHistoricalPayload(symbol, dailyPayload);
-      const quote = parseQuotePayload(symbol, quotePayload, points);
+    function parseMassiveAggregatesPayload(symbol, payload) {
+      if (!payload || typeof payload !== 'object') {
+        throw new Error('Massive returned an empty response.');
+      }
+      if (payload.status === 'ERROR' || payload.error) {
+        throw new Error(payload.error || `Massive request failed for ${symbol}.`);
+      }
+      const results = Array.isArray(payload.results) ? payload.results : [];
+      const points = results
+        .map(item => ({
+          date: item.t ? formatDateKey(new Date(item.t)) : '',
+          open: Number(item.o),
+          high: Number(item.h),
+          low: Number(item.l),
+          close: Number(item.c)
+        }))
+        .filter(item => item.date && Number.isFinite(item.close))
+        .sort((a, b) => a.date.localeCompare(b.date));
 
       if (points.length === 0) {
-        throw new Error('No recent trading history was returned.');
+        throw new Error(`No recent Massive data was returned for ${symbol}.`);
       }
 
-      const closes = points.map(point => point.close);
-      const highs = points.map(point => point.high);
-      const lows = points.map(point => point.low);
+      const trimmed = points.slice(-THREE_MONTH_TRADING_DAYS);
+      const latest = trimmed[trimmed.length - 1];
+      const prev = trimmed[trimmed.length - 2];
+      const closes = trimmed.map(point => point.close);
+      const highs = trimmed.map(point => point.high);
+      const lows = trimmed.map(point => point.low);
+      const change = prev ? latest.close - prev.close : 0;
+      const changePercent = prev && prev.close !== 0 ? (change / prev.close) * 100 : 0;
 
       return {
         symbol,
-        price: Number.isFinite(quote.price) ? quote.price : closes[closes.length - 1],
-        change: Number.isFinite(quote.change) ? quote.change : 0,
-        changePercent: Number.isFinite(quote.changePercent) ? quote.changePercent : 0,
-        latestTradingDay: quote.latestTradingDay || points[points.length - 1].date,
+        price: latest.close,
+        change,
+        changePercent,
+        latestTradingDay: latest.date,
         avgClose: closes.reduce((sum, value) => sum + value, 0) / closes.length,
         high3m: Math.max(...highs),
         low3m: Math.min(...lows),
-        points,
-        samples: points.length,
+        points: trimmed,
+        samples: trimmed.length,
         refreshedAt: new Date().toISOString()
       };
+    }
+
+    async function fetchMassiveSymbolData(symbol) {
+      const encodedKey = encodeURIComponent(state.apiKey);
+      const encodedSymbol = encodeURIComponent(symbol);
+      const to = new Date();
+      const from = new Date(to);
+      from.setUTCDate(from.getUTCDate() - 120);
+      const url = `${MASSIVE_BASE_URL}/v2/aggs/ticker/${encodedSymbol}/range/1/day/${formatDateKey(from)}/${formatDateKey(to)}?adjusted=true&sort=asc&limit=180&apiKey=${encodedKey}`;
+      const payload = await fetchJson(url);
+      return parseMassiveAggregatesPayload(symbol, payload);
     }
 
     async function fetchStooqSymbolData(symbol) {
@@ -1034,16 +994,19 @@
     }
 
     async function fetchSymbolData(symbol) {
+      if (state.provider === 'massive') {
+        return fetchMassiveSymbolData(symbol);
+      }
       if (state.provider === 'stooq') {
         return fetchStooqSymbolData(symbol);
       }
-      return fetchAlphaVantageSymbolData(symbol);
+      throw new Error('Unsupported provider.');
     }
 
     async function refreshAllStocks() {
       if (state.isRefreshing) return;
-      if (state.provider === 'alphavantage' && !state.apiKey) {
-        setStatus('Enter an Alpha Vantage API key before refreshing.', 'error');
+      if (state.provider === 'massive' && !state.apiKey) {
+        setStatus('Enter a Massive API key before refreshing.', 'error');
         return;
       }
       if (state.symbols.length === 0) {
@@ -1059,8 +1022,8 @@
       let successCount = 0;
 
       for (const [index, symbol] of state.symbols.entries()) {
-        if (state.provider === 'alphavantage') {
-          setStatus(`Refreshing ${symbol} (${index + 1}/${state.symbols.length}) with Alpha Vantage rate limiting...`);
+        if (state.provider === 'massive') {
+          setStatus(`Refreshing ${symbol} (${index + 1}/${state.symbols.length}) with Massive...`);
         }
         try {
           const stock = await fetchSymbolData(symbol);
@@ -1083,12 +1046,13 @@
       renderSummary();
       renderStocks();
 
+      const providerLabel = state.provider === 'massive' ? 'Massive' : 'Stooq';
       if (successCount === state.symbols.length) {
-        setStatus(`Loaded ${successCount} symbol${successCount === 1 ? '' : 's'} from ${state.provider === 'stooq' ? 'Stooq' : 'Alpha Vantage'}.`, 'success');
+        setStatus(`Loaded ${successCount} symbol${successCount === 1 ? '' : 's'} from ${providerLabel}.`, 'success');
       } else if (successCount > 0) {
-        setStatus(`Loaded ${successCount} of ${state.symbols.length} symbols. Some requests failed or were rate limited.`, 'error');
+        setStatus(`Loaded ${successCount} of ${state.symbols.length} symbols from ${providerLabel}. Some requests failed.`, 'error');
       } else {
-        setStatus('No symbols loaded. Check the API key, symbols, or rate limit status.', 'error');
+        setStatus(`No symbols loaded from ${providerLabel}. Check the API key, symbols, or plan access.`, 'error');
       }
     }
 
@@ -1148,7 +1112,7 @@
       setStatus(
         state.provider === 'stooq'
           ? 'Using Stooq no-key mode. Data is typically delayed or end-of-day rather than true real-time.'
-          : 'Using Alpha Vantage. Enter your API key for quote refresh.',
+          : 'Using Massive. Enter your Massive API key for refresh.',
         'success'
       );
       if (state.symbols.length > 0 && (state.provider === 'stooq' || state.apiKey)) {
