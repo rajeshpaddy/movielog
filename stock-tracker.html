@@ -562,6 +562,7 @@
     const STORAGE_PROVIDER_KEY = 'stock-tracker-provider';
     const STORAGE_REFRESH_MS = 'stock-tracker-refresh-ms';
     const THREE_MONTH_TRADING_DAYS = 66;
+    const ALPHA_VANTAGE_MIN_INTERVAL_MS = 1000;
 
     const state = {
       symbols: [],
@@ -570,7 +571,8 @@
       refreshMs: 60000,
       stocks: {},
       refreshTimer: null,
-      isRefreshing: false
+      isRefreshing: false,
+      lastAlphaVantageRequestAt: 0
     };
 
     const apiKeyInput = document.getElementById('apiKeyInput');
@@ -918,6 +920,20 @@
       return response.json();
     }
 
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function fetchAlphaVantageJson(url) {
+      const now = Date.now();
+      const waitMs = Math.max(0, ALPHA_VANTAGE_MIN_INTERVAL_MS - (now - state.lastAlphaVantageRequestAt));
+      if (waitMs > 0) {
+        await sleep(waitMs);
+      }
+      state.lastAlphaVantageRequestAt = Date.now();
+      return fetchJson(url);
+    }
+
     async function fetchText(url) {
       const response = await fetch(url);
       if (!response.ok) {
@@ -981,10 +997,8 @@
       const dailyUrl = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${encodedSymbol}&outputsize=compact&apikey=${encodedKey}`;
       const quoteUrl = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${encodedSymbol}&apikey=${encodedKey}`;
 
-      const [dailyPayload, quotePayload] = await Promise.all([
-        fetchJson(dailyUrl),
-        fetchJson(quoteUrl)
-      ]);
+      const dailyPayload = await fetchAlphaVantageJson(dailyUrl);
+      const quotePayload = await fetchAlphaVantageJson(quoteUrl);
 
       const points = parseHistoricalPayload(symbol, dailyPayload);
       const quote = parseQuotePayload(symbol, quotePayload, points);
@@ -1044,7 +1058,10 @@
 
       let successCount = 0;
 
-      for (const symbol of state.symbols) {
+      for (const [index, symbol] of state.symbols.entries()) {
+        if (state.provider === 'alphavantage') {
+          setStatus(`Refreshing ${symbol} (${index + 1}/${state.symbols.length}) with Alpha Vantage rate limiting...`);
+        }
         try {
           const stock = await fetchSymbolData(symbol);
           state.stocks[symbol] = stock;
