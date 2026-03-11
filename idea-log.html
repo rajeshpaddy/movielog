@@ -529,9 +529,12 @@
         if (!payload || payload.app !== 'idea-log' || !Array.isArray(payload.ideas)) {
           throw new Error('Shared data format is invalid.');
         }
-        const incoming = payload.ideas.map(normalizeIdea).filter(Boolean);
+        const incoming = stampImportedIdeas(payload.ideas, keyword);
         const byId = new Map(ideas.map(i => [i.id, i]));
-        incoming.forEach(item => byId.set(item.id, item));
+        incoming.forEach(item => {
+          const existing = byId.get(item.id);
+          byId.set(item.id, existing ? { ...existing, ...item, importKeyword: item.importKeyword } : item);
+        });
         ideas = Array.from(byId.values()).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         saveIdeas();
         renderAll();
@@ -632,6 +635,14 @@
         updatedAt,
         importKeyword
       };
+    }
+
+    function stampImportedIdeas(sourceIdeas, keyword) {
+      const importKeyword = normalizeKeyword(keyword || '');
+      return sourceIdeas
+        .map(normalizeIdea)
+        .filter(Boolean)
+        .map(item => ({ ...item, importKeyword }));
     }
 
     function loadIdeas() {
@@ -775,12 +786,12 @@
         if (!payload || payload.app !== 'idea-log' || !Array.isArray(payload.ideas)) {
           throw new Error('Invalid share payload.');
         }
-        const incoming = payload.ideas
-          .map(normalizeIdea)
-          .filter(Boolean)
-          .map(item => ({ ...item, importKeyword: keyword }));
+        const incoming = stampImportedIdeas(payload.ideas, payload.keyword || 'shared-url');
         const byId = new Map(ideas.map(i => [i.id, i]));
-        incoming.forEach(item => byId.set(item.id, item));
+        incoming.forEach(item => {
+          const existing = byId.get(item.id);
+          byId.set(item.id, existing ? { ...existing, ...item, importKeyword: item.importKeyword } : item);
+        });
         ideas = Array.from(byId.values()).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         saveIdeas();
         renderAll();
