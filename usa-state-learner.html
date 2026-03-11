@@ -224,6 +224,68 @@
     .region-shape.visited { fill: #16a34a; stroke: #4ade80; }
     .region-shape.selected { fill: #8b5cf6; stroke: #c4b5fd; }
 
+    .detail-panel {
+      margin-top: 10px;
+      background: #0f172a;
+      border: 1px solid #1f3a5f;
+      border-radius: 14px;
+      padding: 12px;
+      max-height: 300px;
+      overflow: auto;
+    }
+    .detail-panel.empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #94a3b8;
+      font-size: 14px;
+      min-height: 110px;
+    }
+    .detail-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .detail-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .detail-subtitle {
+      font-size: 12px;
+      color: #93c5fd;
+    }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+    .detail-card {
+      background: #111c31;
+      border: 1px solid #223553;
+      border-radius: 12px;
+      padding: 10px;
+    }
+    .detail-card-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #67e8f9;
+      margin-bottom: 8px;
+    }
+    .detail-line {
+      font-size: 13px;
+      line-height: 1.4;
+      color: #dbeafe;
+      margin-bottom: 6px;
+    }
+    .detail-line:last-child { margin-bottom: 0; }
+    .detail-line strong { color: #f8fafc; }
+
     .status {
       position: fixed;
       left: 10px;
@@ -313,6 +375,7 @@
         <div id="mapMarkers" class="map-markers"></div>
         <svg id="mapSvg" class="map-svg" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid meet" aria-label="USA political map"></svg>
       </div>
+      <div id="detailPanel" class="detail-panel empty">Select a state to see a detailed snapshot.</div>
     </div>
 
     <div class="pane side">
@@ -392,6 +455,61 @@
       1:'AL',2:'AK',4:'AZ',5:'AR',6:'CA',8:'CO',9:'CT',10:'DE',12:'FL',13:'GA',15:'HI',16:'ID',17:'IL',18:'IN',19:'IA',20:'KS',21:'KY',22:'LA',23:'ME',24:'MD',25:'MA',26:'MI',27:'MN',28:'MS',29:'MO',30:'MT',31:'NE',32:'NV',33:'NH',34:'NJ',35:'NM',36:'NY',37:'NC',38:'ND',39:'OH',40:'OK',41:'OR',42:'PA',44:'RI',45:'SC',46:'SD',47:'TN',48:'TX',49:'UT',50:'VT',51:'VA',53:'WA',54:'WV',55:'WI',56:'WY'
     };
 
+    const STATE_DETAILS = {
+      AL: { politicalLean: 'Red', abortionLaw: 'Near-total ban with narrow exceptions.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Restrictive policy climate.', population: '5.2M', demographics: 'White majority with a large Black population.', boomingIndustry: 'Auto manufacturing, aerospace, and logistics.', topChallenges: 'Rural health access, workforce skills, and poverty.', governor: 'Kay Ivey', senators: 'Katie Britt, Tommy Tuberville', majorAirports: 'BHM, HSV, MOB' },
+      AK: { politicalLean: 'Red', abortionLaw: 'Protected by state court precedent.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'Opt-in system only.', lgbtClimate: 'Mixed protections.', population: '741K', demographics: 'White plurality with high Alaska Native representation.', boomingIndustry: 'Energy, tourism, fisheries, and cargo aviation.', topChallenges: 'High costs, remote infrastructure, and housing.', governor: 'Mike Dunleavy', senators: 'Lisa Murkowski, Dan Sullivan', majorAirports: 'ANC, FAI, JNU' },
+      AZ: { politicalLean: 'Purple', abortionLaw: 'Legal with a 15-week limit.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'Yes.', lgbtClimate: 'Mixed but improving protections.', population: '7.6M', demographics: 'White plurality with a large Hispanic population.', boomingIndustry: 'Semiconductors, data centers, and logistics.', topChallenges: 'Water supply, housing costs, and heat resilience.', governor: 'Katie Hobbs', senators: 'Ruben Gallego, Mark Kelly', majorAirports: 'PHX, TUS, AZA' },
+      AR: { politicalLean: 'Red', abortionLaw: 'Near-total ban with narrow exceptions.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Restrictive policy climate.', population: '3.1M', demographics: 'White majority with a sizable Black population.', boomingIndustry: 'Retail supply chains, poultry, and steel.', topChallenges: 'Health outcomes, education gaps, and rural broadband.', governor: 'Sarah Huckabee Sanders', senators: 'John Boozman, Tom Cotton', majorAirports: 'LIT, XNA, FSM' },
+      CA: { politicalLean: 'Blue', abortionLaw: 'Protected in state law and constitution.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'Yes.', lgbtClimate: 'Broad protections.', population: '39.4M', demographics: 'No single majority; large Latino and Asian communities.', boomingIndustry: 'AI, entertainment, biotech, and clean tech.', topChallenges: 'Housing affordability, homelessness, and wildfire risk.', governor: 'Gavin Newsom', senators: 'Alex Padilla, Adam Schiff', majorAirports: 'LAX, SFO, SAN' },
+      CO: { politicalLean: 'Blue', abortionLaw: 'Protected in state law.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Broad protections.', population: '6.0M', demographics: 'White majority with a growing Hispanic population.', boomingIndustry: 'Aerospace, clean energy, and software.', topChallenges: 'Housing costs, water stress, and transit.', governor: 'Jared Polis', senators: 'Michael Bennet, John Hickenlooper', majorAirports: 'DEN, COS, ASE' },
+      CT: { politicalLean: 'Blue', abortionLaw: 'Protected in state law.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Broad protections.', population: '3.7M', demographics: 'White plurality with large Black and Hispanic communities.', boomingIndustry: 'Insurance, advanced manufacturing, and biotech.', topChallenges: 'High living costs, aging infrastructure, and inequality.', governor: 'Ned Lamont', senators: 'Richard Blumenthal, Chris Murphy', majorAirports: 'BDL, HVN, SWF area access' },
+      DE: { politicalLean: 'Blue', abortionLaw: 'Protected in state law.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Broad protections.', population: '1.1M', demographics: 'White plurality with substantial Black population.', boomingIndustry: 'Chemicals, finance, and life sciences.', topChallenges: 'Coastal flooding, housing supply, and health care access.', governor: 'Matt Meyer', senators: 'Lisa Blunt Rochester, Chris Coons', majorAirports: 'ILG, PHL access, BWI access' },
+      FL: { politicalLean: 'Red', abortionLaw: '6-week ban with exceptions.', autoSystem: 'No-fault auto insurance.', communityProperty: 'No.', lgbtClimate: 'Restrictive policy climate.', population: '23.5M', demographics: 'White plurality with very large Hispanic population.', boomingIndustry: 'Tourism, health care, aerospace, and logistics.', topChallenges: 'Insurance costs, hurricanes, and housing affordability.', governor: 'Ron DeSantis', senators: 'Ashley Moody, Rick Scott', majorAirports: 'MIA, MCO, FLL' },
+      GA: { politicalLean: 'Purple', abortionLaw: '6-week ban with exceptions.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Mixed protections.', population: '11.3M', demographics: 'White plurality with a large Black population.', boomingIndustry: 'Film, logistics, EVs, and fintech.', topChallenges: 'Traffic, housing, and rural hospital strain.', governor: 'Brian Kemp', senators: 'Jon Ossoff, Raphael Warnock', majorAirports: 'ATL, SAV, CHS area access' },
+      HI: { politicalLean: 'Blue', abortionLaw: 'Protected in state law.', autoSystem: 'No-fault auto insurance.', communityProperty: 'No.', lgbtClimate: 'Broad protections.', population: '1.4M', demographics: 'Asian plurality with large multiracial and Native Hawaiian communities.', boomingIndustry: 'Tourism, defense, and clean energy.', topChallenges: 'High cost of living, housing, and climate risk.', governor: 'Josh Green', senators: 'Mazie Hirono, Brian Schatz', majorAirports: 'HNL, OGG, KOA' },
+      ID: { politicalLean: 'Red', abortionLaw: 'Near-total ban with limited emergency exceptions.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'Yes.', lgbtClimate: 'Restrictive policy climate.', population: '2.0M', demographics: 'White majority with a growing Hispanic population.', boomingIndustry: 'Semiconductors, food processing, and outdoor recreation.', topChallenges: 'Housing costs, school funding, and water pressure.', governor: 'Brad Little', senators: 'Mike Crapo, Jim Risch', majorAirports: 'BOI, SUN, IDA' },
+      IL: { politicalLean: 'Blue', abortionLaw: 'Protected in state law.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Broad protections.', population: '12.7M', demographics: 'White plurality with large Black and Hispanic communities.', boomingIndustry: 'Finance, logistics, health care, and quantum tech.', topChallenges: 'Fiscal pressure, public safety, and population stagnation.', governor: 'J.B. Pritzker', senators: 'Tammy Duckworth, Dick Durbin', majorAirports: 'ORD, MDW, RFD' },
+      IN: { politicalLean: 'Red', abortionLaw: 'Near-total ban with narrow exceptions.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Restrictive to mixed climate.', population: '7.0M', demographics: 'White majority with growing Hispanic and Black populations.', boomingIndustry: 'Manufacturing, pharmaceuticals, and logistics.', topChallenges: 'Brain drain, health outcomes, and housing.', governor: 'Mike Braun', senators: 'Jim Banks, Todd Young', majorAirports: 'IND, SBN, FWA' },
+      IA: { politicalLean: 'Red', abortionLaw: '6-week ban with exceptions.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Restrictive to mixed climate.', population: '3.2M', demographics: 'White majority with growing Latino communities.', boomingIndustry: 'Ag tech, biofuels, insurance, and manufacturing.', topChallenges: 'Rural depopulation, water quality, and workforce shortages.', governor: 'Kim Reynolds', senators: 'Joni Ernst, Chuck Grassley', majorAirports: 'DSM, CID, DBQ' },
+      KS: { politicalLean: 'Red', abortionLaw: 'Abortion remains legal under state constitutional protection.', autoSystem: 'No-fault auto insurance.', communityProperty: 'No.', lgbtClimate: 'Mixed protections.', population: '3.0M', demographics: 'White majority with sizable Hispanic population.', boomingIndustry: 'Aviation, animal health, and agriculture.', topChallenges: 'Water depletion, rural hospitals, and teacher retention.', governor: 'Laura Kelly', senators: 'Roger Marshall, Jerry Moran', majorAirports: 'MCI access, ICT, FOE' },
+      KY: { politicalLean: 'Red', abortionLaw: 'Near-total ban with narrow exceptions.', autoSystem: 'Choice no-fault auto system.', communityProperty: 'No.', lgbtClimate: 'Mixed to restrictive climate.', population: '4.6M', demographics: 'White majority with sizable Black population in metros.', boomingIndustry: 'Auto manufacturing, logistics, and bourbon.', topChallenges: 'Addiction, health outcomes, and flood resilience.', governor: 'Andy Beshear', senators: 'Mitch McConnell, Rand Paul', majorAirports: 'SDF, CVG, LEX' },
+      LA: { politicalLean: 'Red', abortionLaw: 'Near-total ban with narrow exceptions.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'Yes.', lgbtClimate: 'Restrictive policy climate.', population: '4.6M', demographics: 'White majority with a large Black population.', boomingIndustry: 'Petrochemicals, LNG, and ports.', topChallenges: 'Coastal erosion, insurance, and poverty.', governor: 'Jeff Landry', senators: 'Bill Cassidy, John Kennedy', majorAirports: 'MSY, BTR, LFT' },
+      ME: { politicalLean: 'Blue', abortionLaw: 'Protected in state law; viability framework.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Broad protections.', population: '1.4M', demographics: 'White majority with older age profile.', boomingIndustry: 'Shipbuilding, biotech, forestry, and tourism.', topChallenges: 'Aging population, housing, and rural access.', governor: 'Janet Mills', senators: 'Susan Collins, Angus King', majorAirports: 'PWM, BGR, AUG' },
+      MD: { politicalLean: 'Blue', abortionLaw: 'Protected in state law.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Broad protections.', population: '6.3M', demographics: 'Diverse; large Black, White, and immigrant communities.', boomingIndustry: 'Biotech, cyber, defense, and health care.', topChallenges: 'Transit funding, housing, and Chesapeake resilience.', governor: 'Wes Moore', senators: 'Angela Alsobrooks, Chris Van Hollen', majorAirports: 'BWI, DCA access, IAD access' },
+      MA: { politicalLean: 'Blue', abortionLaw: 'Protected in state law.', autoSystem: 'No-fault auto insurance.', communityProperty: 'No.', lgbtClimate: 'Broad protections.', population: '7.2M', demographics: 'White majority with large Asian, Black, and Hispanic communities.', boomingIndustry: 'Biotech, higher ed, robotics, and finance.', topChallenges: 'Housing costs, transit reliability, and affordability.', governor: 'Maura Healey', senators: 'Ed Markey, Elizabeth Warren', majorAirports: 'BOS, ORH, PVD access' },
+      MI: { politicalLean: 'Purple', abortionLaw: 'Protected by state constitution.', autoSystem: 'No-fault auto insurance.', communityProperty: 'No.', lgbtClimate: 'Broad protections.', population: '10.1M', demographics: 'White majority with large Black and Arab American communities.', boomingIndustry: 'EVs, batteries, advanced manufacturing, and mobility tech.', topChallenges: 'Roads, population growth, and industrial transition.', governor: 'Gretchen Whitmer', senators: 'Gary Peters, Elissa Slotkin', majorAirports: 'DTW, GRR, FNT' },
+      MN: { politicalLean: 'Blue', abortionLaw: 'Protected in state law.', autoSystem: 'No-fault auto insurance.', communityProperty: 'No.', lgbtClimate: 'Broad protections.', population: '5.8M', demographics: 'White majority with growing Black, Asian, and East African communities.', boomingIndustry: 'Medical devices, food processing, and clean tech.', topChallenges: 'Housing, public safety, and regional disparities.', governor: 'Tim Walz', senators: 'Amy Klobuchar, Tina Smith', majorAirports: 'MSP, DLH, RST' },
+      MS: { politicalLean: 'Red', abortionLaw: 'Near-total ban with narrow exceptions.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Restrictive policy climate.', population: '2.9M', demographics: 'White majority with one of the largest Black population shares in the country.', boomingIndustry: 'Shipbuilding, logistics, and advanced manufacturing.', topChallenges: 'Poverty, health outcomes, and education.', governor: 'Tate Reeves', senators: 'Cindy Hyde-Smith, Roger Wicker', majorAirports: 'JAN, GPT, MEM access' },
+      MO: { politicalLean: 'Red', abortionLaw: 'Severely restricted; legal status remains contested after voter action.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Restrictive to mixed climate.', population: '6.3M', demographics: 'White majority with large Black population in St. Louis and Kansas City.', boomingIndustry: 'Ag tech, aerospace, geospatial, and health care.', topChallenges: 'Urban-rural divides, abortion litigation, and infrastructure.', governor: 'Mike Kehoe', senators: 'Josh Hawley, Eric Schmitt', majorAirports: 'STL, MCI, SGF' },
+      MT: { politicalLean: 'Red', abortionLaw: 'Protected under state constitutional precedent.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Mixed protections.', population: '1.2M', demographics: 'White majority with notable Native American communities.', boomingIndustry: 'Outdoor recreation, tourism, and energy.', topChallenges: 'Housing costs, wildfire risk, and rural health.', governor: 'Greg Gianforte', senators: 'Steve Daines, Tim Sheehy', majorAirports: 'BZN, MSO, FCA' },
+      NE: { politicalLean: 'Red', abortionLaw: '12-week limit with restrictions.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Mixed to restrictive climate.', population: '2.0M', demographics: 'White majority with growing Hispanic communities.', boomingIndustry: 'Agribusiness, insurance, and advanced manufacturing.', topChallenges: 'Workforce shortages, water management, and rural population loss.', governor: 'Jim Pillen', senators: 'Deb Fischer, Pete Ricketts', majorAirports: 'OMA, LNK, GRI' },
+      NV: { politicalLean: 'Purple', abortionLaw: 'Protected by voter-approved law.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'Yes.', lgbtClimate: 'Broad protections.', population: '3.3M', demographics: 'No single majority; large Hispanic and Asian communities.', boomingIndustry: 'Tourism, logistics, batteries, and data centers.', topChallenges: 'Water supply, housing, and economic volatility.', governor: 'Joe Lombardo', senators: 'Catherine Cortez Masto, Jacky Rosen', majorAirports: 'LAS, RNO, HND' },
+      NH: { politicalLean: 'Purple', abortionLaw: 'Legal with a 24-week limit.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Mixed protections.', population: '1.4M', demographics: 'White majority with older age profile.', boomingIndustry: 'Advanced manufacturing, health tech, and tourism.', topChallenges: 'Housing shortages, workforce aging, and child care.', governor: 'Kelly Ayotte', senators: 'Maggie Hassan, Jeanne Shaheen', majorAirports: 'MHT, BOS access, PSM' },
+      NJ: { politicalLean: 'Blue', abortionLaw: 'Protected in state law.', autoSystem: 'Choice no-fault auto system.', communityProperty: 'No.', lgbtClimate: 'Broad protections.', population: '9.5M', demographics: 'Highly diverse; large Hispanic, Asian, Black, and White communities.', boomingIndustry: 'Pharma, logistics, fintech, and clean energy.', topChallenges: 'Property taxes, transit reliability, and housing costs.', governor: 'Mikie Sherrill', senators: 'Cory Booker, Andy Kim', majorAirports: 'EWR, ACY, PHL access' },
+      NM: { politicalLean: 'Blue', abortionLaw: 'Protected in state law.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'Yes.', lgbtClimate: 'Broad protections.', population: '2.1M', demographics: 'Majority-minority state with large Hispanic and Native populations.', boomingIndustry: 'Film, aerospace, renewables, and federal labs.', topChallenges: 'Crime, education outcomes, and water scarcity.', governor: 'Michelle Lujan Grisham', senators: 'Martin Heinrich, Ben Ray Luján', majorAirports: 'ABQ, SAF, ROW' },
+      NY: { politicalLean: 'Blue', abortionLaw: 'Protected in state law.', autoSystem: 'No-fault auto insurance.', communityProperty: 'No.', lgbtClimate: 'Broad protections.', population: '20.0M', demographics: 'Highly diverse; large immigrant, Black, Hispanic, and Asian communities.', boomingIndustry: 'Finance, AI, biotech, media, and semiconductors.', topChallenges: 'Housing costs, transit funding, and outmigration.', governor: 'Kathy Hochul', senators: 'Kirsten Gillibrand, Chuck Schumer', majorAirports: 'JFK, LGA, EWR' },
+      NC: { politicalLean: 'Purple', abortionLaw: '12-week limit with exceptions.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Mixed protections.', population: '11.2M', demographics: 'White majority with large Black population and fast growth.', boomingIndustry: 'Biotech, banking, and advanced manufacturing.', topChallenges: 'Housing growth, storm resilience, and school funding.', governor: 'Josh Stein', senators: 'Ted Budd, Thom Tillis', majorAirports: 'CLT, RDU, GSO' },
+      ND: { politicalLean: 'Red', abortionLaw: 'Strict bans blocked in court; status remains contested.', autoSystem: 'No-fault auto insurance.', communityProperty: 'No.', lgbtClimate: 'Restrictive policy climate.', population: '800K', demographics: 'White majority with significant Native communities.', boomingIndustry: 'Energy, agriculture, and data infrastructure.', topChallenges: 'Workforce shortages, housing in boom areas, and climate extremes.', governor: 'Kelly Armstrong', senators: 'Kevin Cramer, John Hoeven', majorAirports: 'FAR, BIS, GFK' },
+      OH: { politicalLean: 'Red', abortionLaw: 'Protected by state constitutional amendment.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Mixed protections.', population: '11.9M', demographics: 'White majority with large Black population in major metros.', boomingIndustry: 'Semiconductors, logistics, and manufacturing.', topChallenges: 'Population stagnation, opioid recovery, and aging infrastructure.', governor: 'Mike DeWine', senators: 'Jon Husted, Bernie Moreno', majorAirports: 'CMH, CLE, CVG access' },
+      OK: { politicalLean: 'Red', abortionLaw: 'Near-total ban with narrow exceptions.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Restrictive policy climate.', population: '4.2M', demographics: 'White majority with large Native American population.', boomingIndustry: 'Energy, aerospace, and logistics.', topChallenges: 'Education funding, health outcomes, and severe weather.', governor: 'Kevin Stitt', senators: 'James Lankford, Markwayne Mullin', majorAirports: 'OKC, TUL, XNA access' },
+      OR: { politicalLean: 'Blue', abortionLaw: 'Protected in state law.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Broad protections.', population: '4.3M', demographics: 'White majority with growing Hispanic and Asian populations.', boomingIndustry: 'Semiconductors, sportswear, and clean tech.', topChallenges: 'Homelessness, drug crisis, and wildfire risk.', governor: 'Tina Kotek', senators: 'Jeff Merkley, Ron Wyden', majorAirports: 'PDX, EUG, MFR' },
+      PA: { politicalLean: 'Purple', abortionLaw: 'Legal with a 24-week limit.', autoSystem: 'Choice no-fault auto system.', communityProperty: 'No.', lgbtClimate: 'Mixed protections.', population: '13.1M', demographics: 'White majority with large Black and Hispanic communities.', boomingIndustry: 'Health care, logistics, energy, and robotics.', topChallenges: 'Aging infrastructure, grid transition, and housing.', governor: 'Josh Shapiro', senators: 'John Fetterman, Dave McCormick', majorAirports: 'PHL, PIT, MDT' },
+      RI: { politicalLean: 'Blue', abortionLaw: 'Protected in state law.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Broad protections.', population: '1.1M', demographics: 'White majority with large Hispanic and Portuguese communities.', boomingIndustry: 'Blue economy, defense, and health services.', topChallenges: 'Housing costs, school outcomes, and coastal flooding.', governor: 'Dan McKee', senators: 'Jack Reed, Sheldon Whitehouse', majorAirports: 'PVD, BOS access, BDL access' },
+      SC: { politicalLean: 'Red', abortionLaw: '6-week ban with exceptions.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Restrictive to mixed climate.', population: '5.6M', demographics: 'White majority with large Black population and fast in-migration.', boomingIndustry: 'Autos, aerospace, and logistics.', topChallenges: 'Rapid growth, roads, and coastal climate risk.', governor: 'Henry McMaster', senators: 'Lindsey Graham, Tim Scott', majorAirports: 'CHS, GSP, CAE' },
+      SD: { politicalLean: 'Red', abortionLaw: 'Near-total ban with narrow exceptions.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Restrictive policy climate.', population: '940K', demographics: 'White majority with notable Native communities.', boomingIndustry: 'Ag processing, finance, and tourism.', topChallenges: 'Workforce shortages, rural care, and housing.', governor: 'Larry Rhoden', senators: 'Mike Rounds, John Thune', majorAirports: 'FSD, RAP, PIR' },
+      TN: { politicalLean: 'Red', abortionLaw: 'Near-total ban with narrow exceptions.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Restrictive policy climate.', population: '7.3M', demographics: 'White majority with large Black population and rapid metro growth.', boomingIndustry: 'Auto plants, health care, and logistics.', topChallenges: 'Housing costs, transit, and maternal health.', governor: 'Bill Lee', senators: 'Marsha Blackburn, Bill Hagerty', majorAirports: 'BNA, MEM, TYS' },
+      TX: { politicalLean: 'Red', abortionLaw: 'Near-total ban with narrow exceptions.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'Yes.', lgbtClimate: 'Restrictive policy climate.', population: '31.7M', demographics: 'No single majority; very large Hispanic population.', boomingIndustry: 'Energy, semiconductors, data centers, and aerospace.', topChallenges: 'Grid reliability, water, housing, and border policy.', governor: 'Greg Abbott', senators: 'John Cornyn, Ted Cruz', majorAirports: 'DFW, IAH, AUS' },
+      UT: { politicalLean: 'Red', abortionLaw: 'Legal status is mixed while trigger ban remains blocked.', autoSystem: 'No-fault auto insurance.', communityProperty: 'No.', lgbtClimate: 'Mixed protections.', population: '3.5M', demographics: 'White majority with young and fast-growing population.', boomingIndustry: 'Software, fintech, life sciences, and aerospace.', topChallenges: 'Housing affordability, water scarcity, and air quality.', governor: 'Spencer Cox', senators: 'John Curtis, Mike Lee', majorAirports: 'SLC, PVU, SGU' },
+      VT: { politicalLean: 'Blue', abortionLaw: 'Protected by state constitution.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Broad protections.', population: '649K', demographics: 'White majority with older age profile.', boomingIndustry: 'Specialty food, tourism, and clean energy.', topChallenges: 'Aging population, flood recovery, and housing.', governor: 'Phil Scott', senators: 'Bernie Sanders, Peter Welch', majorAirports: 'BTV, RUT, ALB access' },
+      VA: { politicalLean: 'Blue', abortionLaw: 'Legal with a viability framework.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Broad protections.', population: '8.9M', demographics: 'Diverse; large Black, Asian, and immigrant communities.', boomingIndustry: 'Defense, data centers, biotech, and logistics.', topChallenges: 'Housing, traffic, and coastal resilience.', governor: 'Abigail Spanberger', senators: 'Tim Kaine, Mark Warner', majorAirports: 'DCA, IAD, ORF' },
+      WA: { politicalLean: 'Blue', abortionLaw: 'Protected in state law.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'Yes.', lgbtClimate: 'Broad protections.', population: '8.0M', demographics: 'White majority with large Asian and Hispanic communities.', boomingIndustry: 'Cloud computing, aerospace, and clean energy.', topChallenges: 'Housing costs, homelessness, and wildfire smoke.', governor: 'Bob Ferguson', senators: 'Maria Cantwell, Patty Murray', majorAirports: 'SEA, GEG, PAE' },
+      WV: { politicalLean: 'Red', abortionLaw: 'Near-total ban with limited exceptions.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Restrictive policy climate.', population: '1.8M', demographics: 'White majority with older age profile.', boomingIndustry: 'Energy, chemicals, and outdoor tourism.', topChallenges: 'Population decline, addiction, and health care access.', governor: 'Patrick Morrisey', senators: 'Shelley Moore Capito, Jim Justice', majorAirports: 'CRW, HTS, PIT access' },
+      WI: { politicalLean: 'Purple', abortionLaw: 'Legal access remains in place; future limits still contested.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'Yes.', lgbtClimate: 'Mixed protections.', population: '6.0M', demographics: 'White majority with growing Hispanic, Asian, and Black communities.', boomingIndustry: 'Advanced manufacturing, water tech, and biotech.', topChallenges: 'Political polarization, workforce aging, and housing.', governor: 'Tony Evers', senators: 'Tammy Baldwin, Ron Johnson', majorAirports: 'MKE, MSN, GRB' },
+      WY: { politicalLean: 'Red', abortionLaw: 'Abortion bans remain tied up in court.', autoSystem: 'Fault-based auto insurance.', communityProperty: 'No.', lgbtClimate: 'Mixed to restrictive climate.', population: '588K', demographics: 'White majority with small but important Native and Hispanic communities.', boomingIndustry: 'Energy, minerals, and tourism.', topChallenges: 'Revenue dependence, housing in resort towns, and drought.', governor: 'Mark Gordon', senators: 'John Barrasso, Cynthia Lummis', majorAirports: 'JAC, CYS, CPR' }
+    };
+
+    DATA.forEach(item => Object.assign(item, STATE_DETAILS[item.code] || {}));
+
     const STORE_KEY = 'visitedUSStates';
     const MODE_KEY = 'usMapMode';
     const SETGET_SET_URL = 'https://setget.io/api/set';
@@ -432,6 +550,7 @@
     const importSharedBtn = document.getElementById('importSharedBtn');
     const importFile = document.getElementById('importFile');
     const transferStatus = document.getElementById('transferStatus');
+    const detailPanel = document.getElementById('detailPanel');
 
     function setTransferStatus(message, isError = false) {
       transferStatus.textContent = message;
@@ -502,6 +621,7 @@
       renderLists();
       renderVisitButton();
       renderStatus();
+      renderDetailPanel();
       scheduleMapRender();
     }
 
@@ -536,6 +656,54 @@
       `;
     }
 
+    function detailLine(label, value) {
+      return `<div class="detail-line"><strong>${label}:</strong> ${value || 'Not available'}</div>`;
+    }
+
+    function renderDetailPanel() {
+      const item = codeToState[selectedCode];
+      if (!item) {
+        detailPanel.className = 'detail-panel empty';
+        detailPanel.textContent = 'Select a state to see a detailed snapshot.';
+        return;
+      }
+
+      detailPanel.className = 'detail-panel';
+      detailPanel.innerHTML = `
+        <div class="detail-header">
+          <div class="detail-title">${item.name}</div>
+          <div class="detail-subtitle">${visited[item.code] ? 'Visited' : 'Not visited'} • ${item.region}</div>
+        </div>
+        <div class="detail-grid">
+          <div class="detail-card">
+            <div class="detail-card-title">Overview</div>
+            ${detailLine('Capital city', item.capital)}
+            ${detailLine('Population', item.population)}
+            ${detailLine('Demographics', item.demographics)}
+            ${detailLine('Major airports', item.majorAirports)}
+          </div>
+          <div class="detail-card">
+            <div class="detail-card-title">Politics & Leaders</div>
+            ${detailLine('Blue / Red', item.politicalLean)}
+            ${detailLine('Governor', item.governor)}
+            ${detailLine('Senators', item.senators)}
+            ${detailLine('LGBT climate', item.lgbtClimate)}
+          </div>
+          <div class="detail-card">
+            <div class="detail-card-title">Law & Household Rules</div>
+            ${detailLine('Abortion law', item.abortionLaw)}
+            ${detailLine('Auto system', item.autoSystem)}
+            ${detailLine('Community property', item.communityProperty)}
+          </div>
+          <div class="detail-card">
+            <div class="detail-card-title">Economy Snapshot</div>
+            ${detailLine('Booming industry', item.boomingIndustry)}
+            ${detailLine('Top challenges', item.topChallenges)}
+          </div>
+        </div>
+      `;
+    }
+
     function toggleVisited() {
       if (!selectedCode) return;
       if (visited[selectedCode]) {
@@ -548,6 +716,7 @@
       renderLists();
       renderVisitButton();
       renderStatus();
+      renderDetailPanel();
       scheduleMapRender();
     }
 
@@ -720,6 +889,7 @@
           renderLists();
           renderVisitButton();
           renderStatus();
+          renderDetailPanel();
           scheduleMapRender();
           setTransferStatus(`Imported ${Object.keys(visited).length} states`);
         } catch (error) {
@@ -801,6 +971,7 @@
         renderLists();
         renderVisitButton();
         renderStatus();
+        renderDetailPanel();
         scheduleMapRender();
         setTransferStatus(`Shared import complete (${keyword})`, false);
       } catch (error) {
@@ -877,6 +1048,7 @@
     } else {
       renderVisitButton();
       renderStatus();
+      renderDetailPanel();
       scheduleMapRender();
     }
   </script>
