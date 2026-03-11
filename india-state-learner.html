@@ -959,10 +959,20 @@
       return normalized;
     }
 
+    function buildSharedKey(keyword) {
+      let hash = 2166136261;
+      for (let i = 0; i < keyword.length; i += 1) {
+        hash ^= keyword.charCodeAt(i);
+        hash = Math.imul(hash, 16777619);
+      }
+      const shortKeyword = keyword.slice(0, 16).replace(/^-+|-+$/g, '') || 'share';
+      return `inst-${shortKeyword}-${(hash >>> 0).toString(36).slice(0, 6)}`;
+    }
+
     async function exportSharedData() {
       const keyword = promptSharedKeyword('Shared export');
       if (!keyword) return;
-      const key = `india-state-learner-${keyword}`;
+      const key = buildSharedKey(keyword);
       const payload = {
         app: 'india-state-learner',
         version: 1,
@@ -994,7 +1004,7 @@
     async function importSharedData() {
       const keyword = promptSharedKeyword('Shared import');
       if (!keyword) return;
-      const key = `india-state-learner-${keyword}`;
+      const key = buildSharedKey(keyword);
       try {
         const response = await fetch(`${SETGET_GET_BASE}/${encodeURIComponent(key)}`);
         const text = await response.text();
@@ -1027,7 +1037,7 @@
     async function clearSharedData() {
       const keyword = promptSharedKeyword('Clear shared');
       if (!keyword) return;
-      const key = `india-state-learner-${keyword}`;
+      const key = buildSharedKey(keyword);
       const payload = {
         app: 'india-state-learner',
         version: 1,
