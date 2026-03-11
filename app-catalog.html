@@ -134,6 +134,7 @@
   <a class="changelog-link" href="changelog.html" title="View per-app changelog">Changelog</a>
 
   <script>
+    const CATALOG_LAUNCH_PREFIX = 'ai-app-catalog-telemetry-catalog-launch';
     const apps = [
       {
         name: 'Catalog Guide Chat',
@@ -357,8 +358,50 @@
       `).join('');
     }
 
+    function rememberCatalogLaunch(app) {
+      if (!app || !app.file || !app.file.includes('rajeshpaddy.github.io/movielog/')) return;
+
+      const fileName = app.file.split('/').pop().split('?')[0];
+      const telemetryMap = {
+        'catalog-guide-chat.html': 'catalog-guide-chat',
+        'bill-tracker.html': 'bill-tracker',
+        'ski-tracker.html': 'ski-tracker',
+        'spanish-flashcards.html': 'spanish-flashcards',
+        'food-designer.html': 'food-designer',
+        'food-log.html': 'food-log',
+        'time-tracker.html': 'time-tracker',
+        'scotch-ghazal.html': 'scotch-ghazal',
+        'pokemon-learner.html': 'pokemon-learner',
+        'president-learner.html': 'president-learner',
+        'american-idioms-learner.html': 'american-idioms-learner',
+        'country-learner.html': 'country-learner',
+        'usa-state-learner.html': 'usa-state-learner',
+        'india-state-learner.html': 'india-state-learner',
+        'Fire-Plans.html': 'fire-plans',
+        'CowsNBulls.html': 'cows-n-bulls',
+        'book-log.html': 'book-log',
+        'idea-log.html': 'idea-log',
+        'health-insurance-retirement.html': 'health-insurance-retirement',
+        'tictactoe.html': 'tic-tac-toe',
+        'stock-tracker.html': 'stock-tracker'
+      };
+      const targetAppId = telemetryMap[fileName];
+      if (!targetAppId) return;
+
+      try {
+        localStorage.setItem(`${CATALOG_LAUNCH_PREFIX}-${targetAppId}`, JSON.stringify({
+          source: 'app-catalog',
+          targetAppId,
+          at: new Date().toISOString()
+        }));
+      } catch (error) {
+        /* ignore storage failures */
+      }
+    }
+
     function openApp(app, inNewTab = false) {
       if (!app) return;
+      rememberCatalogLaunch(app);
       if (inNewTab) {
         window.open(app.file, '_blank');
         return;
@@ -479,6 +522,12 @@
     
     renderCatalogStats();
     renderApps(filteredApps);
+
+    document.querySelector('.video-tile')?.addEventListener('click', () => {
+      rememberCatalogLaunch({
+        file: 'https://rajeshpaddy.github.io/movielog/catalog-guide-chat.html'
+      });
+    });
   </script>
   <script>window.APP_TELEMETRY_ID = "app-catalog";</script>
   <script src="app-telemetry.js" defer></script>

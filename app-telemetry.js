@@ -8,8 +8,9 @@
   const SETGET_SET_URL = 'https://setget.io/api/set';
   const SETGET_GET_BASE = 'https://setget.io/api/get';
   const STORAGE_PREFIX = 'ai-app-catalog-telemetry';
-  const TELEMETRY_VERSION = 2;
+  const TELEMETRY_VERSION = 3;
   const RECENT_SAMPLE_LIMIT = 20;
+  const CATALOG_LAUNCH_PREFIX = `${STORAGE_PREFIX}-catalog-launch`;
 
   if (navigator.doNotTrack === '1' || window.doNotTrack === '1' || navigator.msDoNotTrack === '1') {
     return;
@@ -26,6 +27,15 @@
   function safeSetItem(key, value) {
     try {
       localStorage.setItem(key, value);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function safeRemoveItem(key) {
+    try {
+      localStorage.removeItem(key);
       return true;
     } catch (error) {
       return false;
@@ -112,6 +122,22 @@
 
   function normalizeName(value) {
     return String(value || '').trim();
+  }
+
+  function consumeCatalogLaunch() {
+    const launchKey = `${CATALOG_LAUNCH_PREFIX}-${appId}`;
+    const raw = safeGetItem(launchKey);
+    if (!raw) return null;
+    safeRemoveItem(launchKey);
+
+    try {
+      const payload = JSON.parse(raw);
+      if (!payload || typeof payload !== 'object') return null;
+      if (payload.targetAppId && payload.targetAppId !== appId) return null;
+      return payload;
+    } catch (error) {
+      return null;
+    }
   }
 
   function pickRegionBucket(geo) {
@@ -225,10 +251,9 @@
 
   async function recordTelemetry() {
     const weekKey = getWeekKey(new Date());
-    const sentKey = `${STORAGE_PREFIX}-sent-v${TELEMETRY_VERSION}-${appId}-${weekKey}`;
     const telemetryKey = buildTelemetryKey(weekKey);
     ensureTelemetryLink(telemetryKey);
-    if (safeGetItem(sentKey)) return;
+    const catalogLaunch = consumeCatalogLaunch();
 
     const geo = await fetchGeo().catch(() => ({
       countryCode: '',
@@ -250,6 +275,7 @@
           week: weekKey,
           key: telemetryKey,
           hitCount: 0,
+          launchSources: {},
           regions: {},
           countries: {},
           recent: []
@@ -262,24 +288,29 @@
     next.key = telemetryKey;
     next.updatedAt = now;
     next.hitCount = Number(next.hitCount || 0) + 1;
+    next.launchSources = next.launchSources && typeof next.launchSources === 'object' ? next.launchSources : {};
     next.regions = next.regions && typeof next.regions === 'object' ? next.regions : {};
     next.countries = next.countries && typeof next.countries === 'object' ? next.countries : {};
     next.recent = Array.isArray(next.recent) ? next.recent : [];
 
     const regionKey = geo.regionBucket || 'Unknown';
     const countryKey = geo.countryCode || geo.countryName || 'Unknown';
+    const launchSource = catalogLaunch && catalogLaunch.source === 'app-catalog'
+      ? 'app-catalog'
+      : 'direct';
 
+    next.launchSources[launchSource] = Number(next.launchSources[launchSource] || 0) + 1;
     next.regions[regionKey] = Number(next.regions[regionKey] || 0) + 1;
     next.countries[countryKey] = Number(next.countries[countryKey] || 0) + 1;
     next.recent.unshift({
       at: now,
+      source: launchSource,
       region: regionKey,
       country: countryKey
     });
     next.recent = next.recent.slice(0, RECENT_SAMPLE_LIMIT);
 
     await writeTelemetry(telemetryKey, next);
-    safeSetItem(sentKey, now);
   }
 
   function scheduleTelemetry() {
