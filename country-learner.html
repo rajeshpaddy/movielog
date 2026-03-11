@@ -79,6 +79,16 @@
       align-items: center;
       justify-content: center;
     }
+    .transfer-btn svg {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex: 0 0 auto;
+    }
     .transfer-btn:hover {
       background: #1a4a7a;
     }
@@ -1074,9 +1084,21 @@
       <div class="transfer-actions">
         <button type="button" class="transfer-btn" id="exportVisitedBtn" aria-label="Export visited countries" title="Export visited countries">⤓</button>
         <button type="button" class="transfer-btn" id="importVisitedBtn" aria-label="Import visited countries" title="Import visited countries">⤒</button>
-        <button type="button" class="transfer-btn" id="exportSharedVisitedBtn" aria-label="Export visited countries to cloud" title="Export visited countries to cloud">☁↑</button>
+        <button type="button" class="transfer-btn" id="exportSharedVisitedBtn" aria-label="Export visited countries to cloud" title="Export visited countries to cloud">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 18a4 4 0 1 1 .8-7.92A5.5 5.5 0 0 1 18.5 11 3.5 3.5 0 1 1 18 18Z"></path>
+            <path d="M12 15V8"></path>
+            <path d="m9.5 10.5 2.5-2.5 2.5 2.5"></path>
+          </svg>
+        </button>
         <button type="button" class="transfer-btn" id="clearSharedVisitedBtn" aria-label="Clear cloud export for visited countries" title="Clear cloud export for visited countries">✕</button>
-        <button type="button" class="transfer-btn" id="importSharedVisitedBtn" aria-label="Import visited countries from cloud" title="Import visited countries from cloud">☁↓</button>
+        <button type="button" class="transfer-btn" id="importSharedVisitedBtn" aria-label="Import visited countries from cloud" title="Import visited countries from cloud">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 18a4 4 0 1 1 .8-7.92A5.5 5.5 0 0 1 18.5 11 3.5 3.5 0 1 1 18 18Z"></path>
+            <path d="M12 9v7"></path>
+            <path d="m9.5 13.5 2.5 2.5 2.5-2.5"></path>
+          </svg>
+        </button>
         <input type="file" id="importVisitedFile" accept="application/json" hidden>
       </div>
       <div class="transfer-status" id="transferStatus" aria-live="polite"></div>
