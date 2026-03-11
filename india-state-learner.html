@@ -218,6 +218,68 @@
     .region-shape.visited { fill: #16a34a; stroke: #4ade80; }
     .region-shape.selected { fill: #8b5cf6; stroke: #c4b5fd; }
 
+    .detail-panel {
+      margin-top: 10px;
+      background: #0f172a;
+      border: 1px solid #4b5563;
+      border-radius: 14px;
+      padding: 12px;
+      max-height: 320px;
+      overflow: auto;
+    }
+    .detail-panel.empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #cbd5e1;
+      font-size: 14px;
+      min-height: 110px;
+    }
+    .detail-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .detail-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .detail-subtitle {
+      font-size: 12px;
+      color: #fde68a;
+    }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+    .detail-card {
+      background: #111c31;
+      border: 1px solid #223553;
+      border-radius: 12px;
+      padding: 10px;
+    }
+    .detail-card-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #fbbf24;
+      margin-bottom: 8px;
+    }
+    .detail-line {
+      font-size: 13px;
+      line-height: 1.4;
+      color: #dbeafe;
+      margin-bottom: 6px;
+    }
+    .detail-line:last-child { margin-bottom: 0; }
+    .detail-line strong { color: #f8fafc; }
+
     .status {
       position: fixed;
       left: 10px;
@@ -306,6 +368,7 @@
         <div id="mapMarkers" class="map-markers"></div>
         <svg id="mapSvg" class="map-svg" viewBox="0 0 1000 900" preserveAspectRatio="xMidYMid meet" aria-label="India political map"></svg>
       </div>
+      <div id="detailPanel" class="detail-panel empty">Select a state or union territory to see a detailed snapshot.</div>
     </div>
 
     <div class="pane side">
@@ -367,6 +430,47 @@
       { code: 'PY', name: 'Puducherry', region: 'union-territory', capital: 'Puducherry', lat: 11.9416, lng: 79.8083 }
     ];
 
+    const DETAIL_DATA = {
+      AP: { typeLabel: 'State', population: '53M', languages: 'Telugu, Urdu', literacy: '67%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'N. Chandrababu Naidu', headOfStateLabel: 'Governor', headOfState: 'S. Abdul Nazeer', lokSabhaSeats: '25', majorAirports: 'Visakhapatnam, Vijayawada, Tirupati', boomingIndustry: 'Ports, electronics, pharma, and food processing', topChallenges: 'Capital-region buildout, jobs, and cyclone resilience', knownFor: 'Long coastline, Tirupati, and Kuchipudi tradition' },
+      AR: { typeLabel: 'State', population: '1.7M', languages: 'English, Hindi, Nyishi and other tribal languages', literacy: '66%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Pema Khandu', headOfStateLabel: 'Governor', headOfState: 'K. T. Parnaik', lokSabhaSeats: '2', majorAirports: 'Itanagar Hollongi, Tezu, Pasighat', boomingIndustry: 'Hydropower, tourism, and horticulture', topChallenges: 'Connectivity, border infrastructure, and landslides', knownFor: 'Eastern Himalaya, monasteries, and high biodiversity' },
+      AS: { typeLabel: 'State', population: '36M', languages: 'Assamese, Bengali, Bodo', literacy: '73%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Himanta Biswa Sarma', headOfStateLabel: 'Governor', headOfState: 'Lakshman Prasad Acharya', lokSabhaSeats: '14', majorAirports: 'Guwahati, Dibrugarh, Silchar', boomingIndustry: 'Tea, petroleum, logistics, and tourism', topChallenges: 'Floods, erosion, and jobs beyond tea and oil', knownFor: 'Kaziranga, Brahmaputra valley, and tea estates' },
+      BR: { typeLabel: 'State', population: '131M', languages: 'Hindi, Urdu, Maithili', literacy: '63%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Nitish Kumar', headOfStateLabel: 'Governor', headOfState: 'Arif Mohammad Khan', lokSabhaSeats: '40', majorAirports: 'Patna, Gaya, Darbhanga', boomingIndustry: 'Construction, agri-processing, and services', topChallenges: 'Jobs, flood control, and industrialisation', knownFor: 'Nalanda, Bodh Gaya, and fertile Gangetic plains' },
+      CT: { typeLabel: 'State', population: '30M', languages: 'Hindi, Chhattisgarhi', literacy: '71%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Vishnu Deo Sai', headOfStateLabel: 'Governor', headOfState: 'Ramen Deka', lokSabhaSeats: '11', majorAirports: 'Raipur, Bilaspur, Jagdalpur', boomingIndustry: 'Steel, power, mining, and cement', topChallenges: 'Tribal development, Naxal violence, and forest rights', knownFor: 'Mineral belt, waterfalls, and tribal culture' },
+      GA: { typeLabel: 'State', population: '1.6M', languages: 'Konkani, Marathi, English', literacy: '88%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Pramod Sawant', headOfStateLabel: 'Governor', headOfState: 'P. S. Sreedharan Pillai', lokSabhaSeats: '2', majorAirports: 'Dabolim, Manohar International', boomingIndustry: 'Tourism, hospitality, and pharma', topChallenges: 'Overtourism, waste, and land-use pressure', knownFor: 'Beaches, churches, and Indo-Portuguese heritage' },
+      GJ: { typeLabel: 'State', population: '72M', languages: 'Gujarati, Hindi', literacy: '79%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Bhupendra Patel', headOfStateLabel: 'Governor', headOfState: 'Acharya Devvrat', lokSabhaSeats: '26', majorAirports: 'Ahmedabad, Surat, Vadodara', boomingIndustry: 'Chemicals, semiconductors, ports, and manufacturing', topChallenges: 'Water stress, pollution, and inclusive job growth', knownFor: 'Gir, Somnath, and strong trading tradition' },
+      HR: { typeLabel: 'State', population: '30M', languages: 'Hindi, Haryanvi, Punjabi', literacy: '76%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Nayab Singh Saini', headOfStateLabel: 'Governor', headOfState: 'Bandaru Dattatreya', lokSabhaSeats: '10', majorAirports: 'Delhi access, Hisar, Chandigarh access', boomingIndustry: 'Auto manufacturing, IT, and warehousing', topChallenges: 'Urban sprawl, water depletion, and farm stress', knownFor: 'NCR economy, sports talent, and dairy belt' },
+      HP: { typeLabel: 'State', population: '7.6M', languages: 'Hindi, Pahari dialects', literacy: '83%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Sukhvinder Singh Sukhu', headOfStateLabel: 'Governor', headOfState: 'Shiv Pratap Shukla', lokSabhaSeats: '4', majorAirports: 'Shimla, Kullu, Dharamshala', boomingIndustry: 'Tourism, hydropower, and horticulture', topChallenges: 'Landslides, climate damage, and youth employment', knownFor: 'Hill stations, apples, and mountain tourism' },
+      JH: { typeLabel: 'State', population: '40M', languages: 'Hindi, Santali, Bengali, Urdu', literacy: '67%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Hemant Soren', headOfStateLabel: 'Governor', headOfState: 'Santosh Kumar Gangwar', lokSabhaSeats: '14', majorAirports: 'Ranchi, Deoghar, Jamshedpur access', boomingIndustry: 'Steel, mining, and heavy engineering', topChallenges: 'Poverty, land rights, and mining-region inequality', knownFor: 'Mineral wealth, forests, and tribal communities' },
+      KA: { typeLabel: 'State', population: '70M', languages: 'Kannada, Urdu, Tulu', literacy: '76%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Siddaramaiah', headOfStateLabel: 'Governor', headOfState: 'Thaawarchand Gehlot', lokSabhaSeats: '28', majorAirports: 'Bengaluru, Mangaluru, Hubballi', boomingIndustry: 'IT, aerospace, biotech, and electronics', topChallenges: 'Traffic, water, and regional imbalance', knownFor: 'Bengaluru tech hub, Mysuru, and coffee hills' },
+      KL: { typeLabel: 'State', population: '36M', languages: 'Malayalam, English', literacy: '96%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Pinarayi Vijayan', headOfStateLabel: 'Governor', headOfState: 'Rajendra Vishwanath Arlekar', lokSabhaSeats: '20', majorAirports: 'Kochi, Thiruvananthapuram, Kozhikode', boomingIndustry: 'Tourism, health care, IT, and remittance-driven services', topChallenges: 'Aging population, flooding, and job creation', knownFor: 'Backwaters, Ayurveda, and high social indicators' },
+      MP: { typeLabel: 'State', population: '87M', languages: 'Hindi, Bundeli, Malvi', literacy: '71%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Mohan Yadav', headOfStateLabel: 'Governor', headOfState: 'Mangubhai C. Patel', lokSabhaSeats: '29', majorAirports: 'Indore, Bhopal, Jabalpur', boomingIndustry: 'Auto supply chains, agriculture, and logistics', topChallenges: 'Malnutrition, water stress, and rural incomes', knownFor: 'Khajuraho, tiger reserves, and central location' },
+      MH: { typeLabel: 'State', population: '126M', languages: 'Marathi, Hindi, Urdu', literacy: '83%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Devendra Fadnavis', headOfStateLabel: 'Governor', headOfState: 'C. P. Radhakrishnan', lokSabhaSeats: '48', majorAirports: 'Mumbai, Pune, Nagpur', boomingIndustry: 'Finance, media, auto, and manufacturing', topChallenges: 'Urban housing, agrarian distress, and pollution', knownFor: 'Mumbai, Bollywood, and major industrial corridors' },
+      MN: { typeLabel: 'State', population: '3.2M', languages: 'Meitei, English, tribal languages', literacy: '77%', headOfGovtLabel: 'Administration', headOfGovt: 'Presidents Rule in force', headOfStateLabel: 'Governor', headOfState: 'Ajay Kumar Bhalla', lokSabhaSeats: '2', majorAirports: 'Imphal', boomingIndustry: 'Handloom, sports goods, and border trade potential', topChallenges: 'Ethnic conflict, displacement, and connectivity', knownFor: 'Loktak Lake, polo heritage, and handloom crafts' },
+      ML: { typeLabel: 'State', population: '3.9M', languages: 'Khasi, Garo, English', literacy: '75%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Conrad K. Sangma', headOfStateLabel: 'Governor', headOfState: 'C. H. Vijayashankar', lokSabhaSeats: '2', majorAirports: 'Shillong, Guwahati access', boomingIndustry: 'Tourism, horticulture, and cement', topChallenges: 'Road connectivity, jobs, and coal transition', knownFor: 'Living root bridges, waterfalls, and music scene' },
+      MZ: { typeLabel: 'State', population: '1.3M', languages: 'Mizo, English', literacy: '91%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Lalduhoma', headOfStateLabel: 'Governor', headOfState: 'Vijay Kumar Singh', lokSabhaSeats: '1', majorAirports: 'Aizawl Lengpui', boomingIndustry: 'Bamboo, horticulture, and border trade', topChallenges: 'Connectivity, landslides, and limited industrial base', knownFor: 'Hill towns, bamboo culture, and church-led civil society' },
+      NL: { typeLabel: 'State', population: '2.3M', languages: 'English, Nagamese and tribal languages', literacy: '80%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Neiphiu Rio', headOfStateLabel: 'Governor', headOfState: 'La. Ganesan', lokSabhaSeats: '1', majorAirports: 'Dimapur, Kohima access', boomingIndustry: 'Agri-processing, tourism, and handloom', topChallenges: 'Connectivity, jobs, and peace-process uncertainty', knownFor: 'Hornbill Festival and rich tribal diversity' },
+      OD: { typeLabel: 'State', population: '47M', languages: 'Odia, Hindi', literacy: '77%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Mohan Charan Majhi', headOfStateLabel: 'Governor', headOfState: 'Hari Babu Kambhampati', lokSabhaSeats: '21', majorAirports: 'Bhubaneswar, Jharsuguda, Puri access', boomingIndustry: 'Metals, mining, green energy, and tourism', topChallenges: 'Cyclones, tribal welfare, and value-added jobs', knownFor: 'Jagannath Temple, Chilika, and classical Odissi culture' },
+      PB: { typeLabel: 'State', population: '31M', languages: 'Punjabi, Hindi', literacy: '76%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Bhagwant Mann', headOfStateLabel: 'Governor', headOfState: 'Gulab Chand Kataria', lokSabhaSeats: '13', majorAirports: 'Amritsar, Chandigarh, Ludhiana access', boomingIndustry: 'Food processing, manufacturing, and logistics', topChallenges: 'Groundwater decline, drug abuse, and farm diversification', knownFor: 'Golden Temple, bhangra, and wheat-rice belt' },
+      RJ: { typeLabel: 'State', population: '82M', languages: 'Hindi, Rajasthani dialects', literacy: '69%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Bhajan Lal Sharma', headOfStateLabel: 'Governor', headOfState: 'Haribhau Bagade', lokSabhaSeats: '25', majorAirports: 'Jaipur, Udaipur, Jodhpur', boomingIndustry: 'Tourism, solar power, cement, and textiles', topChallenges: 'Water scarcity, heat, and rural jobs', knownFor: 'Forts, deserts, and palace tourism' },
+      SK: { typeLabel: 'State', population: '700K', languages: 'Nepali, Sikkimese, Lepcha, English', literacy: '82%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Prem Singh Tamang', headOfStateLabel: 'Governor', headOfState: 'Om Prakash Mathur', lokSabhaSeats: '1', majorAirports: 'Pakyong, Bagdogra access', boomingIndustry: 'Tourism, hydropower, and organic farming', topChallenges: 'Landslides, connectivity, and climate shocks', knownFor: 'Kanchenjunga views and organic agriculture branding' },
+      TN: { typeLabel: 'State', population: '78M', languages: 'Tamil, English', literacy: '81%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'M. K. Stalin', headOfStateLabel: 'Governor', headOfState: 'R. N. Ravi', lokSabhaSeats: '39', majorAirports: 'Chennai, Coimbatore, Madurai', boomingIndustry: 'Auto, electronics, renewables, and textiles', topChallenges: 'Water security, urban congestion, and climate heat', knownFor: 'Classical Tamil culture, temples, and manufacturing base' },
+      TG: { typeLabel: 'State', population: '39M', languages: 'Telugu, Urdu', literacy: '72%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'A. Revanth Reddy', headOfStateLabel: 'Governor', headOfState: 'Jishnu Dev Varma', lokSabhaSeats: '17', majorAirports: 'Hyderabad, Warangal access', boomingIndustry: 'IT, pharma, data centers, and aerospace', topChallenges: 'Urban sprawl, irrigation finance, and jobs', knownFor: 'Hyderabad, Charminar, and pharma corridor' },
+      TR: { typeLabel: 'State', population: '4.2M', languages: 'Bengali, Kokborok, English', literacy: '87%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Manik Saha', headOfStateLabel: 'Governor', headOfState: 'Nallu Indrasena Reddy', lokSabhaSeats: '2', majorAirports: 'Agartala, Kailashahar access', boomingIndustry: 'Rubber, bamboo, and gas-based industries', topChallenges: 'Connectivity costs, jobs, and border trade balance', knownFor: 'Royal palaces, bamboo crafts, and green cover' },
+      UP: { typeLabel: 'State', population: '241M', languages: 'Hindi, Urdu', literacy: '70%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Yogi Adityanath', headOfStateLabel: 'Governor', headOfState: 'Anandiben Patel', lokSabhaSeats: '80', majorAirports: 'Lucknow, Varanasi, Noida/Delhi region', boomingIndustry: 'Electronics, expressway logistics, and food processing', topChallenges: 'Jobs, urban services, and learning outcomes', knownFor: 'Varanasi, Ayodhya, Taj region access, and Gangetic heartland' },
+      UK: { typeLabel: 'State', population: '11.5M', languages: 'Hindi, Garhwali, Kumaoni', literacy: '79%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Pushkar Singh Dhami', headOfStateLabel: 'Governor', headOfState: 'Gurmit Singh', lokSabhaSeats: '5', majorAirports: 'Dehradun, Pantnagar, Pithoragarh access', boomingIndustry: 'Tourism, wellness, hydropower, and food products', topChallenges: 'Disaster risk, migration from hills, and ecology pressure', knownFor: 'Char Dham, Himalayan trekking, and yoga tourism' },
+      WB: { typeLabel: 'State', population: '102M', languages: 'Bengali, Hindi, Urdu', literacy: '77%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Mamata Banerjee', headOfStateLabel: 'Governor', headOfState: 'C. V. Ananda Bose', lokSabhaSeats: '42', majorAirports: 'Kolkata, Bagdogra, Andal', boomingIndustry: 'Services, tea, steel, and logistics', topChallenges: 'Industrial revival, flooding, and job creation', knownFor: 'Kolkata culture, Sundarbans, and Durga Puja' },
+      AN: { typeLabel: 'Union Territory', population: '400K', languages: 'Hindi, Bengali, Tamil, Nicobarese', literacy: '86%', headOfGovtLabel: 'Local Administration', headOfGovt: 'No elected legislature', headOfStateLabel: 'Lieutenant Governor', headOfState: 'Admiral D. K. Joshi', lokSabhaSeats: '1', majorAirports: 'Port Blair', boomingIndustry: 'Tourism, fisheries, and logistics', topChallenges: 'Island connectivity, ecology, and disaster resilience', knownFor: 'Coral islands, diving, and Cellular Jail' },
+      CH: { typeLabel: 'Union Territory', population: '1.2M', languages: 'Hindi, Punjabi, English', literacy: '86%', headOfGovtLabel: 'Local Administration', headOfGovt: 'Union territory without assembly', headOfStateLabel: 'Administrator', headOfState: 'Gulab Chand Kataria', lokSabhaSeats: '1', majorAirports: 'Chandigarh', boomingIndustry: 'Services, education, and health care', topChallenges: 'Urban land pressure, waste, and traffic', knownFor: 'Planned city design by Le Corbusier' },
+      DH: { typeLabel: 'Union Territory', population: '1.3M', languages: 'Gujarati, Hindi, Marathi', literacy: '88%', headOfGovtLabel: 'Local Administration', headOfGovt: 'Union territory without assembly', headOfStateLabel: 'Administrator', headOfState: 'Praful Khoda Patel', lokSabhaSeats: '2', majorAirports: 'Daman, Surat access', boomingIndustry: 'Manufacturing, tourism, and logistics', topChallenges: 'Urban services, coastal management, and integration of enclaves', knownFor: 'Industrial hubs and Portuguese-era coastal heritage' },
+      DL: { typeLabel: 'Union Territory', population: '20M+', languages: 'Hindi, English, Punjabi, Urdu', literacy: '87%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Rekha Gupta', headOfStateLabel: 'Lieutenant Governor', headOfState: 'Vinai Kumar Saxena', lokSabhaSeats: '7', majorAirports: 'Delhi IGI', boomingIndustry: 'Government, services, startups, and retail', topChallenges: 'Air pollution, congestion, and governance overlap', knownFor: 'National capital, monuments, and food culture' },
+      JK: { typeLabel: 'Union Territory', population: '13M', languages: 'Kashmiri, Dogri, Urdu, Hindi', literacy: '68%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'Omar Abdullah', headOfStateLabel: 'Lieutenant Governor', headOfState: 'Manoj Sinha', lokSabhaSeats: '5', majorAirports: 'Srinagar, Jammu', boomingIndustry: 'Tourism, horticulture, and handicrafts', topChallenges: 'Security, jobs, and winter connectivity', knownFor: 'Kashmir valley, Vaishno Devi access, and handicrafts' },
+      LA: { typeLabel: 'Union Territory', population: '300K', languages: 'Ladakhi, Hindi, Urdu', literacy: '77%', headOfGovtLabel: 'Local Administration', headOfGovt: 'Union territory without assembly', headOfStateLabel: 'Lieutenant Governor', headOfState: 'Brig. B. D. Mishra', lokSabhaSeats: '1', majorAirports: 'Leh', boomingIndustry: 'Tourism, defence support, and solar potential', topChallenges: 'Harsh climate, logistics, and glacier stress', knownFor: 'High-altitude desert, monasteries, and adventure travel' },
+      LD: { typeLabel: 'Union Territory', population: '70K', languages: 'Malayalam, Jeseri', literacy: '92%', headOfGovtLabel: 'Local Administration', headOfGovt: 'Union territory without assembly', headOfStateLabel: 'Administrator', headOfState: 'Praful Khoda Patel', lokSabhaSeats: '1', majorAirports: 'Agatti', boomingIndustry: 'Tourism, fisheries, and coconut products', topChallenges: 'Fragile reefs, transport, and freshwater limits', knownFor: 'Coral atolls and lagoon tourism' },
+      PY: { typeLabel: 'Union Territory', population: '1.7M', languages: 'Tamil, Telugu, Malayalam, French', literacy: '86%', headOfGovtLabel: 'Chief Minister', headOfGovt: 'N. Rangasamy', headOfStateLabel: 'Lieutenant Governor', headOfState: 'K. Kailashnathan', lokSabhaSeats: '1', majorAirports: 'Puducherry, Chennai access', boomingIndustry: 'Tourism, education, and small manufacturing', topChallenges: 'Fragmented geography, coastal erosion, and jobs', knownFor: 'French quarter, Auroville, and seaside tourism' }
+    };
+
+    DATA.forEach(item => Object.assign(item, DETAIL_DATA[item.code] || {}));
+
     const STORE_KEY = 'visitedIndiaStates';
     const MODE_KEY = 'indiaMapMode';
     const SETGET_SET_URL = 'https://setget.io/api/set';
@@ -427,6 +531,7 @@
     const importSharedBtn = document.getElementById('importSharedBtn');
     const importFile = document.getElementById('importFile');
     const transferStatus = document.getElementById('transferStatus');
+    const detailPanel = document.getElementById('detailPanel');
 
     function normalizeName(value) {
       return String(value || '')
@@ -506,6 +611,7 @@
       renderLists();
       renderVisitButton();
       renderStatus();
+      renderDetailPanel();
       scheduleMapRender();
     }
 
@@ -540,6 +646,54 @@
       `;
     }
 
+    function detailLine(label, value) {
+      return `<div class="detail-line"><strong>${label}:</strong> ${value || 'Not available'}</div>`;
+    }
+
+    function renderDetailPanel() {
+      const item = codeToItem[selectedCode];
+      if (!item) {
+        detailPanel.className = 'detail-panel empty';
+        detailPanel.textContent = 'Select a state or union territory to see a detailed snapshot.';
+        return;
+      }
+
+      detailPanel.className = 'detail-panel';
+      detailPanel.innerHTML = `
+        <div class="detail-header">
+          <div class="detail-title">${item.name}</div>
+          <div class="detail-subtitle">${item.typeLabel || 'State / UT'} • ${visited[item.code] ? 'Visited' : 'Not visited'} • ${item.region}</div>
+        </div>
+        <div class="detail-grid">
+          <div class="detail-card">
+            <div class="detail-card-title">Overview</div>
+            ${detailLine('Capital', item.capital)}
+            ${detailLine('Population', item.population)}
+            ${detailLine('Languages', item.languages)}
+            ${detailLine('Literacy', item.literacy)}
+          </div>
+          <div class="detail-card">
+            <div class="detail-card-title">Governance</div>
+            ${detailLine(item.headOfGovtLabel || 'Government head', item.headOfGovt)}
+            ${detailLine(item.headOfStateLabel || 'Constitutional head', item.headOfState)}
+            ${detailLine('Lok Sabha seats', item.lokSabhaSeats)}
+            ${detailLine('Type', item.typeLabel)}
+          </div>
+          <div class="detail-card">
+            <div class="detail-card-title">Economy & Issues</div>
+            ${detailLine('Booming sectors', item.boomingIndustry)}
+            ${detailLine('Top challenges', item.topChallenges)}
+            ${detailLine('Known for', item.knownFor)}
+          </div>
+          <div class="detail-card">
+            <div class="detail-card-title">Connectivity</div>
+            ${detailLine('Major airports', item.majorAirports)}
+            ${detailLine('Region', item.region)}
+          </div>
+        </div>
+      `;
+    }
+
     function toggleVisited() {
       if (!selectedCode) return;
       if (visited[selectedCode]) {
@@ -552,6 +706,7 @@
       renderLists();
       renderVisitButton();
       renderStatus();
+      renderDetailPanel();
       scheduleMapRender();
     }
 
@@ -779,6 +934,7 @@
           renderLists();
           renderVisitButton();
           renderStatus();
+          renderDetailPanel();
           scheduleMapRender();
           setTransferStatus(`Imported ${Object.keys(visited).length} entries`);
         } catch (error) {
@@ -860,6 +1016,7 @@
         renderLists();
         renderVisitButton();
         renderStatus();
+        renderDetailPanel();
         scheduleMapRender();
         setTransferStatus(`Shared import complete (${keyword})`, false);
       } catch (error) {
@@ -948,6 +1105,7 @@
     } else {
       renderVisitButton();
       renderStatus();
+      renderDetailPanel();
       scheduleMapRender();
     }
   </script>
