@@ -332,15 +332,6 @@
           <h2 class="pane-title">Popular Idioms</h2>
           <p class="pane-note">Selecting an idiom here marks it as learned and moves it to the right pane.</p>
           <input id="leftSearch" class="search-box" type="text" placeholder="Search unlearned idioms...">
-          <div class="transfer-actions">
-            <button type="button" class="transfer-btn" id="exportLearnedBtn" aria-label="Export learned idioms" title="Export learned idioms">⤓</button>
-            <button type="button" class="transfer-btn" id="importLearnedBtn" aria-label="Import learned idioms" title="Import learned idioms">⤒</button>
-            <button type="button" class="transfer-btn" id="exportSharedLearnedBtn" aria-label="Shared export learned idioms" title="Shared export learned idioms">⇪</button>
-            <button type="button" class="transfer-btn" id="clearSharedLearnedBtn" aria-label="Clear shared learned idioms" title="Clear shared learned idioms">✕</button>
-            <button type="button" class="transfer-btn" id="importSharedLearnedBtn" aria-label="Shared import learned idioms" title="Shared import learned idioms">⇩</button>
-          </div>
-          <div id="transferStatus" class="transfer-status" aria-live="polite"></div>
-          <input id="importLearnedFile" type="file" accept="application/json" hidden>
         </div>
         <div id="leftList" class="item-list"></div>
         <div class="pane-footer">Ordered by approximate common usage, from most familiar upward.</div>
@@ -359,6 +350,15 @@
           <h2 class="pane-title">Learned Idioms</h2>
           <p class="pane-note">Click any learned idiom to revisit it. The list is ordered by most recently learned.</p>
           <input id="rightSearch" class="search-box" type="text" placeholder="Search learned idioms...">
+          <div class="transfer-actions">
+            <button type="button" class="transfer-btn" id="exportLearnedBtn" aria-label="Export learned idioms" title="Export learned idioms">⤓</button>
+            <button type="button" class="transfer-btn" id="importLearnedBtn" aria-label="Import learned idioms" title="Import learned idioms">⤒</button>
+            <button type="button" class="transfer-btn" id="exportSharedLearnedBtn" aria-label="Shared export learned idioms" title="Shared export learned idioms">⇪</button>
+            <button type="button" class="transfer-btn" id="clearSharedLearnedBtn" aria-label="Clear shared learned idioms" title="Clear shared learned idioms">✕</button>
+            <button type="button" class="transfer-btn" id="importSharedLearnedBtn" aria-label="Shared import learned idioms" title="Shared import learned idioms">⇩</button>
+          </div>
+          <div id="transferStatus" class="transfer-status" aria-live="polite"></div>
+          <input id="importLearnedFile" type="file" accept="application/json" hidden>
         </div>
         <div id="rightList" class="item-list"></div>
         <div class="pane-footer">Your learned list is stored locally unless you choose shared export.</div>
