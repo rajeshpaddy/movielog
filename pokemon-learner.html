@@ -100,6 +100,16 @@
       align-items: center;
       justify-content: center;
     }
+    .transfer-btn svg {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex: 0 0 auto;
+    }
     .transfer-btn:hover {
       background: #1a4a7a;
     }
@@ -600,9 +610,21 @@
       <div class="transfer-actions">
         <button type="button" class="transfer-btn" id="exportLearnedBtn" aria-label="Export learned Pokemon" title="Export learned Pokemon">⤓</button>
         <button type="button" class="transfer-btn" id="importLearnedBtn" aria-label="Import learned Pokemon" title="Import learned Pokemon">⤒</button>
-        <button type="button" class="transfer-btn" id="exportSharedLearnedBtn" aria-label="Shared export learned Pokemon" title="Shared export learned Pokemon">⇪</button>
+        <button type="button" class="transfer-btn" id="exportSharedLearnedBtn" aria-label="Export learned Pokemon to cloud" title="Export learned Pokemon to cloud">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 18a4 4 0 1 1 .8-7.92A5.5 5.5 0 0 1 18.5 11 3.5 3.5 0 1 1 18 18Z"></path>
+            <path d="M12 15V8"></path>
+            <path d="m9.5 10.5 2.5-2.5 2.5 2.5"></path>
+          </svg>
+        </button>
         <button type="button" class="transfer-btn" id="clearSharedLearnedBtn" aria-label="Clear shared learned Pokemon" title="Clear shared learned Pokemon">✕</button>
-        <button type="button" class="transfer-btn" id="importSharedLearnedBtn" aria-label="Shared import learned Pokemon" title="Shared import learned Pokemon">⇩</button>
+        <button type="button" class="transfer-btn" id="importSharedLearnedBtn" aria-label="Import learned Pokemon from cloud" title="Import learned Pokemon from cloud">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 18a4 4 0 1 1 .8-7.92A5.5 5.5 0 0 1 18.5 11 3.5 3.5 0 1 1 18 18Z"></path>
+            <path d="M12 9v7"></path>
+            <path d="m9.5 13.5 2.5 2.5 2.5-2.5"></path>
+          </svg>
+        </button>
         <input type="file" id="importLearnedFile" accept="application/json" hidden>
       </div>
       <div class="transfer-status" id="transferStatus" aria-live="polite"></div>

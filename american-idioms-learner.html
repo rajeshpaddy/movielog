@@ -145,6 +145,19 @@
       font-size: 18px;
       font-weight: 700;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .transfer-btn svg {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex: 0 0 auto;
     }
     .transfer-btn:hover { background: #1a2d47; }
     .transfer-status {
@@ -353,9 +366,21 @@
           <div class="transfer-actions">
             <button type="button" class="transfer-btn" id="exportLearnedBtn" aria-label="Export learned idioms" title="Export learned idioms">⤓</button>
             <button type="button" class="transfer-btn" id="importLearnedBtn" aria-label="Import learned idioms" title="Import learned idioms">⤒</button>
-            <button type="button" class="transfer-btn" id="exportSharedLearnedBtn" aria-label="Shared export learned idioms" title="Shared export learned idioms">⇪</button>
+            <button type="button" class="transfer-btn" id="exportSharedLearnedBtn" aria-label="Export learned idioms to cloud" title="Export learned idioms to cloud">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 18a4 4 0 1 1 .8-7.92A5.5 5.5 0 0 1 18.5 11 3.5 3.5 0 1 1 18 18Z"></path>
+                <path d="M12 15V8"></path>
+                <path d="m9.5 10.5 2.5-2.5 2.5 2.5"></path>
+              </svg>
+            </button>
             <button type="button" class="transfer-btn" id="clearSharedLearnedBtn" aria-label="Clear shared learned idioms" title="Clear shared learned idioms">✕</button>
-            <button type="button" class="transfer-btn" id="importSharedLearnedBtn" aria-label="Shared import learned idioms" title="Shared import learned idioms">⇩</button>
+            <button type="button" class="transfer-btn" id="importSharedLearnedBtn" aria-label="Import learned idioms from cloud" title="Import learned idioms from cloud">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 18a4 4 0 1 1 .8-7.92A5.5 5.5 0 0 1 18.5 11 3.5 3.5 0 1 1 18 18Z"></path>
+                <path d="M12 9v7"></path>
+                <path d="m9.5 13.5 2.5 2.5 2.5-2.5"></path>
+              </svg>
+            </button>
           </div>
           <div id="transferStatus" class="transfer-status" aria-live="polite"></div>
           <input id="importLearnedFile" type="file" accept="application/json" hidden>

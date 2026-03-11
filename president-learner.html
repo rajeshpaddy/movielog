@@ -73,6 +73,16 @@
       align-items: center;
       justify-content: center;
     }
+    .transfer-btn svg {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex: 0 0 auto;
+    }
     .transfer-btn:hover {
       background: #1a4a7a;
     }
@@ -546,9 +556,21 @@
       <div class="transfer-actions">
         <button type="button" class="transfer-btn" id="exportStudiedBtn" aria-label="Export studied presidents" title="Export studied presidents">⤓</button>
         <button type="button" class="transfer-btn" id="importStudiedBtn" aria-label="Import studied presidents" title="Import studied presidents">⤒</button>
-        <button type="button" class="transfer-btn" id="exportSharedStudiedBtn" aria-label="Shared export studied presidents" title="Shared export studied presidents">⇪</button>
+        <button type="button" class="transfer-btn" id="exportSharedStudiedBtn" aria-label="Export studied presidents to cloud" title="Export studied presidents to cloud">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 18a4 4 0 1 1 .8-7.92A5.5 5.5 0 0 1 18.5 11 3.5 3.5 0 1 1 18 18Z"></path>
+            <path d="M12 15V8"></path>
+            <path d="m9.5 10.5 2.5-2.5 2.5 2.5"></path>
+          </svg>
+        </button>
         <button type="button" class="transfer-btn" id="clearSharedStudiedBtn" aria-label="Clear shared studied presidents" title="Clear shared studied presidents">✕</button>
-        <button type="button" class="transfer-btn" id="importSharedStudiedBtn" aria-label="Shared import studied presidents" title="Shared import studied presidents">⇩</button>
+        <button type="button" class="transfer-btn" id="importSharedStudiedBtn" aria-label="Import studied presidents from cloud" title="Import studied presidents from cloud">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 18a4 4 0 1 1 .8-7.92A5.5 5.5 0 0 1 18.5 11 3.5 3.5 0 1 1 18 18Z"></path>
+            <path d="M12 9v7"></path>
+            <path d="m9.5 13.5 2.5 2.5 2.5-2.5"></path>
+          </svg>
+        </button>
         <input type="file" id="importStudiedFile" accept="application/json" hidden>
       </div>
       <div class="transfer-status" id="transferStatus" aria-live="polite"></div>

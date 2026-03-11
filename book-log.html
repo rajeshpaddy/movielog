@@ -92,6 +92,19 @@
       font-weight: 600;
       padding: 9px 11px;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-secondary svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex: 0 0 auto;
     }
     .status {
       min-height: 20px;
@@ -316,9 +329,23 @@
           <button id="toggleSearchPaneBtn" class="btn-secondary" type="button">Collapse Search</button>
           <button id="exportDataBtn" class="btn-secondary" type="button">Export Data</button>
           <button id="importDataBtn" class="btn-secondary" type="button">Import Data</button>
-          <button id="exportSharedDataBtn" class="btn-secondary" type="button">Export Shared</button>
+          <button id="exportSharedDataBtn" class="btn-secondary" type="button" aria-label="Export data to cloud" title="Export data to cloud">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 18a4 4 0 1 1 .8-7.92A5.5 5.5 0 0 1 18.5 11 3.5 3.5 0 1 1 18 18Z"></path>
+              <path d="M12 15V8"></path>
+              <path d="m9.5 10.5 2.5-2.5 2.5 2.5"></path>
+            </svg>
+            Cloud Export
+          </button>
           <button id="clearSharedDataBtn" class="btn-secondary" type="button">Clear Shared</button>
-          <button id="importSharedDataBtn" class="btn-secondary" type="button">Import Shared</button>
+          <button id="importSharedDataBtn" class="btn-secondary" type="button" aria-label="Import data from cloud" title="Import data from cloud">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 18a4 4 0 1 1 .8-7.92A5.5 5.5 0 0 1 18.5 11 3.5 3.5 0 1 1 18 18Z"></path>
+              <path d="M12 9v7"></path>
+              <path d="m9.5 13.5 2.5 2.5 2.5-2.5"></path>
+            </svg>
+            Cloud Import
+          </button>
           <input id="importDataFile" type="file" accept="application/json" hidden>
         </div>
       </div>

@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Tracker</title>
+  <style>
+    :root {
+      --bg: #07111f;
+      --bg-accent: #0f1f39;
+      --panel: rgba(14, 26, 47, 0.92);
+      --panel-border: rgba(125, 211, 252, 0.18);
+      --panel-soft: rgba(17, 34, 63, 0.92);
+      --text: #e6eef8;
+      --muted: #93a9c6;
+      --primary: #7dd3fc;
+      --primary-strong: #38bdf8;
+      --success: #4ade80;
+      --danger: #fb7185;
+      --warning: #fbbf24;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(56, 189, 248, 0.22), transparent 30%),
+        radial-gradient(circle at top left, rgba(74, 222, 128, 0.18), transparent 28%),
+        linear-gradient(180deg, #050b16 0%, #091426 52%, #06101d 100%);
+      color: var(--text);
+    }
+
+    .shell {
+      width: min(1280px, calc(100vw - 28px));
+      margin: 20px auto 36px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .hero,
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .hero {
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -10% -35% auto;
+      width: 360px;
+      height: 360px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.22), transparent 70%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(32px, 5vw, 52px);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px;
+    }
+
+    .panel {
+      padding: 20px;
+    }
+
+    .panel-title {
+      margin: 0 0 14px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .controls {
+      display: grid;
+      gap: 14px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    input,
+    select,
+    button {
+      font: inherit;
+    }
+
+    .input,
+    .select {
+      width: 100%;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 14px;
+      padding: 13px 14px;
+      background: rgba(7, 17, 31, 0.78);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .input:focus,
+    .select:focus {
+      border-color: rgba(125, 211, 252, 0.6);
+      box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.12);
+      background: rgba(7, 17, 31, 0.96);
+    }
+
+    .symbol-entry {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+    }
+
+    .chip-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      min-height: 44px;
+      padding: 2px 0 0;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 9px 12px;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.22), rgba(14, 165, 233, 0.1));
+      border: 1px solid rgba(125, 211, 252, 0.34);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .chip button {
+      border: none;
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      border: 1px solid transparent;
+      border-radius: 14px;
+      padding: 12px 16px;
+      cursor: pointer;
+      color: var(--text);
+      background: rgba(15, 31, 57, 0.94);
+      transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(125, 211, 252, 0.28);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.92), rgba(56, 189, 248, 0.82));
+      color: #06111f;
+    }
+
+    .btn-secondary {
+      border-color: rgba(148, 163, 184, 0.2);
+    }
+
+    .btn-subtle {
+      border-color: rgba(125, 211, 252, 0.18);
+      background: rgba(10, 20, 37, 0.8);
+      color: var(--muted);
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .status {
+      min-height: 20px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .status.error { color: var(--danger); }
+    .status.success { color: var(--success); }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .summary-card {
+      background: var(--panel-soft);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .summary-k {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    .summary-v {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .table-wrap {
+      display: grid;
+      gap: 14px;
+    }
+
+    .stock-card {
+      display: grid;
+      grid-template-columns: minmax(280px, 1fr) minmax(260px, 360px);
+      gap: 18px;
+      background: linear-gradient(180deg, rgba(14, 27, 49, 0.98), rgba(10, 20, 36, 0.98));
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 22px;
+      padding: 18px;
+    }
+
+    .stock-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .symbol {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      margin: 0;
+    }
+
+    .stamp {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .price-block {
+      text-align: right;
+    }
+
+    .price {
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      margin: 0 0 6px;
+    }
+
+    .delta {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .delta.positive { color: var(--success); }
+    .delta.negative { color: var(--danger); }
+    .delta.flat { color: var(--muted); }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .metric {
+      background: rgba(7, 17, 31, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      border-radius: 16px;
+      padding: 12px;
+    }
+
+    .metric-k {
+      color: var(--muted);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 7px;
+    }
+
+    .metric-v {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .metric-sub {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .chart-panel {
+      background: rgba(7, 17, 31, 0.78);
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      border-radius: 18px;
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .chart-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: baseline;
+    }
+
+    .chart-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .chart-sub {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .sparkline {
+      width: 100%;
+      height: 148px;
+      display: block;
+      overflow: visible;
+    }
+
+    .legend {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .empty {
+      padding: 42px 22px;
+      border-radius: 22px;
+      border: 1px dashed rgba(125, 211, 252, 0.22);
+      background: rgba(7, 17, 31, 0.5);
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .loading {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary-strong);
+      box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.45);
+      animation: pulse 1.2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.45); }
+      70% { box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+    }
+
+    @media (max-width: 980px) {
+      .grid { grid-template-columns: 1fr; }
+      .stock-card { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 720px) {
+      .shell {
+        width: min(100vw - 18px, 100%);
+        margin: 10px auto 22px;
+      }
+      .hero,
+      .panel {
+        border-radius: 20px;
+      }
+      .hero,
+      .panel {
+        padding: 18px;
+      }
+      .field-grid,
+      .summary-grid,
+      .metrics {
+        grid-template-columns: 1fr;
+      }
+      .symbol-entry {
+        grid-template-columns: 1fr;
+      }
+      .stock-head {
+        flex-direction: column;
+      }
+      .price-block {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="eyebrow">AI App Catalog</div>
+      <h1>Stock Tracker</h1>
+      <p>Enter ticker symbols as tags, refresh live quotes, and compare each stock against a rolling 3 month trend. The app shows the latest quote, day change, 3 month average close, and the high and low across the selected window.</p>
+    </section>
+
+    <section class="grid">
+      <div class="panel">
+        <h2 class="panel-title">Watchlist Setup</h2>
+        <div class="controls">
+          <div class="field-grid">
+            <label>
+              Data Provider
+              <select class="select" id="providerSelect">
+                <option value="stooq">Stooq (No Key)</option>
+                <option value="alphavantage">Alpha Vantage (API Key)</option>
+              </select>
+            </label>
+            <label>
+              Alpha Vantage API Key
+              <input class="input" id="apiKeyInput" type="password" placeholder="Enter your API key">
+            </label>
+            <label>
+              Auto Refresh
+              <select class="select" id="refreshIntervalSelect">
+                <option value="0">Manual only</option>
+                <option value="30000">Every 30 seconds</option>
+                <option value="60000" selected>Every 60 seconds</option>
+                <option value="300000">Every 5 minutes</option>
+              </select>
+            </label>
+          </div>
+
+          <label>
+            Add Stock Symbols
+            <div class="symbol-entry">
+              <input class="input" id="symbolInput" type="text" placeholder="AAPL, MSFT, NVDA">
+              <button class="btn btn-primary" id="addSymbolBtn" type="button">Add Symbols</button>
+            </div>
+          </label>
+
+          <div id="chipWrap" class="chip-wrap"></div>
+
+          <div class="btn-row">
+            <button class="btn btn-secondary" id="refreshBtn" type="button">Refresh Prices</button>
+            <button class="btn btn-subtle" id="clearSymbolsBtn" type="button">Clear Watchlist</button>
+          </div>
+
+          <div class="hint">
+            Stooq no-key mode works without setup but is better treated as delayed or end-of-day data. Alpha Vantage needs a key, but usually gives better quote coverage. This app stores your symbols, provider choice, and optional API key only in this browser.
+          </div>
+
+          <div id="status" class="status" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 class="panel-title">Portfolio Snapshot</h2>
+        <div class="summary-grid">
+          <div class="summary-card">
+            <div class="summary-k">Tracked Symbols</div>
+            <div class="summary-v" id="trackedCount">0</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-k">Average Last Price</div>
+            <div class="summary-v" id="averagePrice">-</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-k">Last Refresh</div>
+            <div class="summary-v" id="lastRefresh">-</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="panel-title">Tracked Stocks</h2>
+      <div id="stocksContainer" class="table-wrap"></div>
+    </section>
+  </div>
+
+  <script>
+    const STORAGE_SYMBOLS_KEY = 'stock-tracker-symbols';
+    const STORAGE_API_KEY = 'stock-tracker-api-key';
+    const STORAGE_PROVIDER_KEY = 'stock-tracker-provider';
+    const STORAGE_REFRESH_MS = 'stock-tracker-refresh-ms';
+    const THREE_MONTH_TRADING_DAYS = 66;
+
+    const state = {
+      symbols: [],
+      apiKey: '',
+      provider: 'stooq',
+      refreshMs: 60000,
+      stocks: {},
+      refreshTimer: null,
+      isRefreshing: false
+    };
+
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const providerSelect = document.getElementById('providerSelect');
+    const refreshIntervalSelect = document.getElementById('refreshIntervalSelect');
+    const symbolInput = document.getElementById('symbolInput');
+    const addSymbolBtn = document.getElementById('addSymbolBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const clearSymbolsBtn = document.getElementById('clearSymbolsBtn');
+    const chipWrap = document.getElementById('chipWrap');
+    const statusEl = document.getElementById('status');
+    const stocksContainer = document.getElementById('stocksContainer');
+    const trackedCountEl = document.getElementById('trackedCount');
+    const averagePriceEl = document.getElementById('averagePrice');
+    const lastRefreshEl = document.getElementById('lastRefresh');
+
+    function formatCurrency(value) {
+      if (!Number.isFinite(value)) return '-';
+      return new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: value >= 1000 ? 0 : 2
+      }).format(value);
+    }
+
+    function formatNumber(value) {
+      if (!Number.isFinite(value)) return '-';
+      return new Intl.NumberFormat(undefined, {
+        maximumFractionDigits: 2
+      }).format(value);
+    }
+
+    function formatPercent(value) {
+      if (!Number.isFinite(value)) return '-';
+      const sign = value > 0 ? '+' : value < 0 ? '' : '';
+      return sign + value.toFixed(2) + '%';
+    }
+
+    function formatTime(value) {
+      if (!value) return '-';
+      return new Date(value).toLocaleTimeString([], {
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+    }
+
+    function setStatus(message, type = '') {
+      statusEl.textContent = message;
+      statusEl.className = 'status' + (type ? ' ' + type : '');
+    }
+
+    function normalizeSymbol(raw) {
+      return raw.trim().toUpperCase().replace(/[^A-Z0-9.\-]/g, '');
+    }
+
+    function parseSymbols(raw) {
+      return raw
+        .split(/[\s,]+/)
+        .map(normalizeSymbol)
+        .filter(Boolean);
+    }
+
+    function savePreferences() {
+      localStorage.setItem(STORAGE_SYMBOLS_KEY, JSON.stringify(state.symbols));
+      localStorage.setItem(STORAGE_API_KEY, state.apiKey);
+      localStorage.setItem(STORAGE_PROVIDER_KEY, state.provider);
+      localStorage.setItem(STORAGE_REFRESH_MS, String(state.refreshMs));
+    }
+
+    function loadPreferences() {
+      try {
+        const storedSymbols = JSON.parse(localStorage.getItem(STORAGE_SYMBOLS_KEY) || '[]');
+        state.symbols = Array.isArray(storedSymbols) ? storedSymbols.map(normalizeSymbol).filter(Boolean) : [];
+      } catch (error) {
+        state.symbols = [];
+      }
+      state.apiKey = localStorage.getItem(STORAGE_API_KEY) || '';
+      state.provider = localStorage.getItem(STORAGE_PROVIDER_KEY) || 'stooq';
+      state.refreshMs = Number(localStorage.getItem(STORAGE_REFRESH_MS) || 60000) || 0;
+    }
+
+    function renderProviderState() {
+      const usingAlphaVantage = state.provider === 'alphavantage';
+      apiKeyInput.disabled = !usingAlphaVantage;
+      apiKeyInput.placeholder = usingAlphaVantage ? 'Enter your API key' : 'Not needed for Stooq';
+    }
+
+    function upsertSymbols(nextSymbols) {
+      const merged = new Set(state.symbols);
+      nextSymbols.forEach(symbol => merged.add(symbol));
+      state.symbols = Array.from(merged);
+      savePreferences();
+      renderChips();
+      renderSummary();
+      renderStocks();
+    }
+
+    function removeSymbol(symbol) {
+      state.symbols = state.symbols.filter(item => item !== symbol);
+      delete state.stocks[symbol];
+      savePreferences();
+      renderChips();
+      renderSummary();
+      renderStocks();
+    }
+
+    function clearSymbols() {
+      state.symbols = [];
+      state.stocks = {};
+      savePreferences();
+      renderChips();
+      renderSummary();
+      renderStocks();
+      setStatus('Watchlist cleared.', 'success');
+    }
+
+    function renderChips() {
+      if (state.symbols.length === 0) {
+        chipWrap.innerHTML = '<div class="hint">No symbols added yet. Try AAPL, MSFT, NVDA, AMZN, GOOGL.</div>';
+        return;
+      }
+      chipWrap.innerHTML = state.symbols.map(symbol => `
+        <div class="chip">
+          <span>${symbol}</span>
+          <button type="button" data-remove-symbol="${symbol}" aria-label="Remove ${symbol}">✕</button>
+        </div>
+      `).join('');
+
+      chipWrap.querySelectorAll('[data-remove-symbol]').forEach(button => {
+        button.addEventListener('click', () => removeSymbol(button.getAttribute('data-remove-symbol')));
+      });
+    }
+
+    function renderSummary() {
+      trackedCountEl.textContent = String(state.symbols.length);
+      const activeStocks = state.symbols
+        .map(symbol => state.stocks[symbol])
+        .filter(stock => stock && !stock.error && Number.isFinite(stock.price));
+      const averagePrice = activeStocks.length
+        ? activeStocks.reduce((sum, stock) => sum + stock.price, 0) / activeStocks.length
+        : NaN;
+      averagePriceEl.textContent = formatCurrency(averagePrice);
+      const latestTimestamp = activeStocks.reduce((latest, stock) => {
+        const current = stock.refreshedAt ? new Date(stock.refreshedAt).getTime() : 0;
+        return current > latest ? current : latest;
+      }, 0);
+      lastRefreshEl.textContent = latestTimestamp ? formatTime(latestTimestamp) : '-';
+    }
+
+    function buildSparkline(points, symbol) {
+      if (!Array.isArray(points) || points.length === 0) {
+        return '<div class="empty">No chart data available.</div>';
+      }
+
+      const width = 320;
+      const height = 148;
+      const padding = 10;
+      const values = points.map(point => point.close);
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      const range = max - min || 1;
+
+      const linePoints = points.map((point, index) => {
+        const x = padding + (index / Math.max(points.length - 1, 1)) * (width - padding * 2);
+        const y = height - padding - ((point.close - min) / range) * (height - padding * 2);
+        return [x, y];
+      });
+
+      const linePath = linePoints.map(([x, y], index) => `${index === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`).join(' ');
+      const fillPath = `${linePath} L ${linePoints[linePoints.length - 1][0].toFixed(2)} ${(height - padding).toFixed(2)} L ${linePoints[0][0].toFixed(2)} ${(height - padding).toFixed(2)} Z`;
+      const gradientId = `sparkGradient-${symbol.replace(/[^a-z0-9]/gi, '')}`;
+
+      return `
+        <svg class="sparkline" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="${symbol} price chart over 3 months">
+          <defs>
+            <linearGradient id="${gradientId}" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="rgba(56, 189, 248, 0.48)"></stop>
+              <stop offset="100%" stop-color="rgba(56, 189, 248, 0.02)"></stop>
+            </linearGradient>
+          </defs>
+          <path d="${fillPath}" fill="url(#${gradientId})"></path>
+          <path d="${linePath}" fill="none" stroke="#7dd3fc" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+      `;
+    }
+
+    function renderStocks() {
+      if (state.symbols.length === 0) {
+        stocksContainer.innerHTML = '<div class="empty">Add a few stock symbols above to build your watchlist.</div>';
+        return;
+      }
+
+      stocksContainer.innerHTML = state.symbols.map(symbol => {
+        const stock = state.stocks[symbol];
+
+        if (!stock) {
+          return `
+            <article class="stock-card">
+              <div>
+                <div class="stock-head">
+                  <div>
+                    <h3 class="symbol">${symbol}</h3>
+                    <div class="stamp">Waiting for first refresh.</div>
+                  </div>
+                </div>
+                <div class="empty">No data loaded yet.</div>
+              </div>
+              <div class="chart-panel">
+                <div class="empty">Refresh to load a 3 month trend chart.</div>
+              </div>
+            </article>
+          `;
+        }
+
+        if (stock.error) {
+          return `
+            <article class="stock-card">
+              <div>
+                <div class="stock-head">
+                  <div>
+                    <h3 class="symbol">${symbol}</h3>
+                    <div class="stamp">Last checked ${formatTime(stock.refreshedAt)}</div>
+                  </div>
+                </div>
+                <div class="empty">${stock.error}</div>
+              </div>
+              <div class="chart-panel">
+                <div class="empty">No chart because the quote request failed.</div>
+              </div>
+            </article>
+          `;
+        }
+
+        const deltaClass = stock.change > 0 ? 'positive' : stock.change < 0 ? 'negative' : 'flat';
+
+        return `
+          <article class="stock-card">
+            <div>
+              <div class="stock-head">
+                <div>
+                  <h3 class="symbol">${symbol}</h3>
+                  <div class="stamp">Updated ${formatTime(stock.refreshedAt)}${stock.latestTradingDay ? ' • latest trading day ' + stock.latestTradingDay : ''}</div>
+                </div>
+                <div class="price-block">
+                  <div class="price">${formatCurrency(stock.price)}</div>
+                  <div class="delta ${deltaClass}">${stock.change > 0 ? '+' : ''}${formatNumber(stock.change)} • ${formatPercent(stock.changePercent)}</div>
+                </div>
+              </div>
+
+              <div class="metrics">
+                <div class="metric">
+                  <div class="metric-k">3M Average</div>
+                  <div class="metric-v">${formatCurrency(stock.avgClose)}</div>
+                  <div class="metric-sub">Average close across ${stock.samples} sessions</div>
+                </div>
+                <div class="metric">
+                  <div class="metric-k">3M High</div>
+                  <div class="metric-v">${formatCurrency(stock.high3m)}</div>
+                  <div class="metric-sub">Highest intraday high in the window</div>
+                </div>
+                <div class="metric">
+                  <div class="metric-k">3M Low</div>
+                  <div class="metric-v">${formatCurrency(stock.low3m)}</div>
+                  <div class="metric-sub">Lowest intraday low in the window</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="chart-panel">
+              <div class="chart-top">
+                <div class="chart-title">3 Month Trend</div>
+                <div class="chart-sub">${stock.samples} daily points</div>
+              </div>
+              ${buildSparkline(stock.points, symbol)}
+              <div class="legend">
+                <span>${stock.points[0] ? stock.points[0].date : '-'}</span>
+                <span>${stock.points[stock.points.length - 1] ? stock.points[stock.points.length - 1].date : '-'}</span>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function parseHistoricalPayload(symbol, payload) {
+      const series = payload['Time Series (Daily)'];
+      if (!series) {
+        if (payload.Note) throw new Error(payload.Note);
+        if (payload.Information) throw new Error(payload.Information);
+        if (payload['Error Message']) throw new Error(`Symbol ${symbol} was not recognized.`);
+        throw new Error('Historical data was unavailable.');
+      }
+
+      const entries = Object.entries(series)
+        .map(([date, values]) => ({
+          date,
+          open: Number(values['1. open']),
+          high: Number(values['2. high']),
+          low: Number(values['3. low']),
+          close: Number(values['4. close'])
+        }))
+        .filter(item => Number.isFinite(item.close))
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      return entries.slice(-THREE_MONTH_TRADING_DAYS);
+    }
+
+    function parseQuotePayload(symbol, payload, historicalPoints) {
+      const quote = payload['Global Quote'];
+      const fallbackLatest = historicalPoints[historicalPoints.length - 1];
+      const fallbackPrev = historicalPoints[historicalPoints.length - 2];
+
+      if (!quote || Object.keys(quote).length === 0) {
+        if (!fallbackLatest) {
+          if (payload.Note) throw new Error(payload.Note);
+          if (payload.Information) throw new Error(payload.Information);
+          if (payload['Error Message']) throw new Error(`Symbol ${symbol} was not recognized.`);
+          throw new Error('Quote data was unavailable.');
+        }
+
+        const fallbackChange = fallbackPrev ? fallbackLatest.close - fallbackPrev.close : 0;
+        const fallbackPercent = fallbackPrev && fallbackPrev.close !== 0 ? (fallbackChange / fallbackPrev.close) * 100 : 0;
+
+        return {
+          price: fallbackLatest.close,
+          change: fallbackChange,
+          changePercent: fallbackPercent,
+          latestTradingDay: fallbackLatest.date
+        };
+      }
+
+      return {
+        price: Number(quote['05. price']),
+        change: Number(quote['09. change']),
+        changePercent: Number(String(quote['10. change percent'] || '').replace('%', '')),
+        latestTradingDay: quote['07. latest trading day'] || (fallbackLatest ? fallbackLatest.date : '')
+      };
+    }
+
+    async function fetchJson(url) {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Request failed (${response.status})`);
+      }
+      return response.json();
+    }
+
+    async function fetchText(url) {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Request failed (${response.status})`);
+      }
+      return response.text();
+    }
+
+    function toStooqSymbol(symbol) {
+      return symbol.includes('.') ? symbol.toLowerCase() : `${symbol.toLowerCase()}.us`;
+    }
+
+    function parseStooqCsv(symbol, csvText) {
+      const lines = csvText.trim().split(/\r?\n/);
+      if (lines.length <= 1) {
+        throw new Error(`No Stooq data returned for ${symbol}.`);
+      }
+
+      const rows = lines.slice(1).map(line => {
+        const [date, open, high, low, close] = line.split(',');
+        return {
+          date,
+          open: Number(open),
+          high: Number(high),
+          low: Number(low),
+          close: Number(close)
+        };
+      }).filter(row => row.date && Number.isFinite(row.close) && row.close > 0);
+
+      const points = rows.slice(-THREE_MONTH_TRADING_DAYS);
+      if (points.length === 0) {
+        throw new Error(`No recent Stooq history was returned for ${symbol}.`);
+      }
+
+      const latest = points[points.length - 1];
+      const prev = points[points.length - 2];
+      const closes = points.map(point => point.close);
+      const highs = points.map(point => point.high);
+      const lows = points.map(point => point.low);
+      const change = prev ? latest.close - prev.close : 0;
+      const changePercent = prev && prev.close !== 0 ? (change / prev.close) * 100 : 0;
+
+      return {
+        symbol,
+        price: latest.close,
+        change,
+        changePercent,
+        latestTradingDay: latest.date,
+        avgClose: closes.reduce((sum, value) => sum + value, 0) / closes.length,
+        high3m: Math.max(...highs),
+        low3m: Math.min(...lows),
+        points,
+        samples: points.length,
+        refreshedAt: new Date().toISOString()
+      };
+    }
+
+    async function fetchAlphaVantageSymbolData(symbol) {
+      const encodedKey = encodeURIComponent(state.apiKey);
+      const encodedSymbol = encodeURIComponent(symbol);
+      const dailyUrl = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${encodedSymbol}&outputsize=compact&apikey=${encodedKey}`;
+      const quoteUrl = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${encodedSymbol}&apikey=${encodedKey}`;
+
+      const [dailyPayload, quotePayload] = await Promise.all([
+        fetchJson(dailyUrl),
+        fetchJson(quoteUrl)
+      ]);
+
+      const points = parseHistoricalPayload(symbol, dailyPayload);
+      const quote = parseQuotePayload(symbol, quotePayload, points);
+
+      if (points.length === 0) {
+        throw new Error('No recent trading history was returned.');
+      }
+
+      const closes = points.map(point => point.close);
+      const highs = points.map(point => point.high);
+      const lows = points.map(point => point.low);
+
+      return {
+        symbol,
+        price: Number.isFinite(quote.price) ? quote.price : closes[closes.length - 1],
+        change: Number.isFinite(quote.change) ? quote.change : 0,
+        changePercent: Number.isFinite(quote.changePercent) ? quote.changePercent : 0,
+        latestTradingDay: quote.latestTradingDay || points[points.length - 1].date,
+        avgClose: closes.reduce((sum, value) => sum + value, 0) / closes.length,
+        high3m: Math.max(...highs),
+        low3m: Math.min(...lows),
+        points,
+        samples: points.length,
+        refreshedAt: new Date().toISOString()
+      };
+    }
+
+    async function fetchStooqSymbolData(symbol) {
+      const stooqSymbol = encodeURIComponent(toStooqSymbol(symbol));
+      const csvUrl = `https://stooq.com/q/d/l/?s=${stooqSymbol}&i=d`;
+      const csvText = await fetchText(csvUrl);
+      return parseStooqCsv(symbol, csvText);
+    }
+
+    async function fetchSymbolData(symbol) {
+      if (state.provider === 'stooq') {
+        return fetchStooqSymbolData(symbol);
+      }
+      return fetchAlphaVantageSymbolData(symbol);
+    }
+
+    async function refreshAllStocks() {
+      if (state.isRefreshing) return;
+      if (state.provider === 'alphavantage' && !state.apiKey) {
+        setStatus('Enter an Alpha Vantage API key before refreshing.', 'error');
+        return;
+      }
+      if (state.symbols.length === 0) {
+        setStatus('Add at least one stock symbol to refresh.', 'error');
+        return;
+      }
+
+      state.isRefreshing = true;
+      refreshBtn.disabled = true;
+      refreshBtn.innerHTML = '<span class="loading"><span class="dot"></span>Refreshing…</span>';
+      setStatus(`Refreshing ${state.symbols.length} symbol${state.symbols.length === 1 ? '' : 's'}...`);
+
+      let successCount = 0;
+
+      for (const symbol of state.symbols) {
+        try {
+          const stock = await fetchSymbolData(symbol);
+          state.stocks[symbol] = stock;
+          successCount += 1;
+        } catch (error) {
+          state.stocks[symbol] = {
+            symbol,
+            error: error.message || 'Unable to load data.',
+            refreshedAt: new Date().toISOString()
+          };
+        }
+        renderSummary();
+        renderStocks();
+      }
+
+      state.isRefreshing = false;
+      refreshBtn.disabled = false;
+      refreshBtn.textContent = 'Refresh Prices';
+      renderSummary();
+      renderStocks();
+
+      if (successCount === state.symbols.length) {
+        setStatus(`Loaded ${successCount} symbol${successCount === 1 ? '' : 's'} from ${state.provider === 'stooq' ? 'Stooq' : 'Alpha Vantage'}.`, 'success');
+      } else if (successCount > 0) {
+        setStatus(`Loaded ${successCount} of ${state.symbols.length} symbols. Some requests failed or were rate limited.`, 'error');
+      } else {
+        setStatus('No symbols loaded. Check the API key, symbols, or rate limit status.', 'error');
+      }
+    }
+
+    function restartAutoRefresh() {
+      if (state.refreshTimer) {
+        clearInterval(state.refreshTimer);
+        state.refreshTimer = null;
+      }
+      if (state.refreshMs > 0) {
+        state.refreshTimer = setInterval(() => {
+          if (!document.hidden) refreshAllStocks();
+        }, state.refreshMs);
+      }
+    }
+
+    function handleAddSymbols() {
+      const nextSymbols = parseSymbols(symbolInput.value);
+      if (nextSymbols.length === 0) {
+        setStatus('Enter one or more valid ticker symbols.', 'error');
+        return;
+      }
+      upsertSymbols(nextSymbols);
+      symbolInput.value = '';
+      setStatus(`Added ${nextSymbols.length} symbol${nextSymbols.length === 1 ? '' : 's'} to the watchlist.`, 'success');
+      if (state.provider === 'stooq' || state.apiKey) refreshAllStocks();
+    }
+
+    function initialize() {
+      loadPreferences();
+      apiKeyInput.value = state.apiKey;
+      providerSelect.value = state.provider;
+      refreshIntervalSelect.value = String(state.refreshMs);
+      renderProviderState();
+      renderChips();
+      renderSummary();
+      renderStocks();
+      restartAutoRefresh();
+    }
+
+    addSymbolBtn.addEventListener('click', handleAddSymbols);
+    symbolInput.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ',') {
+        event.preventDefault();
+        handleAddSymbols();
+      }
+    });
+
+    apiKeyInput.addEventListener('input', () => {
+      state.apiKey = apiKeyInput.value.trim();
+      savePreferences();
+    });
+
+    providerSelect.addEventListener('change', () => {
+      state.provider = providerSelect.value;
+      savePreferences();
+      renderProviderState();
+      setStatus(
+        state.provider === 'stooq'
+          ? 'Using Stooq no-key mode. Data is typically delayed or end-of-day rather than true real-time.'
+          : 'Using Alpha Vantage. Enter your API key for quote refresh.',
+        'success'
+      );
+      if (state.symbols.length > 0 && (state.provider === 'stooq' || state.apiKey)) {
+        refreshAllStocks();
+      }
+    });
+
+    refreshIntervalSelect.addEventListener('change', () => {
+      state.refreshMs = Number(refreshIntervalSelect.value) || 0;
+      savePreferences();
+      restartAutoRefresh();
+      setStatus(state.refreshMs > 0 ? `Auto refresh set to ${Math.round(state.refreshMs / 1000)} seconds.` : 'Auto refresh disabled.', 'success');
+    });
+
+    refreshBtn.addEventListener('click', refreshAllStocks);
+    clearSymbolsBtn.addEventListener('click', clearSymbols);
+
+    initialize();
+  </script>
+</body>
+</html>

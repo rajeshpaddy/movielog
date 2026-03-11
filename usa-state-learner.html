@@ -63,6 +63,19 @@
       font-weight: 700;
       min-height: 34px;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .transfer-btn svg {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex: 0 0 auto;
     }
     .transfer-status {
       min-height: 16px;
@@ -383,9 +396,21 @@
       <div class="transfer-row">
         <button id="exportBtn" class="transfer-btn" aria-label="Export visited states" title="Export visited states">⤓</button>
         <button id="importBtn" class="transfer-btn" aria-label="Import visited states" title="Import visited states">⤒</button>
-        <button id="exportSharedBtn" class="transfer-btn" aria-label="Shared export visited states" title="Shared export visited states">⇪</button>
+        <button id="exportSharedBtn" class="transfer-btn" aria-label="Export visited states to cloud" title="Export visited states to cloud">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 18a4 4 0 1 1 .8-7.92A5.5 5.5 0 0 1 18.5 11 3.5 3.5 0 1 1 18 18Z"></path>
+            <path d="M12 15V8"></path>
+            <path d="m9.5 10.5 2.5-2.5 2.5 2.5"></path>
+          </svg>
+        </button>
         <button id="clearSharedBtn" class="transfer-btn" aria-label="Clear shared visited states" title="Clear shared visited states">✕</button>
-        <button id="importSharedBtn" class="transfer-btn" aria-label="Shared import visited states" title="Shared import visited states">⇩</button>
+        <button id="importSharedBtn" class="transfer-btn" aria-label="Import visited states from cloud" title="Import visited states from cloud">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 18a4 4 0 1 1 .8-7.92A5.5 5.5 0 0 1 18.5 11 3.5 3.5 0 1 1 18 18Z"></path>
+            <path d="M12 9v7"></path>
+            <path d="m9.5 13.5 2.5 2.5 2.5-2.5"></path>
+          </svg>
+        </button>
         <input id="importFile" type="file" accept="application/json" hidden>
       </div>
       <div id="transferStatus" class="transfer-status" aria-live="polite"></div>
