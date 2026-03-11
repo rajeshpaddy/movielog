@@ -1109,7 +1109,11 @@
   <script>
     const SETGET_SET_URL = 'https://setget.io/api/set';
     const SETGET_GET_BASE = 'https://setget.io/api/get';
-   const COUNTRIES = [
+    const SHARED_KEY_PREFIX = 'cl-';
+    const LEGACY_SHARED_KEY_PREFIX = 'country-learner-';
+    const MAX_SHARED_KEY_LENGTH = 32;
+    const MAX_SHARED_KEYWORD_LENGTH = MAX_SHARED_KEY_LENGTH - SHARED_KEY_PREFIX.length;
+    const COUNTRIES = [
       { code: "AF", name: "Afghanistan", nativeName: "افغانستان", flag: "🇦🇫", continent: "asia", capital: "Kabul", population: 40028462, currency: "Afghan afghani (AFN)", language: "Pashto, Dari", travelAdvisory: 4, travelNote: "Do not travel due to terrorism, kidnapping, and armed conflict.", lat: 33.9391, lng: 67.7100 },
       { code: "AL", name: "Albania", nativeName: "Shqipëria", flag: "🇦🇱", continent: "europe", capital: "Tirana", population: 2842321, currency: "Albanian lek (ALL)", language: "Albanian", travelAdvisory: 1, travelNote: "Exercise normal precautions.", lat: 41.1533, lng: 20.1683 },
       { code: "DZ", name: "Algeria", nativeName: "الجزائر", flag: "🇩🇿", continent: "africa", capital: "Algiers", population: 44616624, currency: "Algerian dinar (DZD)", language: "Arabic, Berber", travelAdvisory: 2, travelNote: "Exercise increased caution due to terrorism.", lat: 28.0339, lng: 1.6596 },
@@ -1696,17 +1700,26 @@
     function promptSharedKeyword(label) {
       const raw = prompt(`${label}: enter a keyword`, '');
       if (raw == null) return '';
-      const normalized = String(raw).trim().toLowerCase().replaceAll(/\s+/g, '-').replaceAll(/[^a-z0-9-_]/g, '');
+      let normalized = String(raw).trim().toLowerCase().replaceAll(/\s+/g, '-').replaceAll(/[^a-z0-9-_]/g, '');
       if (!normalized) {
         setTransferStatus('Keyword is required for shared transfer.', true);
+        return '';
+      }
+      if (normalized.length > MAX_SHARED_KEYWORD_LENGTH) {
+        normalized = normalized.slice(0, MAX_SHARED_KEYWORD_LENGTH);
+        setTransferStatus(`Keyword shortened to ${MAX_SHARED_KEYWORD_LENGTH} characters for shared transfer.`, false);
       }
       return normalized;
+    }
+
+    function buildSharedKey(keyword, prefix = SHARED_KEY_PREFIX) {
+      return `${prefix}${keyword}`;
     }
 
     async function exportVisitedCountriesShared() {
       const keyword = promptSharedKeyword('Shared export');
       if (!keyword) return;
-      const key = `country-learner-${keyword}`;
+      const key = buildSharedKey(keyword);
       const payload = {
         app: 'country-learner',
         version: 1,
@@ -1738,12 +1751,28 @@
     async function importVisitedCountriesShared() {
       const keyword = promptSharedKeyword('Shared import');
       if (!keyword) return;
-      const key = `country-learner-${keyword}`;
       try {
-        const response = await fetch(`${SETGET_GET_BASE}/${encodeURIComponent(key)}`);
-        const text = await response.text();
-        if (!response.ok) throw new Error(`Shared import failed (${response.status})${text ? `: ${text}` : ''}`);
-        const parsed = JSON.parse(text);
+        const keysToTry = [
+          buildSharedKey(keyword),
+          buildSharedKey(keyword, LEGACY_SHARED_KEY_PREFIX)
+        ].filter((value, index, array) => array.indexOf(value) === index);
+        let parsed = null;
+        let importedFromLegacyKey = false;
+        let lastError = null;
+
+        for (const key of keysToTry) {
+          const response = await fetch(`${SETGET_GET_BASE}/${encodeURIComponent(key)}`);
+          const text = await response.text();
+          if (!response.ok) {
+            lastError = new Error(`Shared import failed (${response.status})${text ? `: ${text}` : ''}`);
+            continue;
+          }
+          parsed = JSON.parse(text);
+          importedFromLegacyKey = key.startsWith(LEGACY_SHARED_KEY_PREFIX);
+          break;
+        }
+
+        if (!parsed) throw lastError || new Error('Shared import failed');
         visitedCountries = normalizeImportedVisitedData(parsed?.content ?? parsed);
         saveVisitedCountries();
         calculateStats();
@@ -1754,7 +1783,7 @@
           renderCenter(countriesByCode[selectedCountryCode]);
         }
         scheduleWorldMapRender();
-        setTransferStatus(`Shared import complete (${keyword})`, false);
+        setTransferStatus(`Shared import complete (${keyword}${importedFromLegacyKey ? ', legacy key' : ''})`, false);
       } catch (error) {
         setTransferStatus(error.message || 'Shared import failed', true);
       }
@@ -1763,7 +1792,7 @@
     async function clearVisitedCountriesShared() {
       const keyword = promptSharedKeyword('Clear shared');
       if (!keyword) return;
-      const key = `country-learner-${keyword}`;
+      const key = buildSharedKey(keyword);
       const payload = {
         app: 'country-learner',
         version: 1,
