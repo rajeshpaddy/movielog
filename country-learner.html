@@ -2249,22 +2249,20 @@
     }
 
 
-    // Fix: Wait for DOM before initializing
-    document.addEventListener('DOMContentLoaded', () => {
-      applyMapModeUi();
-      applyMapZoom();
-      calculateStats();
-      calculateContinentStats();
-      renderLeftList();
-      renderRightList();
-      scheduleWorldMapRender();
+    // Run initialization directly (DOM is already ready since script is at end of body)
+    applyMapModeUi();
+    applyMapZoom();
+    calculateStats();
+    calculateContinentStats();
+    renderLeftList();
+    renderRightList();
+    scheduleWorldMapRender();
 
-      const lastSelected = localStorage.getItem('lastSelectedCountry');
-      if (lastSelected) {
-        const fromRight = !!visitedCountries[lastSelected];
-        selectCountry(lastSelected, fromRight);
-      }
-    });
+    const lastSelected = localStorage.getItem('lastSelectedCountry');
+    if (lastSelected) {
+      const fromRight = !!visitedCountries[lastSelected];
+      selectCountry(lastSelected, fromRight);
+    }
   </script>
 </body>
 </html>
