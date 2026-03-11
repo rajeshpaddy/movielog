@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catalog Guide Chat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #08111f;
+      --bg-glow: #13233f;
+      --panel: rgba(8, 17, 31, 0.84);
+      --panel-strong: #0f1b31;
+      --line: rgba(129, 169, 214, 0.18);
+      --text: #edf4ff;
+      --muted: #90a9c8;
+      --cyan: #7dd3fc;
+      --mint: #7bf1c8;
+      --gold: #ffd36c;
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: 'Manrope', sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(125, 211, 252, 0.22), transparent 26%),
+        radial-gradient(circle at top right, rgba(123, 241, 200, 0.15), transparent 28%),
+        linear-gradient(160deg, #050b14 0%, #091423 48%, #0e1c34 100%);
+      padding: 24px;
+    }
+
+    .shell {
+      max-width: 1380px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(300px, 0.85fr);
+      gap: 18px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .chat-panel {
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      min-height: calc(100vh - 48px);
+      overflow: hidden;
+    }
+
+    .hero {
+      padding: 28px 28px 18px;
+      border-bottom: 1px solid var(--line);
+      background:
+        linear-gradient(135deg, rgba(125, 211, 252, 0.09), rgba(123, 241, 200, 0.04)),
+        transparent;
+    }
+
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .home-link, .ghost-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      border: 1px solid rgba(125, 211, 252, 0.35);
+      color: var(--text);
+      padding: 9px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      background: rgba(15, 27, 49, 0.72);
+    }
+
+    .ghost-link { color: var(--muted); }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(125, 211, 252, 0.1);
+      color: var(--cyan);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(32px, 5vw, 52px);
+      line-height: 0.96;
+      max-width: 11ch;
+      margin-bottom: 12px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.65;
+      max-width: 64ch;
+    }
+
+    .hero-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 0 28px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .stat {
+      min-width: 130px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(15, 27, 49, 0.88);
+      border: 1px solid rgba(129, 169, 214, 0.12);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .stat-value {
+      margin-top: 5px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 28px;
+      color: var(--text);
+    }
+
+    .messages {
+      overflow-y: auto;
+      padding: 24px 28px;
+      display: grid;
+      gap: 16px;
+      align-content: start;
+    }
+
+    .message {
+      max-width: min(760px, 88%);
+      border-radius: 22px;
+      padding: 16px 18px;
+      line-height: 1.6;
+      border: 1px solid transparent;
+      animation: rise 160ms ease-out;
+    }
+
+    .message.assistant {
+      background: rgba(15, 27, 49, 0.9);
+      border-color: rgba(129, 169, 214, 0.14);
+    }
+
+    .message.user {
+      margin-left: auto;
+      background: linear-gradient(135deg, rgba(125, 211, 252, 0.18), rgba(123, 241, 200, 0.16));
+      border-color: rgba(125, 211, 252, 0.2);
+    }
+
+    .message p + p { margin-top: 10px; }
+
+    .message-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .message-link {
+      text-decoration: none;
+      color: #06101e;
+      background: var(--gold);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .message-note {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .composer-wrap {
+      padding: 18px 28px 28px;
+      border-top: 1px solid var(--line);
+      display: grid;
+      gap: 12px;
+      background: rgba(7, 14, 25, 0.92);
+    }
+
+    .prompt-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      border: 1px solid rgba(129, 169, 214, 0.16);
+      background: rgba(15, 27, 49, 0.86);
+      color: var(--text);
+      padding: 9px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      font: inherit;
+      font-size: 13px;
+    }
+
+    .chip:hover { border-color: rgba(125, 211, 252, 0.36); }
+
+    .composer {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+    }
+
+    .composer textarea {
+      width: 100%;
+      min-height: 62px;
+      max-height: 180px;
+      resize: vertical;
+      border-radius: 18px;
+      border: 1px solid rgba(129, 169, 214, 0.18);
+      background: rgba(15, 27, 49, 0.95);
+      color: var(--text);
+      padding: 16px 18px;
+      font: inherit;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .composer textarea:focus {
+      border-color: rgba(125, 211, 252, 0.45);
+      box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.12);
+    }
+
+    .send-btn {
+      border: 0;
+      background: linear-gradient(135deg, var(--cyan), var(--mint));
+      color: #04111d;
+      border-radius: 18px;
+      padding: 0 22px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      min-width: 118px;
+    }
+
+    .side-panel {
+      padding: 24px;
+      display: grid;
+      gap: 16px;
+      align-content: start;
+      min-height: calc(100vh - 48px);
+    }
+
+    .side-card {
+      padding: 18px;
+      border-radius: 22px;
+      background: rgba(15, 27, 49, 0.85);
+      border: 1px solid rgba(129, 169, 214, 0.14);
+    }
+
+    .side-card h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 21px;
+      margin-bottom: 8px;
+    }
+
+    .side-card p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .topic-list, .app-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .topic-btn, .app-shortcut {
+      width: 100%;
+      text-align: left;
+      border-radius: 16px;
+      border: 1px solid rgba(129, 169, 214, 0.14);
+      background: rgba(6, 12, 22, 0.55);
+      color: var(--text);
+      padding: 12px 14px;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .topic-btn strong, .app-shortcut strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+
+    .topic-btn span, .app-shortcut span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .app-shortcut {
+      display: grid;
+      gap: 6px;
+    }
+
+    .app-shortcut a {
+      color: var(--cyan);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 1040px) {
+      .shell { grid-template-columns: 1fr; }
+      .chat-panel, .side-panel { min-height: auto; }
+    }
+
+    @media (max-width: 720px) {
+      body { padding: 14px; }
+      .hero, .hero-stats, .messages, .composer-wrap, .side-panel { padding-left: 16px; padding-right: 16px; }
+      .composer { grid-template-columns: 1fr; }
+      .send-btn { min-height: 52px; }
+      .message { max-width: 100%; }
+      h1 { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <main class="panel chat-panel">
+      <section class="hero">
+        <div class="top-row">
+          <a class="home-link" href="app-catalog.html">← Back to App Catalog</a>
+          <a class="ghost-link" href="changelog.html">View Changelog</a>
+        </div>
+        <div class="eyebrow">Catalog Assistant</div>
+        <h1>Ask the app catalog what it can do.</h1>
+        <p class="subtitle">This is a single-page chat guide for the AI App Catalog. Ask for app recommendations, feature summaries, latest additions, or direct links to any tool in the collection.</p>
+      </section>
+
+      <section class="hero-stats" id="heroStats"></section>
+
+      <section class="messages" id="messages"></section>
+
+      <section class="composer-wrap">
+        <div class="prompt-row" id="promptRow"></div>
+        <form class="composer" id="composer">
+          <textarea id="promptInput" placeholder="Ask about the catalog, an app, a category, or say something like: Which apps help with planning?"></textarea>
+          <button class="send-btn" type="submit">Send</button>
+        </form>
+      </section>
+    </main>
+
+    <aside class="panel side-panel">
+      <section class="side-card">
+        <h2>What it answers</h2>
+        <p>Use it like a catalog concierge. It knows every app name, what each app is for, core features, release dates, categories, and launch links.</p>
+        <div class="topic-list" id="topicList"></div>
+      </section>
+
+      <section class="side-card">
+        <h2>Quick Launch</h2>
+        <p>Direct shortcuts to a few representative apps. Ask for any other app in chat and it will bring up its link too.</p>
+        <div class="app-list" id="appList"></div>
+      </section>
+    </aside>
+  </div>
+
+  <script>
+    const catalogOverview = {
+      name: 'AI App Catalog',
+      url: 'app-catalog.html',
+      summary: 'A browser-based collection of single-page apps for learning, planning, tracking, entertainment, and daily workflows.',
+      features: [
+        'Search across the full app collection',
+        'Browse grouped categories',
+        'Launch every app in one click',
+        'Watch a documentary-style guided demo',
+        'Review recent additions via stats and changelog'
+      ]
+    };
+
+    const apps = [
+      {
+        name: 'Catalog Guide Chat',
+        icon: '🧭',
+        desc: 'Chat with the AI App Catalog to discover apps, compare features, and launch the right tool quickly.',
+        file: 'catalog-guide-chat.html',
+        date: '2026-03-11',
+        category: 'Catalog Guide',
+        aliases: ['catalog guide', 'chat app', 'catalog chat', 'catalog assistant', 'ai app catalog chat'],
+        features: [
+          'Answers questions about the full app catalog',
+          'Gives quick links to launch any app',
+          'Summarizes features for each app',
+          'Suggests apps by goal or category'
+        ]
+      },
+      {
+        name: 'Movie Log',
+        icon: '🎬',
+        desc: 'Track movies you have watched, rate them, and keep a personal watchlist.',
+        file: 'https://bit.ly/movie-log',
+        date: '2025-02-25',
+        category: 'Culture & Entertainment',
+        aliases: ['movies', 'movie tracker', 'watchlist'],
+        features: ['Movie search and logging', 'Ratings', 'Personal watchlist', 'Organized viewing history']
+      },
+      {
+        name: 'Bill Tracker',
+        icon: '📋',
+        desc: 'Track monthly bills with carryover, yearly overview, and keyboard shortcuts.',
+        file: 'https://rajeshpaddy.github.io/movielog/bill-tracker.html',
+        date: '2025-02-24',
+        category: 'Planning & Decisions',
+        aliases: ['bills', 'payments', 'monthly bills'],
+        features: ['Monthly bill tracking', 'Carryover handling', 'Yearly overview', 'Keyboard shortcuts']
+      },
+      {
+        name: 'Ski Tracker',
+        icon: '⛷️',
+        desc: 'Log ski runs by level, track speed, slope time, lift time, weather, and snow conditions.',
+        file: 'https://rajeshpaddy.github.io/movielog/ski-tracker.html',
+        date: '2025-02-24',
+        category: 'Health & Lifestyle',
+        aliases: ['skiing', 'snow', 'runs'],
+        features: ['Run logging', 'Difficulty tracking', 'Speed and time stats', 'Weather and snow notes']
+      },
+      {
+        name: 'Spanish Flash Cards',
+        icon: '🇪🇸',
+        desc: 'Learn Spanish with flash cards using words or sentences from beginner to advanced levels.',
+        file: 'https://rajeshpaddy.github.io/movielog/spanish-flashcards.html',
+        date: '2025-02-24',
+        category: 'Learning & Reference',
+        aliases: ['spanish', 'flashcards', 'language'],
+        features: ['Flash cards', 'Words and sentence practice', 'Beginner to advanced content']
+      },
+      {
+        name: 'Food Designer',
+        icon: '🥗',
+        desc: 'Generate breakfast, lunch, and dinner suggestions from calorie needs and ingredients.',
+        file: 'https://rajeshpaddy.github.io/movielog/food-designer.html',
+        date: '2026-02-26',
+        category: 'Health & Lifestyle',
+        aliases: ['meal planner', 'recipes', 'diet'],
+        features: ['Calorie-aware meal suggestions', 'Ingredient-based planning', 'Recipe-style outputs', 'Breakfast, lunch, and dinner ideas']
+      },
+      {
+        name: 'Food Log',
+        icon: '🍽️',
+        desc: 'Track daily food intake with automatic calorie estimation and exercise burn calculation.',
+        file: 'https://rajeshpaddy.github.io/movielog/food-log.html',
+        date: '2026-02-26',
+        category: 'Health & Lifestyle',
+        aliases: ['nutrition', 'calories', 'food tracker'],
+        features: ['Daily intake logging', 'Calorie estimation', 'Exercise burn tracking']
+      },
+      {
+        name: 'Time Tracker',
+        icon: '⏱️',
+        desc: 'Track daily activities with event logging plus weekly, monthly, and yearly reports.',
+        file: 'https://rajeshpaddy.github.io/movielog/time-tracker.html',
+        date: '2026-02-26',
+        category: 'Planning & Decisions',
+        aliases: ['productivity tracker', 'hours', 'activity log'],
+        features: ['Event logging', 'Date navigation', 'Weekly reports', 'Monthly reports', 'Yearly reports']
+      },
+      {
+        name: 'Scotch & Ghazal',
+        icon: '🥃',
+        desc: 'Play Jagjit Singh and Ghulam Ali ghazals with shuffle and custom playlist support.',
+        file: 'https://rajeshpaddy.github.io/movielog/scotch-ghazal.html',
+        date: '2026-02-26',
+        category: 'Culture & Entertainment',
+        aliases: ['music', 'ghazal', 'playlist'],
+        features: ['Long-form playback', 'Shuffle mode', 'Custom playlist support']
+      },
+      {
+        name: 'Pokemon Learner',
+        icon: '⚡',
+        desc: 'Learn about Pokemon, including stats, evolutions, and what you have already studied.',
+        file: 'https://rajeshpaddy.github.io/movielog/pokemon-learner.html',
+        date: '2026-03-07',
+        category: 'Learning & Reference',
+        aliases: ['pokemon', 'pokedex'],
+        features: ['Pokemon detail view', 'Stats', 'Evolution information', 'Study progress tracking']
+      },
+      {
+        name: 'American Presidents',
+        icon: '🇺🇸',
+        desc: 'Study US presidents with party, vice president, and timeline information.',
+        file: 'https://rajeshpaddy.github.io/movielog/president-learner.html',
+        date: '2026-03-07',
+        category: 'Learning & Reference',
+        aliases: ['presidents', 'us presidents', 'history'],
+        features: ['President profiles', 'Party info', 'Vice president info', 'Study progress tracking']
+      },
+      {
+        name: 'American Idioms Learner',
+        icon: '🗣️',
+        desc: 'Study common American idioms ranked by familiarity, with import and export support.',
+        file: 'https://rajeshpaddy.github.io/movielog/american-idioms-learner.html',
+        date: '2026-03-11',
+        category: 'Learning & Reference',
+        aliases: ['idioms', 'american idioms', 'phrases'],
+        features: ['Ranked idiom library', 'Progress tracking', 'Import and export']
+      },
+      {
+        name: 'Country Learner',
+        icon: '🌍',
+        desc: 'Track countries you have visited and view travel, population, and continent details.',
+        file: 'https://rajeshpaddy.github.io/movielog/country-learner.html',
+        date: '2026-03-08',
+        category: 'Learning & Reference',
+        aliases: ['countries', 'travel', 'visited countries'],
+        features: ['Visited country tracking', 'Travel advisory context', 'Population details', 'Continent stats']
+      },
+      {
+        name: 'USA State Learner',
+        icon: '🗽',
+        desc: 'Track all 50 US states visited with approximate and accurate map modes.',
+        file: 'https://rajeshpaddy.github.io/movielog/usa-state-learner.html',
+        date: '2026-03-08',
+        category: 'Learning & Reference',
+        aliases: ['us states', 'states', 'usa map'],
+        features: ['Visited state tracking', '50-state coverage', 'Approximate map mode', 'Accurate map mode']
+      },
+      {
+        name: 'India States & UT Learner',
+        icon: '🇮🇳',
+        desc: 'Track Indian states and union territories with approximate and accurate map modes.',
+        file: 'https://rajeshpaddy.github.io/movielog/india-state-learner.html',
+        date: '2026-03-08',
+        category: 'Learning & Reference',
+        aliases: ['india states', 'union territories', 'india map'],
+        features: ['State and UT tracking', 'Approximate map mode', 'Accurate map mode']
+      },
+      {
+        name: 'FIRE Plans',
+        icon: '🔥',
+        desc: 'Model FIRE sustainability using portfolio, annual spend, years, and withdrawal assumptions.',
+        file: 'https://rajeshpaddy.github.io/movielog/Fire-Plans.html',
+        date: '2026-03-08',
+        category: 'Planning & Decisions',
+        aliases: ['fire', 'retirement', 'financial independence'],
+        features: ['FIRE scenario modeling', 'Portfolio controls', 'Annual spend controls', 'Safe withdrawal rate controls']
+      },
+      {
+        name: 'CowsNBulls',
+        icon: '🐄',
+        desc: 'Guess the secret four-digit number with cows and bulls clues and score tracking.',
+        file: 'https://rajeshpaddy.github.io/movielog/CowsNBulls.html',
+        date: '2026-03-09',
+        category: 'Games & Puzzles',
+        aliases: ['cows and bulls', 'number game', 'guessing game'],
+        features: ['4-digit guessing gameplay', 'Cows and bulls clues', '10-attempt limit', 'Score history']
+      },
+      {
+        name: 'Book Log',
+        icon: '📚',
+        desc: 'Search books and organize them into To Read, Reading, and Read lists.',
+        file: 'https://rajeshpaddy.github.io/movielog/book-log.html',
+        date: '2026-03-10',
+        category: 'Culture & Entertainment',
+        aliases: ['books', 'reading tracker', 'library'],
+        features: ['Book search', 'To Read list', 'Reading list', 'Read list']
+      },
+      {
+        name: 'Idea Log',
+        icon: '💡',
+        desc: 'Capture ideas and move them across Experimenting, Discarded, and Launched states.',
+        file: 'https://rajeshpaddy.github.io/movielog/idea-log.html?v=20260310-3',
+        date: '2026-03-10',
+        category: 'Productivity & Workflow',
+        aliases: ['ideas', 'idea tracker', 'kanban'],
+        features: ['Idea capture', 'Experimenting lane', 'Discarded lane', 'Launched lane', 'Export and import', 'Timeline stats']
+      },
+      {
+        name: 'Retirement Health Insurance',
+        icon: '🏥',
+        desc: 'Compare Marketplace, COBRA, retiree coverage, and Medicare paths for retirement planning.',
+        file: 'https://rajeshpaddy.github.io/movielog/health-insurance-retirement.html',
+        date: '2026-03-10',
+        category: 'Health & Lifestyle',
+        aliases: ['health insurance', 'cobra', 'medicare', 'retirement insurance'],
+        features: ['Compare coverage paths', 'Retirement planning prompts', 'Marketplace and COBRA analysis', 'Medicare decision support']
+      },
+      {
+        name: 'Tic Tac Toe',
+        icon: '⭕',
+        desc: 'Play classic Tic Tac Toe against an AI opponent.',
+        file: 'https://rajeshpaddy.github.io/movielog/tictactoe.html',
+        date: '2026-03-01',
+        category: 'Games & Puzzles',
+        aliases: ['tic tac toe', 'xo', 'game'],
+        features: ['Single-player gameplay', 'AI opponent', 'Classic board game experience']
+      }
+    ];
+
+    const messagesEl = document.getElementById('messages');
+    const composerEl = document.getElementById('composer');
+    const promptInput = document.getElementById('promptInput');
+    const promptRow = document.getElementById('promptRow');
+    const heroStats = document.getElementById('heroStats');
+    const topicList = document.getElementById('topicList');
+    const appList = document.getElementById('appList');
+
+    const starterPrompts = [
+      'What is the AI App Catalog?',
+      'Which apps are best for learning?',
+      'Show the latest apps',
+      'What does Retirement Health Insurance do?',
+      'Compare Idea Log and Time Tracker',
+      'Give me quick links to planning apps'
+    ];
+
+    const featuredTopics = [
+      'What should a new visitor try first?',
+      'Which apps help with finance or planning?',
+      'Show apps for learning and studying',
+      'What are the newest additions?',
+      'Which app should I use for food and fitness?'
+    ];
+
+    function normalize(text) {
+      return String(text || '').toLowerCase().replace(/[^a-z0-9\s&]/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    function formatDate(dateString) {
+      return new Date(`${dateString}T00:00:00`).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    }
+
+    function uniqueByName(items) {
+      const seen = new Set();
+      return items.filter(item => {
+        const key = item.name;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function scoreApp(app, query) {
+      const normalizedQuery = normalize(query);
+      if (!normalizedQuery) return 0;
+
+      let score = 0;
+      const haystack = normalize([
+        app.name,
+        app.desc,
+        app.category,
+        ...(app.features || []),
+        ...(app.aliases || [])
+      ].join(' '));
+
+      if (haystack.includes(normalizedQuery)) score += 18;
+      if (normalize(app.name) === normalizedQuery) score += 50;
+
+      normalizedQuery.split(' ').forEach(token => {
+        if (token.length < 3) return;
+        if (normalize(app.name).includes(token)) score += 10;
+        if ((app.aliases || []).some(alias => normalize(alias).includes(token))) score += 7;
+        if (haystack.includes(token)) score += 3;
+      });
+
+      return score;
+    }
+
+    function findMentionedApps(query) {
+      const normalizedQuery = normalize(query);
+      const matches = apps.filter(app => {
+        const namesToCheck = [app.name, ...(app.aliases || [])];
+        return namesToCheck.some(name => {
+          const normalizedName = normalize(name);
+          return normalizedName && normalizedQuery.includes(normalizedName);
+        });
+      });
+
+      if (matches.length) return uniqueByName(matches);
+
+      return apps
+        .map(app => ({ app, score: scoreApp(app, query) }))
+        .filter(entry => entry.score >= 12)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3)
+        .map(entry => entry.app);
+    }
+
+    function appsInCategory(label) {
+      return apps.filter(app => normalize(app.category).includes(normalize(label)));
+    }
+
+    function getCategoryFromQuery(query) {
+      const normalizedQuery = normalize(query);
+      const categories = [...new Set(apps.map(app => app.category))];
+      return categories.find(category => normalizedQuery.includes(normalize(category))) || null;
+    }
+
+    function buildAppSummary(app) {
+      return `${app.icon} ${app.name} is in ${app.category}. ${app.desc} Key features: ${app.features.slice(0, 4).join(', ')}.`;
+    }
+
+    function listApps(items) {
+      return items.map(app => `${app.icon} ${app.name}`).join(', ');
+    }
+
+    function makeAssistantPayload(query) {
+      const normalizedQuery = normalize(query);
+      const categoryMatch = getCategoryFromQuery(query);
+      const mentionedApps = findMentionedApps(query);
+      const newestApps = [...apps].sort((a, b) => b.date.localeCompare(a.date));
+
+      if (!normalizedQuery) {
+        return {
+          text: 'Ask about any app, category, or use case. I can tell you what each app does, which ones fit a goal, and give you launch links instantly.'
+        };
+      }
+
+      if (/\b(hello|hi|hey)\b/.test(normalizedQuery)) {
+        return {
+          text: 'I can guide you through the AI App Catalog. Try asking for a category, a feature summary, the newest apps, or the right app for a task.'
+        };
+      }
+
+      if (/(what is|about).*(app catalog|ai app catalog|catalog)/.test(normalizedQuery) || normalizedQuery === 'app catalog') {
+        return {
+          text: `${catalogOverview.summary} It currently includes ${apps.length} apps across ${new Set(apps.map(app => app.category)).size} categories.`,
+          links: [{ label: 'Open App Catalog', href: catalogOverview.url }],
+          note: `Catalog highlights: ${catalogOverview.features.join(' • ')}`
+        };
+      }
+
+      if (/(how many|count|number of).*(apps|tools)/.test(normalizedQuery)) {
+        return {
+          text: `There are ${apps.length} apps in the catalog right now, spanning ${new Set(apps.map(app => app.category)).size} categories.`,
+          note: `Categories: ${[...new Set(apps.map(app => app.category))].join(', ')}.`
+        };
+      }
+
+      if (/(latest|newest|recent)/.test(normalizedQuery)) {
+        const latest = newestApps.slice(0, 5);
+        return {
+          text: `The latest additions are ${listApps(latest)}.`,
+          links: latest.map(app => ({ label: app.name, href: app.file })),
+          note: latest.map(app => `${app.name}: ${formatDate(app.date)}`).join(' • ')
+        };
+      }
+
+      if ((/compare|difference|vs\b|versus/.test(normalizedQuery)) && mentionedApps.length >= 2) {
+        const [first, second] = mentionedApps;
+        return {
+          text: `${first.name} focuses on ${first.desc.toLowerCase()} ${second.name} focuses on ${second.desc.toLowerCase()}`,
+          links: [
+            { label: `Open ${first.name}`, href: first.file },
+            { label: `Open ${second.name}`, href: second.file }
+          ],
+          note: `${first.name}: ${first.features.slice(0, 3).join(', ')}. ${second.name}: ${second.features.slice(0, 3).join(', ')}.`
+        };
+      }
+
+      if ((/list|show|which|find|recommend|quick links|links/.test(normalizedQuery)) && categoryMatch) {
+        const categoryApps = appsInCategory(categoryMatch);
+        return {
+          text: `${categoryMatch} includes ${categoryApps.length} apps: ${listApps(categoryApps)}.`,
+          links: categoryApps.slice(0, 8).map(app => ({ label: app.name, href: app.file })),
+          note: `Ask for any app name to get a tighter feature summary.`
+        };
+      }
+
+      if ((/learning|study|learn/.test(normalizedQuery)) && !categoryMatch) {
+        const learningApps = appsInCategory('Learning & Reference');
+        return {
+          text: `For learning, start with ${listApps(learningApps)}.`,
+          links: learningApps.slice(0, 8).map(app => ({ label: app.name, href: app.file }))
+        };
+      }
+
+      if (/(planning|finance|money|retirement|budget|bills|time)/.test(normalizedQuery) && !mentionedApps.length) {
+        const planningApps = apps.filter(app => ['Planning & Decisions', 'Productivity & Workflow'].includes(app.category));
+        return {
+          text: `For planning and decision support, look at ${listApps(planningApps)}.`,
+          links: planningApps.slice(0, 8).map(app => ({ label: app.name, href: app.file }))
+        };
+      }
+
+      if (/(health|fitness|food|insurance|wellness)/.test(normalizedQuery) && !mentionedApps.length) {
+        const healthApps = appsInCategory('Health & Lifestyle');
+        return {
+          text: `For health and lifestyle tasks, use ${listApps(healthApps)}.`,
+          links: healthApps.slice(0, 8).map(app => ({ label: app.name, href: app.file }))
+        };
+      }
+
+      if (/(game|games|play|puzzle)/.test(normalizedQuery) && !mentionedApps.length) {
+        const gameApps = appsInCategory('Games & Puzzles');
+        return {
+          text: `For games and puzzles, the catalog has ${listApps(gameApps)}.`,
+          links: gameApps.map(app => ({ label: app.name, href: app.file }))
+        };
+      }
+
+      if (mentionedApps.length === 1) {
+        const app = mentionedApps[0];
+        return {
+          text: buildAppSummary(app),
+          links: [
+            { label: `Open ${app.name}`, href: app.file },
+            { label: 'Open App Catalog', href: catalogOverview.url }
+          ],
+          note: `Released ${formatDate(app.date)}.`
+        };
+      }
+
+      if (mentionedApps.length > 1) {
+        return {
+          text: `I found a few likely matches: ${listApps(mentionedApps)}.`,
+          links: mentionedApps.map(app => ({ label: app.name, href: app.file })),
+          note: 'Ask about one by name if you want a detailed feature summary.'
+        };
+      }
+
+      const fallback = apps
+        .map(app => ({ app, score: scoreApp(app, query) }))
+        .sort((a, b) => b.score - a.score)
+        .filter(entry => entry.score > 0)
+        .slice(0, 4)
+        .map(entry => entry.app);
+
+      if (fallback.length) {
+        return {
+          text: `I do not have an exact match for that phrasing, but these apps look relevant: ${listApps(fallback)}.`,
+          links: fallback.map(app => ({ label: app.name, href: app.file })),
+          note: 'Try asking by goal, category, or exact app name.'
+        };
+      }
+
+      return {
+        text: 'I could not match that yet. Try asking for the newest apps, a category like Learning & Reference, or a specific app name.'
+      };
+    }
+
+    function renderMessage(role, payload) {
+      const message = document.createElement('article');
+      message.className = `message ${role}`;
+
+      if (typeof payload === 'string') {
+        message.innerHTML = `<p>${payload}</p>`;
+      } else {
+        const paragraphs = Array.isArray(payload.text) ? payload.text : [payload.text];
+        message.innerHTML = paragraphs.map(text => `<p>${text}</p>`).join('');
+
+        if (payload.links && payload.links.length) {
+          const links = document.createElement('div');
+          links.className = 'message-links';
+          payload.links.forEach(link => {
+            const anchor = document.createElement('a');
+            anchor.className = 'message-link';
+            anchor.href = link.href;
+            anchor.textContent = link.label;
+            if (link.action) {
+              anchor.dataset.action = link.action;
+            }
+            if (String(link.href).startsWith('http')) {
+              anchor.target = '_blank';
+              anchor.rel = 'noopener noreferrer';
+            }
+            links.appendChild(anchor);
+          });
+          message.appendChild(links);
+        }
+
+        if (payload.note) {
+          const note = document.createElement('div');
+          note.className = 'message-note';
+          note.textContent = payload.note;
+          message.appendChild(note);
+        }
+      }
+
+      messagesEl.appendChild(message);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function submitPrompt(prompt) {
+      const value = String(prompt || '').trim();
+      if (!value) return;
+      renderMessage('user', value);
+      const response = makeAssistantPayload(value);
+      window.setTimeout(() => renderMessage('assistant', response), 120);
+    }
+
+    function renderStats() {
+      const categories = [...new Set(apps.map(app => app.category))];
+      const newest = [...apps].sort((a, b) => b.date.localeCompare(a.date))[0];
+      const stats = [
+        { label: 'Apps', value: apps.length },
+        { label: 'Categories', value: categories.length },
+        { label: 'Newest App', value: newest.name.split(' ').slice(0, 2).join(' ') },
+        { label: 'Updated', value: formatDate(newest.date) }
+      ];
+
+      heroStats.innerHTML = stats.map(stat => `
+        <div class="stat">
+          <div class="stat-label">${stat.label}</div>
+          <div class="stat-value">${stat.value}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderPrompts() {
+      starterPrompts.forEach(prompt => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'chip';
+        button.textContent = prompt;
+        button.addEventListener('click', () => submitPrompt(prompt));
+        promptRow.appendChild(button);
+      });
+    }
+
+    function renderTopics() {
+      featuredTopics.forEach(topic => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'topic-btn';
+        button.innerHTML = `<strong>${topic}</strong><span>Tap to ask this in chat.</span>`;
+        button.addEventListener('click', () => submitPrompt(topic));
+        topicList.appendChild(button);
+      });
+    }
+
+    function renderQuickLaunch() {
+      const picks = [
+        'App Catalog',
+        'Catalog Guide Chat',
+        'Idea Log',
+        'Retirement Health Insurance',
+        'Pokemon Learner',
+        'Movie Log'
+      ];
+
+      const mapped = picks.map(name => name === 'App Catalog'
+        ? { name: 'App Catalog', desc: catalogOverview.summary, file: catalogOverview.url }
+        : apps.find(app => app.name === name)
+      ).filter(Boolean);
+
+      mapped.forEach(app => {
+        const item = document.createElement('div');
+        item.className = 'app-shortcut';
+        item.innerHTML = `
+          <strong>${app.name}</strong>
+          <span>${app.desc}</span>
+          <a href="${app.file}" ${String(app.file).startsWith('http') ? 'target="_blank" rel="noopener noreferrer"' : ''}>Open</a>
+        `;
+        appList.appendChild(item);
+      });
+    }
+
+    composerEl.addEventListener('submit', (event) => {
+      event.preventDefault();
+      submitPrompt(promptInput.value);
+      promptInput.value = '';
+      promptInput.focus();
+    });
+
+    promptInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        composerEl.requestSubmit();
+      }
+    });
+
+    renderStats();
+    renderPrompts();
+    renderTopics();
+    renderQuickLaunch();
+    renderMessage('assistant', {
+      text: [
+        'I am the guide for the AI App Catalog.',
+        `Ask me about any of the ${apps.length} apps, and I will point you to the right tool with a quick link and a feature summary.`
+      ],
+      links: [
+        { label: 'Open App Catalog', href: catalogOverview.url },
+        { label: 'See Latest Apps', href: '#', action: 'latest' }
+      ],
+      note: 'Good starting prompts: "What is the catalog?", "Which apps are best for learning?", or "What does Idea Log do?"'
+    });
+
+    messagesEl.addEventListener('click', (event) => {
+      const anchor = event.target.closest('a[data-action]');
+      if (!anchor) return;
+      event.preventDefault();
+      if (anchor.dataset.action === 'latest') submitPrompt('Show the latest apps');
+    });
+  </script>
+</body>
+</html>

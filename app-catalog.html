@@ -120,11 +120,11 @@
     <p class="subtitle">Your personal app collection, all data is saved in your browsers local storage and, unless you choose to export to shared storage, no data leaves your device. These apps provide the best experience on desktop or laptop screens.</p>
     <div class="catalog-stats" id="catalogStats"></div>
 
-    <a class="video-tile" href="https://rajeshpaddy.github.io/movielog/demo-video/ai-app-catalog-documentary-demo.mp4" target="_blank" rel="noopener noreferrer">
-      <div class="video-tile-title">🎬 Documentary Demo Video</div>
-      <div class="video-tile-desc">Watch a full under-5-minute guided tour of all apps in this catalog.</div>
+    <a class="video-tile" href="https://rajeshpaddy.github.io/movielog/catalog-guide-chat.html">
+      <div class="video-tile-title">🧭 Catalog Guide Chat</div>
+      <div class="video-tile-desc">Start here. Ask what the catalog includes, get feature summaries, and jump directly to the right app.</div>
     </a>
-    
+
     <div class="search-container">
       <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search apps...">
     </div>
@@ -135,6 +135,13 @@
 
   <script>
     const apps = [
+      {
+        name: 'Catalog Guide Chat',
+        icon: '🧭',
+        desc: 'Chat with the AI App Catalog to discover apps, compare features, and jump to the right tool with quick links',
+        file: 'https://rajeshpaddy.github.io/movielog/catalog-guide-chat.html',
+        date: '2026-03-11'
+      },
       {
         name: 'Movie Log',
         icon: '🎬',
@@ -287,6 +294,9 @@
     function getAppCategory(app) {
       const haystack = `${app.name} ${app.desc}`.toLowerCase();
 
+      if (/(catalog guide|app catalog|catalog chat|discover apps)/.test(haystack)) {
+        return { key: 'catalog-guide', label: 'Start Here', meta: 'Learn the catalog first', order: 0 };
+      }
       if (/(tic tac toe|cowsnbulls|guess|game|puzzle)/.test(haystack)) {
         return { key: 'games', label: 'Games & Puzzles', meta: 'Playful challenges', order: 6 };
       }
