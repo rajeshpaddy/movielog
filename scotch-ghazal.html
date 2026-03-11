@@ -35,7 +35,13 @@
     .app-home-link:focus-visible { outline: 2px solid #00d9ff; outline-offset: 2px; }
 
     .shell { max-width: 1460px; margin: 0 auto; }
-    .heading { text-align: center; margin: 18px 0 16px; }
+    .heading { margin: 18px 0 16px; }
+    .heading-grid {
+      display: grid;
+      gap: 14px;
+      justify-items: center;
+    }
+    .heading-copy { text-align: center; }
     h1 {
       margin: 0;
       font-size: clamp(30px, 4vw, 44px);
@@ -43,6 +49,76 @@
       letter-spacing: 0.6px;
     }
     .sub { margin-top: 8px; color: #b6b4af; font-size: 14px; }
+    .stats-legend {
+      background: rgba(17, 20, 31, 0.84);
+      border: 1px solid rgba(245, 199, 147, 0.2);
+      border-radius: 14px;
+      padding: 12px;
+      text-align: left;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.22);
+      width: min(860px, 100%);
+    }
+    .legend-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .legend-title {
+      color: #ffd8ab;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .legend-clear {
+      border: 1px solid rgba(125, 211, 252, 0.34);
+      background: #122033;
+      color: #bfe5ff;
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .legend-clear:hover { border-color: #7dd3fc; }
+    .legend-grid {
+      display: grid;
+      gap: 10px;
+      max-height: 216px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+    .legend-group { display: grid; gap: 6px; }
+    .legend-group-label {
+      color: #9ca2b0;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.55px;
+    }
+    .legend-chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .legend-chip {
+      border: 1px solid rgba(245, 199, 147, 0.18);
+      background: #111523;
+      color: #e8ddd0;
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    }
+    .legend-chip:hover {
+      border-color: rgba(245, 199, 147, 0.42);
+      transform: translateY(-1px);
+    }
+    .legend-chip.active {
+      background: #f5c793;
+      color: #15120f;
+      border-color: #f5c793;
+      font-weight: 700;
+    }
 
     .layout {
       display: grid;
@@ -230,8 +306,19 @@
 
   <div class="shell">
     <header class="heading">
-      <h1>Scotch & Ghazal Pairing Lounge</h1>
-      <p class="sub">Pick a Scotch and Ghazal, read the in-app excerpt, then open the exact song in a new tab.</p>
+      <div class="heading-grid">
+        <div class="heading-copy">
+          <h1>Scotch & Ghazal Pairing Lounge</h1>
+          <p class="sub">Pick a Scotch and Ghazal, read the in-app excerpt, then open the exact song in a new tab.</p>
+        </div>
+        <aside class="stats-legend" aria-label="Scotch statistics and filters">
+          <div class="legend-top">
+            <div class="legend-title">Scotch Statistics Legend</div>
+            <button id="clearScotchFilters" class="legend-clear" type="button">Clear Filters</button>
+          </div>
+          <div id="scotchStatsLegend" class="legend-grid"></div>
+        </aside>
+      </div>
     </header>
 
     <main class="layout" aria-label="Scotch and Ghazal pairing app">
@@ -315,6 +402,7 @@
           out.push({
             id,
             name: `${d.name} ${e.label}`,
+            branch: d.name,
             region: d.region,
             age: e.age,
             abv: e.abv,
@@ -480,6 +568,12 @@
     let selectedGhazalId = ghazals[0].id;
     let scotchQuery = '';
     let ghazalQuery = '';
+    let scotchLegendFilters = {
+      region: '',
+      abv: '',
+      age: '',
+      branch: ''
+    };
 
     const scotchSearchEl = document.getElementById('scotchSearch');
     const ghazalSearchEl = document.getElementById('ghazalSearch');
@@ -490,20 +584,90 @@
     const pairBannerEl = document.getElementById('pairBanner');
     const scotchCardEl = document.getElementById('scotchCard');
     const ghazalCardEl = document.getElementById('ghazalCard');
+    const scotchStatsLegendEl = document.getElementById('scotchStatsLegend');
+    const clearScotchFiltersEl = document.getElementById('clearScotchFilters');
     function normalize(value) {
       return String(value || '').toLowerCase().trim();
     }
 
+    function getLegendCounts(key) {
+      const counts = new Map();
+      scotches.forEach(scotch => {
+        const value = scotch[key];
+        counts.set(value, (counts.get(value) || 0) + 1);
+      });
+      return counts;
+    }
+
+    function getLegendEntries(key) {
+      const counts = getLegendCounts(key);
+      const entries = Array.from(counts.entries()).map(([value, count]) => ({ value, count }));
+      if (key === 'age') {
+        const order = { '12 Years': 1, '15 Years': 2, '18 Years': 3, '21 Years': 4, 'NAS': 5 };
+        return entries.sort((a, b) => (order[a.value] || 99) - (order[b.value] || 99));
+      }
+      if (key === 'abv') {
+        return entries.sort((a, b) => Number.parseFloat(a.value) - Number.parseFloat(b.value));
+      }
+      return entries.sort((a, b) => a.value.localeCompare(b.value));
+    }
+
+    function renderScotchLegend() {
+      const groups = [
+        { label: 'Region', key: 'region' },
+        { label: 'ABV', key: 'abv' },
+        { label: 'Age', key: 'age' },
+        { label: 'Scotch Branch', key: 'branch' }
+      ];
+
+      scotchStatsLegendEl.innerHTML = groups.map(group => `
+        <div class="legend-group">
+          <div class="legend-group-label">${group.label}</div>
+          <div class="legend-chip-row">
+            ${getLegendEntries(group.key).map(entry => `
+              <button
+                type="button"
+                class="legend-chip ${scotchLegendFilters[group.key] === entry.value ? 'active' : ''}"
+                data-filter-key="${group.key}"
+                data-filter-value="${entry.value}"
+              >
+                ${entry.value} (${entry.count})
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+
+      scotchStatsLegendEl.querySelectorAll('[data-filter-key]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const key = btn.getAttribute('data-filter-key');
+          const value = btn.getAttribute('data-filter-value');
+          scotchLegendFilters[key] = scotchLegendFilters[key] === value ? '' : value;
+          renderAll(false);
+        });
+      });
+    }
+
     function filterScotches() {
       const q = normalize(scotchQuery);
-      if (!q) return scotches;
-      return scotches.filter(s =>
-        normalize(s.name).includes(q) ||
-        normalize(s.region).includes(q) ||
-        normalize(s.style).includes(q) ||
-        normalize(s.age).includes(q) ||
-        normalize(s.abv).includes(q)
-      );
+      return scotches.filter(s => {
+        const matchesSearch = !q || (
+          normalize(s.name).includes(q) ||
+          normalize(s.region).includes(q) ||
+          normalize(s.style).includes(q) ||
+          normalize(s.age).includes(q) ||
+          normalize(s.abv).includes(q) ||
+          normalize(s.branch).includes(q)
+        );
+
+        const matchesLegend =
+          (!scotchLegendFilters.region || s.region === scotchLegendFilters.region) &&
+          (!scotchLegendFilters.abv || s.abv === scotchLegendFilters.abv) &&
+          (!scotchLegendFilters.age || s.age === scotchLegendFilters.age) &&
+          (!scotchLegendFilters.branch || s.branch === scotchLegendFilters.branch);
+
+        return matchesSearch && matchesLegend;
+      });
     }
 
     function filterGhazals() {
@@ -534,7 +698,12 @@
 
     function renderScotchList() {
       const list = filterScotches();
-      scotchResultCountEl.textContent = `${list.length} of ${scotches.length} shown`;
+      const activeFilters = Object.entries(scotchLegendFilters)
+        .filter(([, value]) => value)
+        .map(([key, value]) => `${key}: ${value}`);
+      scotchResultCountEl.textContent = activeFilters.length
+        ? `${list.length} of ${scotches.length} shown · ${activeFilters.join(' · ')}`
+        : `${list.length} of ${scotches.length} shown`;
       if (list.length === 0) {
         scotchListEl.innerHTML = '<div class="empty">No Scotch matches this search.</div>';
         return;
@@ -602,8 +771,9 @@
           <div class="fact"><div class="fact-k">Region</div><div class="fact-v">${scotch.region}</div></div>
           <div class="fact"><div class="fact-k">Age</div><div class="fact-v">${scotch.age}</div></div>
           <div class="fact"><div class="fact-k">ABV</div><div class="fact-v">${scotch.abv}</div></div>
-          <div class="fact"><div class="fact-k">Style</div><div class="fact-v">${scotch.style}</div></div>
+          <div class="fact"><div class="fact-k">Scotch Branch</div><div class="fact-v">${scotch.branch}</div></div>
         </div>
+        <p class="detail-text"><strong>Style:</strong> ${scotch.style}</p>
         <p class="detail-text"><strong>Nose:</strong> ${scotch.nose}</p>
         <p class="detail-text"><strong>Palate:</strong> ${scotch.palate}</p>
         <p class="detail-text"><strong>Finish:</strong> ${scotch.finish}</p>
@@ -646,6 +816,7 @@
 
     function renderAll(autoPlayAudio) {
       ensureSelectedInFiltered();
+      renderScotchLegend();
       renderScotchList();
       renderGhazalList();
       renderCenterPane();
@@ -660,6 +831,13 @@
       ghazalQuery = ghazalSearchEl.value;
       renderAll(false);
     });
+
+    if (clearScotchFiltersEl) {
+      clearScotchFiltersEl.addEventListener('click', () => {
+        scotchLegendFilters = { region: '', abv: '', age: '', branch: '' };
+        renderAll(false);
+      });
+    }
 
     renderAll(false);
   </script>
