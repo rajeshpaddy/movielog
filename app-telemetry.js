@@ -8,6 +8,7 @@
   const SETGET_SET_URL = 'https://setget.io/api/set';
   const SETGET_GET_BASE = 'https://setget.io/api/get';
   const STORAGE_PREFIX = 'ai-app-catalog-telemetry';
+  const TELEMETRY_VERSION = 2;
   const RECENT_SAMPLE_LIMIT = 20;
 
   if (navigator.doNotTrack === '1' || window.doNotTrack === '1' || navigator.msDoNotTrack === '1') {
@@ -48,8 +49,65 @@
     return `${info.year}-W${String(info.week).padStart(2, '0')}`;
   }
 
+  function getCompactWeekKey(date) {
+    const info = getIsoWeekInfo(date);
+    return `${info.year}w${String(info.week).padStart(2, '0')}`;
+  }
+
+  function hashAppId(value) {
+    let hash = 2166136261;
+    const input = String(value || '');
+    for (let i = 0; i < input.length; i += 1) {
+      hash ^= input.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return (hash >>> 0).toString(36).slice(0, 6);
+  }
+
   function buildTelemetryKey(weekKey) {
-    return `${STORAGE_PREFIX}-${appId}-${weekKey}`;
+    const compactApp = appId.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 8) || 'app';
+    const compactWeek = weekKey.toLowerCase().replace('-', '');
+    return `aat-${compactApp}-${hashAppId(appId)}-${compactWeek}`;
+  }
+
+  function ensureTelemetryLink(telemetryKey) {
+    let styleEl = document.getElementById('appTelemetryLinkStyles');
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = 'appTelemetryLinkStyles';
+      styleEl.textContent = `
+        .app-telemetry-link {
+          position: fixed;
+          left: 12px;
+          bottom: 10px;
+          font-size: 11px;
+          color: #8ea6c7;
+          text-decoration: none;
+          opacity: 0.85;
+          z-index: 100;
+        }
+        .app-telemetry-link:hover {
+          color: #bfe3ff;
+          opacity: 1;
+          text-decoration: underline;
+        }
+      `;
+      document.head.appendChild(styleEl);
+    }
+
+    let linkEl = document.getElementById('telemetryLink');
+    if (!linkEl) {
+      linkEl = document.createElement('a');
+      linkEl.id = 'telemetryLink';
+      linkEl.className = 'app-telemetry-link';
+      linkEl.target = '_blank';
+      linkEl.rel = 'noopener noreferrer';
+      linkEl.textContent = 'Telemetry';
+      linkEl.title = "View this week's telemetry";
+      document.body.appendChild(linkEl);
+    }
+
+    linkEl.href = `${SETGET_GET_BASE}/${encodeURIComponent(telemetryKey)}`;
   }
 
   function normalizeName(value) {
@@ -143,7 +201,7 @@
       body: JSON.stringify({
         key,
         content,
-        expireAfter: 1209600
+        expireAfter: 604800
       })
     });
 
@@ -158,11 +216,18 @@
         });
       }
     }
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Telemetry write failed (${response.status})${text ? `: ${text}` : ''}`);
+    }
   }
 
   async function recordTelemetry() {
     const weekKey = getWeekKey(new Date());
-    const sentKey = `${STORAGE_PREFIX}-sent-${appId}-${weekKey}`;
+    const sentKey = `${STORAGE_PREFIX}-sent-v${TELEMETRY_VERSION}-${appId}-${weekKey}`;
+    const telemetryKey = buildTelemetryKey(weekKey);
+    ensureTelemetryLink(telemetryKey);
     if (safeGetItem(sentKey)) return;
 
     const geo = await fetchGeo().catch(() => ({
@@ -173,7 +238,6 @@
       regionBucket: 'Unknown'
     }));
 
-    const telemetryKey = buildTelemetryKey(weekKey);
     const existing = await fetchExistingTelemetry(telemetryKey).catch(() => null);
     const now = new Date().toISOString();
 
@@ -181,9 +245,10 @@
       ? existing
       : {
           app: 'ai-app-catalog-telemetry',
-          version: 1,
+          version: TELEMETRY_VERSION,
           appId,
           week: weekKey,
+          key: telemetryKey,
           hitCount: 0,
           regions: {},
           countries: {},
@@ -191,9 +256,10 @@
         };
 
     next.app = 'ai-app-catalog-telemetry';
-    next.version = 1;
+    next.version = TELEMETRY_VERSION;
     next.appId = appId;
     next.week = weekKey;
+    next.key = telemetryKey;
     next.updatedAt = now;
     next.hitCount = Number(next.hitCount || 0) + 1;
     next.regions = next.regions && typeof next.regions === 'object' ? next.regions : {};
