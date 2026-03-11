@@ -83,7 +83,7 @@
     .legend-grid {
       display: grid;
       gap: 10px;
-      max-height: 216px;
+      max-height: 320px;
       overflow: auto;
       padding-right: 4px;
     }
@@ -617,7 +617,7 @@
         { label: 'Region', key: 'region' },
         { label: 'ABV', key: 'abv' },
         { label: 'Age', key: 'age' },
-        { label: 'Scotch Branch', key: 'branch' }
+        { label: 'Scotch Brand', key: 'branch' }
       ];
 
       scotchStatsLegendEl.innerHTML = groups.map(group => `
@@ -771,7 +771,7 @@
           <div class="fact"><div class="fact-k">Region</div><div class="fact-v">${scotch.region}</div></div>
           <div class="fact"><div class="fact-k">Age</div><div class="fact-v">${scotch.age}</div></div>
           <div class="fact"><div class="fact-k">ABV</div><div class="fact-v">${scotch.abv}</div></div>
-          <div class="fact"><div class="fact-k">Scotch Branch</div><div class="fact-v">${scotch.branch}</div></div>
+          <div class="fact"><div class="fact-k">Scotch Brand</div><div class="fact-v">${scotch.branch}</div></div>
         </div>
         <p class="detail-text"><strong>Style:</strong> ${scotch.style}</p>
         <p class="detail-text"><strong>Nose:</strong> ${scotch.nose}</p>
