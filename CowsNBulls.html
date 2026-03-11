@@ -484,6 +484,7 @@
     let machineCandidates = [];
     let machineCurrentGuess = '';
     let machineSecret = '';
+    let machineManualFeedback = false;
     let machineCurrentBulls = 0;
     let machineCurrentCows = 0;
 
@@ -725,13 +726,14 @@
       machineCandidates = [];
       machineCurrentGuess = '';
       machineSecret = '';
+      machineManualFeedback = false;
       machineCurrentBulls = 0;
       machineCurrentCows = 0;
       gameMode = mode;
       syncModeButtons();
       modeHint.textContent = mode === MODE_HYBRID
         ? 'Machine guesses. You manually enter Bulls and Cows each turn.'
-        : 'Machine guesses your hidden number and feedback is auto-calculated.';
+        : 'Machine guesses your hidden number. Enter it for auto feedback, or keep it in mind and enter Bulls/Cows yourself.';
       guessForm.style.display = 'none';
       machineSection.style.display = 'block';
       setMachineControlsEnabled(false);
@@ -744,10 +746,10 @@
       updateAttemptNote();
       renderTurns();
       machineStartBtn.textContent = mode === MODE_HYBRID ? 'Start Hybrid Game' : 'Start Machine Game';
-      machineSecretInput.placeholder = mode === MODE_HYBRID ? 'Optional: your 4-digit number' : 'Your 4-digit number';
+      machineSecretInput.placeholder = mode === MODE_HYBRID ? 'Optional: your 4-digit number' : 'Optional: your 4-digit number';
       setStatus(mode === MODE_HYBRID
         ? 'Hybrid mode: You can enter a 4-digit number or keep it in mind. Machine guesses; you enter Bulls/Cows and press Next Turn.'
-        : 'Machine mode: Enter your 4-digit number and click Start Machine Game.');
+        : 'Machine mode: Enter a 4-digit number for auto feedback, or keep it in mind and enter Bulls/Cows manually.');
       machineSecretInput.focus();
     }
 
@@ -755,7 +757,7 @@
       if (gameMode !== MODE_MACHINE && gameMode !== MODE_HYBRID) return;
       const rawSecret = machineSecretInput.value.trim();
       let valid = { ok: true, value: '' };
-      if (gameMode === MODE_MACHINE || rawSecret) {
+      if (rawSecret) {
         valid = validateNumber(rawSecret);
         if (!valid.ok) {
           setStatus(valid.message, 'loss');
@@ -767,9 +769,10 @@
       gameOver = false;
       machineStarted = true;
       machineSecret = valid.value;
+      machineManualFeedback = gameMode === MODE_HYBRID || !machineSecret;
       machineCandidates = getAllValidNumbers();
       machineCurrentGuess = machineCandidates[0];
-      if (gameMode === MODE_MACHINE) {
+      if (!machineManualFeedback) {
         const firstResult = evaluateGuess(machineCurrentGuess, machineSecret);
         machineCurrentBulls = firstResult.bulls;
         machineCurrentCows = firstResult.cows;
@@ -777,13 +780,14 @@
         machineCurrentBulls = 0;
         machineCurrentCows = 0;
       }
+      manualFeedbackRow.classList.toggle('show', machineManualFeedback);
       updateMachineGuessDisplay();
       updateMachineFeedbackDisplay();
       setMachineControlsEnabled(true);
       updateAttemptNote();
       renderTurns();
-      if (gameMode === MODE_HYBRID) {
-        setStatus(`Hybrid Turn 1 guess is ${machineCurrentGuess}. Enter Bulls/Cows and press Next Turn.`);
+      if (machineManualFeedback) {
+        setStatus(`${gameMode === MODE_HYBRID ? 'Hybrid' : 'Machine'} Turn 1 guess is ${machineCurrentGuess}. Enter Bulls/Cows and press Next Turn.`);
       } else {
         setStatus(`Machine Turn 1 guess is ${machineCurrentGuess}. Bulls: ${machineCurrentBulls}, Cows: ${machineCurrentCows}. Press Next Turn.`);
       }
@@ -793,15 +797,15 @@
       if ((gameMode !== MODE_MACHINE && gameMode !== MODE_HYBRID) || !machineStarted || gameOver) return;
       let bulls = machineCurrentBulls;
       let cows = machineCurrentCows;
-      if (gameMode === MODE_HYBRID) {
+      if (machineManualFeedback) {
         bulls = Number(hybridBullsInput.value);
         cows = Number(hybridCowsInput.value);
         if (!Number.isInteger(bulls) || !Number.isInteger(cows) || bulls < 0 || cows < 0 || bulls > 4 || cows > 4) {
-          setStatus('Hybrid mode: enter valid Bulls/Cows values between 0 and 4.', 'loss');
+          setStatus(`${gameMode === MODE_HYBRID ? 'Hybrid' : 'Machine'} mode: enter valid Bulls/Cows values between 0 and 4.`, 'loss');
           return;
         }
         if (bulls + cows > 4) {
-          setStatus('Hybrid mode: Bulls + Cows cannot exceed 4.', 'loss');
+          setStatus(`${gameMode === MODE_HYBRID ? 'Hybrid' : 'Machine'} mode: Bulls + Cows cannot exceed 4.`, 'loss');
           return;
         }
       }
@@ -846,7 +850,7 @@
       }
 
       machineCurrentGuess = machineCandidates[0];
-      if (gameMode === MODE_MACHINE) {
+      if (!machineManualFeedback) {
         const nextResult = evaluateGuess(machineCurrentGuess, machineSecret);
         machineCurrentBulls = nextResult.bulls;
         machineCurrentCows = nextResult.cows;
@@ -858,8 +862,8 @@
       }
       updateMachineGuessDisplay();
       updateMachineFeedbackDisplay();
-      if (gameMode === MODE_HYBRID) {
-        setStatus(`Hybrid Turn ${attempts + 1} guess is ${machineCurrentGuess}. Enter Bulls/Cows and press Next Turn.`);
+      if (machineManualFeedback) {
+        setStatus(`${gameMode === MODE_HYBRID ? 'Hybrid' : 'Machine'} Turn ${attempts + 1} guess is ${machineCurrentGuess}. Enter Bulls/Cows and press Next Turn.`);
       } else {
         setStatus(`Machine Turn ${attempts + 1} guess is ${machineCurrentGuess}. Bulls: ${machineCurrentBulls}, Cows: ${machineCurrentCows}. Press Next Turn.`);
       }

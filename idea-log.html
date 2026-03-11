@@ -204,12 +204,31 @@
       display: grid;
       gap: 8px;
     }
+    .idea-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
     .idea-title {
       font-size: 15px;
       font-weight: 700;
       color: #e2e8f0;
       line-height: 1.35;
       word-break: break-word;
+    }
+    .idea-import-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(37, 99, 235, 0.18);
+      border: 1px solid rgba(96, 165, 250, 0.35);
+      color: #93c5fd;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
     }
     .idea-desc {
       color: #94a3b8;
@@ -603,13 +622,15 @@
       const state = STATE_ORDER.includes(input.state) ? input.state : STATES.EXPERIMENTING;
       const createdAt = new Date(input.createdAt || Date.now()).toISOString();
       const updatedAt = new Date(input.updatedAt || createdAt).toISOString();
+      const importKeyword = normalizeKeyword(input.importKeyword || '');
       return {
         id: typeof input.id === 'string' && input.id ? input.id : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         title,
         description: String(input.description || '').trim(),
         state,
         createdAt,
-        updatedAt
+        updatedAt,
+        importKeyword
       };
     }
 
@@ -754,7 +775,10 @@
         if (!payload || payload.app !== 'idea-log' || !Array.isArray(payload.ideas)) {
           throw new Error('Invalid share payload.');
         }
-        const incoming = payload.ideas.map(normalizeIdea).filter(Boolean);
+        const incoming = payload.ideas
+          .map(normalizeIdea)
+          .filter(Boolean)
+          .map(item => ({ ...item, importKeyword: keyword }));
         const byId = new Map(ideas.map(i => [i.id, i]));
         incoming.forEach(item => byId.set(item.id, item));
         ideas = Array.from(byId.values()).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -806,7 +830,10 @@
           ? '<div class="empty">No ideas here yet.</div>'
           : list.map(idea => `
             <article class="idea-card">
-              <div class="idea-title">${escapeHtml(idea.title)}</div>
+              <div class="idea-title-row">
+                <div class="idea-title">${escapeHtml(idea.title)}</div>
+                ${idea.importKeyword ? `<span class="idea-import-badge">Imported: ${escapeHtml(idea.importKeyword)}</span>` : ''}
+              </div>
               ${idea.description ? `<div class="idea-desc">${escapeHtml(idea.description)}</div>` : ''}
               <div class="idea-meta">Created: ${formatDate(idea.createdAt)}</div>
               <div class="card-row">
