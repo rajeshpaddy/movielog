@@ -579,9 +579,9 @@
     </div>
   </div>
 
+  <script src="shared-store-config.js"></script>
+  <script src="shared-store.js"></script>
   <script>
-    const SETGET_SET_URL = 'https://setget.io/api/set';
-    const SETGET_GET_BASE = 'https://setget.io/api/get';
     const PRESIDENTS = [
       { number: 1, name: "George Washington", years: "1789-1797", tenureYears: 8, party: "independent", nickname: "Father of His Country", birthDeath: "1732-1799", priorOffice: "Commander-in-Chief of the Continental Army", priorOccupation: "Planter, Military Leader", vicePresidents: ["John Adams"], image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Presidents_George_Washington.jpg/220px-Presidents_George_Washington.jpg", accomplishments: "Established many traditions including the two-term limit, the cabinet system, and the inaugural address. Set precedents for the peaceful transfer of power.", keyEvents: ["1789: First inauguration", "1791: Bill of Rights ratified", "1794: Whiskey Rebellion", "1796: Farewell Address"] },
       { number: 2, name: "John Adams", years: "1797-1801", tenureYears: 4, party: "federalist", nickname: "The Father of the American Navy", birthDeath: "1735-1826", priorOffice: "Vice President", priorOccupation: "Lawyer, Diplomat", vicePresidents: ["Thomas Jefferson"], image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/John_Adams.jpg/220px-John_Adams.jpg", accomplishments: "Strengthened the navy, avoided war with France, and established the Marine Corps. Defended the Boston Massacre soldiers.", keyEvents: ["1797: First president to live in White House", "1798: Alien and Sedition Acts", "1798: Marine Corps founded", "1800: Move to Washington D.C."] },
@@ -771,7 +771,7 @@
     async function exportStudiedPresidentsShared() {
       const keyword = promptSharedKeyword('Shared export');
       if (!keyword) return;
-      const key = `president-learner-${keyword}`;
+      const key = window.AppSharedStore.buildSharedKey('president-learner', keyword);
       const payload = {
         app: 'president-learner',
         version: 1,
@@ -779,21 +779,7 @@
         studiedPresidents
       };
       try {
-        let response = await fetch(SETGET_SET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key, content: payload, expireAfter: 604800 })
-        });
-        let text = await response.text();
-        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
-          response = await fetch(SETGET_SET_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ key, content: payload })
-          });
-          text = await response.text();
-        }
-        if (!response.ok) throw new Error(`Shared export failed (${response.status})${text ? `: ${text}` : ''}`);
+        await window.AppSharedStore.putSharedContent(key, payload);
         setTransferStatus(`Shared export complete (${keyword})`, false);
       } catch (error) {
         setTransferStatus(error.message || 'Shared export failed', true);
@@ -803,13 +789,9 @@
     async function importStudiedPresidentsShared() {
       const keyword = promptSharedKeyword('Shared import');
       if (!keyword) return;
-      const key = `president-learner-${keyword}`;
+      const key = window.AppSharedStore.buildSharedKey('president-learner', keyword);
       try {
-        const response = await fetch(`${SETGET_GET_BASE}/${encodeURIComponent(key)}`);
-        const text = await response.text();
-        if (!response.ok) throw new Error(`Shared import failed (${response.status})${text ? `: ${text}` : ''}`);
-        const parsed = JSON.parse(text);
-        studiedPresidents = normalizeImportedStudiedData(parsed?.content ?? parsed);
+        studiedPresidents = normalizeImportedStudiedData(await window.AppSharedStore.getSharedContent(key));
         saveStudiedPresidents();
         calculateStats();
         renderLeftList();
@@ -827,29 +809,9 @@
     async function clearStudiedPresidentsShared() {
       const keyword = promptSharedKeyword('Clear shared');
       if (!keyword) return;
-      const key = `president-learner-${keyword}`;
-      const payload = {
-        app: 'president-learner',
-        version: 1,
-        clearedAt: new Date().toISOString(),
-        studiedPresidents: {}
-      };
+      const key = window.AppSharedStore.buildSharedKey('president-learner', keyword);
       try {
-        let response = await fetch(SETGET_SET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key, content: payload, expireAfter: 60 })
-        });
-        let text = await response.text();
-        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
-          response = await fetch(SETGET_SET_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ key, content: payload })
-          });
-          text = await response.text();
-        }
-        if (!response.ok) throw new Error(`Shared clear failed (${response.status})${text ? `: ${text}` : ''}`);
+        await window.AppSharedStore.deleteSharedContent(key);
         setTransferStatus(`Shared key cleared (${keyword})`, false);
       } catch (error) {
         setTransferStatus(error.message || 'Shared clear failed', true);

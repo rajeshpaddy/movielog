@@ -490,7 +490,6 @@
               Data Provider
               <select class="select" id="providerSelect">
                 <option value="massive">Massive (API Key)</option>
-                <option value="stooq">Stooq (No Key)</option>
               </select>
             </label>
             <label>
@@ -524,7 +523,7 @@
           </div>
 
           <div class="hint">
-            Massive uses one keyed request per symbol and returns the 3 month daily window used for price, chart, average, high, and low calculations. Stooq no-key mode works without setup but is better treated as delayed or end-of-day data. This app stores your symbols, provider choice, and optional API key only in this browser.
+            Massive uses one keyed request per symbol and returns the 3 month daily window used for price, chart, average, high, and low calculations. This app stores your symbols, provider choice, and optional API key only in this browser.
           </div>
 
           <div id="status" class="status" aria-live="polite"></div>
@@ -656,7 +655,7 @@
     function renderProviderState() {
       const usingMassive = state.provider === 'massive';
       apiKeyInput.disabled = !usingMassive;
-      apiKeyInput.placeholder = usingMassive ? 'Enter your Massive API key' : 'Not needed for Stooq';
+      apiKeyInput.placeholder = 'Enter your Massive API key';
     }
 
     function upsertSymbols(nextSymbols) {
@@ -864,63 +863,6 @@
       return response.json();
     }
 
-    async function fetchText(url) {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`Request failed (${response.status})`);
-      }
-      return response.text();
-    }
-
-    function toStooqSymbol(symbol) {
-      return symbol.includes('.') ? symbol.toLowerCase() : `${symbol.toLowerCase()}.us`;
-    }
-
-    function parseStooqCsv(symbol, csvText) {
-      const lines = csvText.trim().split(/\r?\n/);
-      if (lines.length <= 1) {
-        throw new Error(`No Stooq data returned for ${symbol}.`);
-      }
-
-      const rows = lines.slice(1).map(line => {
-        const [date, open, high, low, close] = line.split(',');
-        return {
-          date,
-          open: Number(open),
-          high: Number(high),
-          low: Number(low),
-          close: Number(close)
-        };
-      }).filter(row => row.date && Number.isFinite(row.close) && row.close > 0);
-
-      const points = rows.slice(-THREE_MONTH_TRADING_DAYS);
-      if (points.length === 0) {
-        throw new Error(`No recent Stooq history was returned for ${symbol}.`);
-      }
-
-      const latest = points[points.length - 1];
-      const prev = points[points.length - 2];
-      const closes = points.map(point => point.close);
-      const highs = points.map(point => point.high);
-      const lows = points.map(point => point.low);
-      const change = prev ? latest.close - prev.close : 0;
-      const changePercent = prev && prev.close !== 0 ? (change / prev.close) * 100 : 0;
-
-      return {
-        symbol,
-        price: latest.close,
-        change,
-        changePercent,
-        latestTradingDay: latest.date,
-        avgClose: closes.reduce((sum, value) => sum + value, 0) / closes.length,
-        high3m: Math.max(...highs),
-        low3m: Math.min(...lows),
-        points,
-        samples: points.length,
-        refreshedAt: new Date().toISOString()
-      };
-    }
-
     function formatDateKey(date) {
       const year = date.getUTCFullYear();
       const month = String(date.getUTCMonth() + 1).padStart(2, '0');
@@ -986,20 +928,8 @@
       return parseMassiveAggregatesPayload(symbol, payload);
     }
 
-    async function fetchStooqSymbolData(symbol) {
-      const stooqSymbol = encodeURIComponent(toStooqSymbol(symbol));
-      const csvUrl = `https://stooq.com/q/d/l/?s=${stooqSymbol}&i=d`;
-      const csvText = await fetchText(csvUrl);
-      return parseStooqCsv(symbol, csvText);
-    }
-
     async function fetchSymbolData(symbol) {
-      if (state.provider === 'massive') {
-        return fetchMassiveSymbolData(symbol);
-      }
-      if (state.provider === 'stooq') {
-        return fetchStooqSymbolData(symbol);
-      }
+      if (state.provider === 'massive') return fetchMassiveSymbolData(symbol);
       throw new Error('Unsupported provider.');
     }
 
@@ -1046,7 +976,7 @@
       renderSummary();
       renderStocks();
 
-      const providerLabel = state.provider === 'massive' ? 'Massive' : 'Stooq';
+      const providerLabel = 'Massive';
       if (successCount === state.symbols.length) {
         setStatus(`Loaded ${successCount} symbol${successCount === 1 ? '' : 's'} from ${providerLabel}.`, 'success');
       } else if (successCount > 0) {
@@ -1077,7 +1007,7 @@
       upsertSymbols(nextSymbols);
       symbolInput.value = '';
       setStatus(`Added ${nextSymbols.length} symbol${nextSymbols.length === 1 ? '' : 's'} to the watchlist.`, 'success');
-      if (state.provider === 'stooq' || state.apiKey) refreshAllStocks();
+      if (state.apiKey) refreshAllStocks();
     }
 
     function initialize() {
@@ -1110,12 +1040,10 @@
       savePreferences();
       renderProviderState();
       setStatus(
-        state.provider === 'stooq'
-          ? 'Using Stooq no-key mode. Data is typically delayed or end-of-day rather than true real-time.'
-          : 'Using Massive. Enter your Massive API key for refresh.',
+        'Using Massive. Enter your Massive API key for refresh.',
         'success'
       );
-      if (state.symbols.length > 0 && (state.provider === 'stooq' || state.apiKey)) {
+      if (state.symbols.length > 0 && state.apiKey) {
         refreshAllStocks();
       }
     });
@@ -1132,6 +1060,7 @@
 
     initialize();
   </script>
+  <script src="shared-store-config.js"></script>
   <script>window.APP_TELEMETRY_ID = "stock-tracker";</script>
   <script src="app-telemetry.js" defer></script>
 </body>

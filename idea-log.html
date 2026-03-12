@@ -342,11 +342,11 @@
     <section class="board" id="board"></section>
   </div>
 
+  <script src="shared-store-config.js"></script>
+  <script src="shared-store.js"></script>
   <script>
     const STORAGE_KEY = 'ideaLogEntriesV1';
     const SHARE_PARAM = 'ideaShare';
-    const SETGET_SET_URL = 'https://setget.io/api/set';
-    const SETGET_GET_BASE = 'https://setget.io/api/get';
     const STATES = {
       EXPERIMENTING: 'experimenting',
       DISCARDED: 'discarded',
@@ -465,14 +465,14 @@
       return keyword;
     }
 
-    function getSetGetKey(keyword) {
-      return `idea-log-${keyword}`;
+    function getSharedKey(keyword) {
+      return window.AppSharedStore.buildSharedKey('idea-log', keyword);
     }
 
     async function exportIdeasShared() {
       const keyword = promptKeyword('Export Shared');
       if (!keyword) return;
-      const key = getSetGetKey(keyword);
+      const key = getSharedKey(keyword);
       const payload = {
         app: 'idea-log',
         version: 1,
@@ -482,29 +482,7 @@
       };
 
       try {
-        const requestBody = {
-          key,
-          content: payload,
-          expireAfter: 604800
-        };
-        let response = await fetch(SETGET_SET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
-        });
-        let responseText = await response.text();
-        if (!response.ok && response.status === 422 && responseText.includes('expireAfter')) {
-          response = await fetch(SETGET_SET_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ key, content: payload })
-          });
-          responseText = await response.text();
-        }
-        if (!response.ok) {
-          throw new Error(`Shared export failed (${response.status})${responseText ? `: ${responseText}` : ''}`);
-        }
-        const sharedUrl = `${SETGET_GET_BASE}/${encodeURIComponent(key)}`;
+        await window.AppSharedStore.putSharedContent(key, payload);
         setSharedLink('');
         setStatus(`Shared export complete for keyword "${keyword}".`, false);
       } catch (error) {
@@ -515,17 +493,11 @@
     async function importIdeasShared() {
       const keyword = promptKeyword('Import Shared');
       if (!keyword) return;
-      const key = getSetGetKey(keyword);
-      const sharedUrl = `${SETGET_GET_BASE}/${encodeURIComponent(key)}`;
+      const key = getSharedKey(keyword);
+      const sharedUrl = window.AppSharedStore.buildSharedContentUrl(key);
 
       try {
-        const response = await fetch(sharedUrl);
-        const responseText = await response.text();
-        if (!response.ok) {
-          throw new Error(`Shared import failed (${response.status})${responseText ? `: ${responseText}` : ''}`);
-        }
-        const parsed = JSON.parse(responseText);
-        const payload = parsed && typeof parsed === 'object' ? parsed.content : null;
+        const payload = await window.AppSharedStore.getSharedContent(key);
         if (!payload || payload.app !== 'idea-log' || !Array.isArray(payload.ideas)) {
           throw new Error('Shared data format is invalid.');
         }
@@ -548,32 +520,9 @@
     async function clearIdeasShared() {
       const keyword = promptKeyword('Clear Shared');
       if (!keyword) return;
-      const key = getSetGetKey(keyword);
-      const payload = {
-        app: 'idea-log',
-        version: 1,
-        cleared: true,
-        clearedAt: new Date().toISOString(),
-        ideas: []
-      };
+      const key = getSharedKey(keyword);
       try {
-        let response = await fetch(SETGET_SET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key, content: payload, expireAfter: 60 })
-        });
-        let text = await response.text();
-        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
-          response = await fetch(SETGET_SET_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ key, content: payload })
-          });
-          text = await response.text();
-        }
-        if (!response.ok) {
-          throw new Error(`Shared clear failed (${response.status})${text ? `: ${text}` : ''}`);
-        }
+        await window.AppSharedStore.deleteSharedContent(key);
         setStatus(`Shared key cleared (${keyword}).`, false);
       } catch (error) {
         setStatus(error.message || 'Shared clear failed.', true);

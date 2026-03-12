@@ -5,12 +5,11 @@
   const appId = String(window.APP_TELEMETRY_ID || '').trim();
   if (!appId) return;
 
-  const SETGET_SET_URL = 'https://setget.io/api/set';
-  const SETGET_GET_BASE = 'https://setget.io/api/get';
   const STORAGE_PREFIX = 'ai-app-catalog-telemetry';
   const TELEMETRY_VERSION = 3;
   const RECENT_SAMPLE_LIMIT = 20;
   const CATALOG_LAUNCH_PREFIX = `${STORAGE_PREFIX}-catalog-launch`;
+  const SHARED_STORE_CONFIG_ERROR = 'Cloud telemetry storage is not configured. Set window.APP_SHARED_STORE_BASE_URL in shared-store-config.js.';
 
   if (navigator.doNotTrack === '1' || window.doNotTrack === '1' || navigator.msDoNotTrack === '1') {
     return;
@@ -39,6 +38,62 @@
       return true;
     } catch (error) {
       return false;
+    }
+  }
+
+  function getSharedStoreBaseUrl() {
+    const raw = String(window.APP_SHARED_STORE_BASE_URL || '').trim().replace(/\/+$/, '');
+    if (!raw) {
+      throw new Error(SHARED_STORE_CONFIG_ERROR);
+    }
+    return raw;
+  }
+
+  async function fetchTelemetryPayload(key) {
+    const response = await fetch(`${getSharedStoreBaseUrl()}/v1/telemetry/${encodeURIComponent(key)}`, { cache: 'no-store' });
+    const text = await response.text();
+    let payload = null;
+    if (text) {
+      try {
+        payload = JSON.parse(text);
+      } catch (error) {
+        payload = null;
+      }
+    }
+
+    if (!response.ok) {
+      if (response.status === 404) return null;
+      const message = payload && typeof payload.error === 'string'
+        ? payload.error
+        : `Telemetry fetch failed (${response.status})`;
+      throw new Error(message);
+    }
+
+    return payload && typeof payload === 'object' ? payload.content ?? null : null;
+  }
+
+  async function writeTelemetryPayload(key, content) {
+    const response = await fetch(`${getSharedStoreBaseUrl()}/v1/telemetry/${encodeURIComponent(key)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      keepalive: true,
+      body: JSON.stringify({ content })
+    });
+    const text = await response.text();
+    let payload = null;
+    if (text) {
+      try {
+        payload = JSON.parse(text);
+      } catch (error) {
+        payload = null;
+      }
+    }
+
+    if (!response.ok) {
+      const message = payload && typeof payload.error === 'string'
+        ? payload.error
+        : `Telemetry write failed (${response.status})`;
+      throw new Error(message);
     }
   }
 
@@ -173,14 +228,13 @@
       `);
       viewer.document.close();
 
+      let endpoint = 'Unavailable';
       try {
-        const response = await fetch(`${SETGET_GET_BASE}/${encodeURIComponent(telemetryKey)}`, { cache: 'no-store' });
-        if (!response.ok) {
-          throw new Error(`Telemetry fetch failed (${response.status})`);
+        endpoint = `${getSharedStoreBaseUrl()}/v1/telemetry/${encodeURIComponent(telemetryKey)}`;
+        const content = await fetchTelemetryPayload(telemetryKey);
+        if (!content) {
+          throw new Error('Telemetry not found.');
         }
-
-        const payload = await response.json();
-        const content = payload && typeof payload === 'object' ? payload.content : payload;
         viewer.document.title = `Telemetry - ${telemetryKey}`;
         const message = viewer.document.querySelector('p');
         const pre = viewer.document.getElementById('telemetryContent');
@@ -197,7 +251,7 @@
             '',
             String(error && error.message ? error.message : error),
             '',
-            `Endpoint: ${SETGET_GET_BASE}/${encodeURIComponent(telemetryKey)}`
+            `Endpoint: ${endpoint}`
           ].join('\n');
         }
       }
@@ -297,40 +351,11 @@
   }
 
   async function fetchExistingTelemetry(key) {
-    const response = await fetch(`${SETGET_GET_BASE}/${encodeURIComponent(key)}`, { cache: 'no-store' });
-    if (!response.ok) return null;
-    const payload = await response.json();
-    return payload && typeof payload === 'object' ? payload.content : null;
+    return fetchTelemetryPayload(key);
   }
 
   async function writeTelemetry(key, content) {
-    let response = await fetch(SETGET_SET_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      keepalive: true,
-      body: JSON.stringify({
-        key,
-        content,
-        expireAfter: 604800
-      })
-    });
-
-    if (!response.ok) {
-      const text = await response.text();
-      if (response.status === 422 && text.includes('expireAfter')) {
-        response = await fetch(SETGET_SET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          keepalive: true,
-          body: JSON.stringify({ key, content })
-        });
-      }
-    }
-
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`Telemetry write failed (${response.status})${text ? `: ${text}` : ''}`);
-    }
+    await writeTelemetryPayload(key, content);
   }
 
   async function recordTelemetry() {

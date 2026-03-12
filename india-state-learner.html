@@ -415,6 +415,8 @@
 
   <div class="status" id="statusBar"><div class="status-track"><div class="status-item">Select a state or union territory</div></div></div>
 
+  <script src="shared-store-config.js"></script>
+  <script src="shared-store.js"></script>
   <script>
     const DATA = [
       { code: 'AP', name: 'Andhra Pradesh', region: 'south', capital: 'Amaravati', lat: 15.9129, lng: 79.7400 },
@@ -498,8 +500,6 @@
 
     const STORE_KEY = 'visitedIndiaStates';
     const MODE_KEY = 'indiaMapMode';
-    const SETGET_SET_URL = 'https://setget.io/api/set';
-    const SETGET_GET_BASE = 'https://setget.io/api/get';
 
     let visited = JSON.parse(localStorage.getItem(STORE_KEY) || '{}');
     let selectedCode = null;
@@ -1005,21 +1005,7 @@
         visited
       };
       try {
-        let response = await fetch(SETGET_SET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key, content: payload, expireAfter: 604800 })
-        });
-        let text = await response.text();
-        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
-          response = await fetch(SETGET_SET_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ key, content: payload })
-          });
-          text = await response.text();
-        }
-        if (!response.ok) throw new Error(`Shared export failed (${response.status})${text ? `: ${text}` : ''}`);
+        await window.AppSharedStore.putSharedContent(key, payload);
         setTransferStatus(`Shared export complete (${keyword})`, false);
       } catch (error) {
         setTransferStatus(error.message || 'Shared export failed', true);
@@ -1031,11 +1017,8 @@
       if (!keyword) return;
       const key = buildSharedKey(keyword);
       try {
-        const response = await fetch(`${SETGET_GET_BASE}/${encodeURIComponent(key)}`);
-        const text = await response.text();
-        if (!response.ok) throw new Error(`Shared import failed (${response.status})${text ? `: ${text}` : ''}`);
-        const parsed = JSON.parse(text);
-        const source = parsed?.content?.visited ?? parsed?.visited ?? parsed?.content ?? parsed;
+        const payload = await window.AppSharedStore.getSharedContent(key);
+        const source = payload?.visited ?? payload;
         if (!source || typeof source !== 'object' || Array.isArray(source)) throw new Error('Invalid format');
         const next = {};
         Object.entries(source).forEach(([k, v]) => {
@@ -1063,28 +1046,8 @@
       const keyword = promptSharedKeyword('Clear shared');
       if (!keyword) return;
       const key = buildSharedKey(keyword);
-      const payload = {
-        app: 'india-state-learner',
-        version: 1,
-        clearedAt: new Date().toISOString(),
-        visited: {}
-      };
       try {
-        let response = await fetch(SETGET_SET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key, content: payload, expireAfter: 60 })
-        });
-        let text = await response.text();
-        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
-          response = await fetch(SETGET_SET_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ key, content: payload })
-          });
-          text = await response.text();
-        }
-        if (!response.ok) throw new Error(`Shared clear failed (${response.status})${text ? `: ${text}` : ''}`);
+        await window.AppSharedStore.deleteSharedContent(key);
         setTransferStatus(`Shared key cleared (${keyword})`, false);
       } catch (error) {
         setTransferStatus(error.message || 'Shared clear failed', true);

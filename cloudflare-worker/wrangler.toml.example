@@ -1,0 +1,7 @@
+name = "movielog-shared-store"
+main = "src/index.js"
+compatibility_date = "2026-03-12"
+
+[[kv_namespaces]]
+binding = "SHARED_STORE"
+id = "replace-with-your-kv-namespace-id"

@@ -1128,9 +1128,9 @@
     </div>
   </div>
 
+  <script src="shared-store-config.js"></script>
+  <script src="shared-store.js"></script>
   <script>
-    const SETGET_SET_URL = 'https://setget.io/api/set';
-    const SETGET_GET_BASE = 'https://setget.io/api/get';
     const SHARED_KEY_PREFIX = 'cl-';
     const LEGACY_SHARED_KEY_PREFIX = 'country-learner-';
     const MAX_SHARED_KEY_LENGTH = 32;
@@ -1749,21 +1749,7 @@
         visitedCountries
       };
       try {
-        let response = await fetch(SETGET_SET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key, content: payload, expireAfter: 604800 })
-        });
-        let text = await response.text();
-        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
-          response = await fetch(SETGET_SET_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ key, content: payload })
-          });
-          text = await response.text();
-        }
-        if (!response.ok) throw new Error(`Shared export failed (${response.status})${text ? `: ${text}` : ''}`);
+        await window.AppSharedStore.putSharedContent(key, payload);
         setTransferStatus(`Shared export complete (${keyword})`, false);
       } catch (error) {
         setTransferStatus(error.message || 'Shared export failed', true);
@@ -1783,13 +1769,12 @@
         let lastError = null;
 
         for (const key of keysToTry) {
-          const response = await fetch(`${SETGET_GET_BASE}/${encodeURIComponent(key)}`);
-          const text = await response.text();
-          if (!response.ok) {
-            lastError = new Error(`Shared import failed (${response.status})${text ? `: ${text}` : ''}`);
+          try {
+            parsed = await window.AppSharedStore.getSharedContent(key);
+          } catch (error) {
+            lastError = error;
             continue;
           }
-          parsed = JSON.parse(text);
           importedFromLegacyKey = key.startsWith(LEGACY_SHARED_KEY_PREFIX);
           break;
         }
@@ -1815,28 +1800,8 @@
       const keyword = promptSharedKeyword('Clear shared');
       if (!keyword) return;
       const key = buildSharedKey(keyword);
-      const payload = {
-        app: 'country-learner',
-        version: 1,
-        clearedAt: new Date().toISOString(),
-        visitedCountries: {}
-      };
       try {
-        let response = await fetch(SETGET_SET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key, content: payload, expireAfter: 60 })
-        });
-        let text = await response.text();
-        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
-          response = await fetch(SETGET_SET_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ key, content: payload })
-          });
-          text = await response.text();
-        }
-        if (!response.ok) throw new Error(`Shared clear failed (${response.status})${text ? `: ${text}` : ''}`);
+        await window.AppSharedStore.deleteSharedContent(key);
         setTransferStatus(`Shared key cleared (${keyword})`, false);
       } catch (error) {
         setTransferStatus(error.message || 'Shared clear failed', true);

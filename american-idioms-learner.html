@@ -391,11 +391,11 @@
     </main>
   </div>
 
+  <script src="shared-store-config.js"></script>
+  <script src="shared-store.js"></script>
   <script>
     const STORAGE_KEY = 'learnedAmericanIdioms';
     const LAST_SELECTED_KEY = 'lastSelectedAmericanIdiom';
-    const SETGET_SET_URL = 'https://setget.io/api/set';
-    const SETGET_GET_BASE = 'https://setget.io/api/get';
 
     const IDIOMS = [
       { id: 'break-the-ice', rank: 1, idiom: 'Break the ice', category: 'conversation', meaning: 'To ease tension and make people feel more comfortable in a social setting.', origin: 'The phrase likely comes from ships literally breaking ice to open a path, then shifted into social use for opening communication.', usage: 'Use it when someone says or does the first thing that gets an awkward group talking.', example: 'Her joke at the start of the meeting really broke the ice.' },
@@ -614,7 +614,7 @@
     async function exportLearnedIdiomsShared() {
       const keyword = promptSharedKeyword('Shared export');
       if (!keyword) return;
-      const key = `american-idioms-learner-${keyword}`;
+      const key = window.AppSharedStore.buildSharedKey('american-idioms-learner', keyword);
       const payload = {
         app: 'american-idioms-learner',
         version: 1,
@@ -622,21 +622,7 @@
         learnedIdioms
       };
       try {
-        let response = await fetch(SETGET_SET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key, content: payload, expireAfter: 604800 })
-        });
-        let text = await response.text();
-        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
-          response = await fetch(SETGET_SET_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ key, content: payload })
-          });
-          text = await response.text();
-        }
-        if (!response.ok) throw new Error(`Shared export failed (${response.status})${text ? `: ${text}` : ''}`);
+        await window.AppSharedStore.putSharedContent(key, payload);
         setTransferStatus(`Shared export complete (${keyword})`);
       } catch (error) {
         setTransferStatus(error.message || 'Shared export failed', true);
@@ -646,13 +632,9 @@
     async function importLearnedIdiomsShared() {
       const keyword = promptSharedKeyword('Shared import');
       if (!keyword) return;
-      const key = `american-idioms-learner-${keyword}`;
+      const key = window.AppSharedStore.buildSharedKey('american-idioms-learner', keyword);
       try {
-        const response = await fetch(`${SETGET_GET_BASE}/${encodeURIComponent(key)}`);
-        const text = await response.text();
-        if (!response.ok) throw new Error(`Shared import failed (${response.status})${text ? `: ${text}` : ''}`);
-        const parsed = JSON.parse(text);
-        learnedIdioms = normalizeImportedLearnedData(parsed?.content ?? parsed);
+        learnedIdioms = normalizeImportedLearnedData(await window.AppSharedStore.getSharedContent(key));
         saveLearnedIdioms();
         renderAll();
         setTransferStatus(`Shared import complete (${keyword})`);
@@ -664,29 +646,9 @@
     async function clearLearnedIdiomsShared() {
       const keyword = promptSharedKeyword('Clear shared');
       if (!keyword) return;
-      const key = `american-idioms-learner-${keyword}`;
-      const payload = {
-        app: 'american-idioms-learner',
-        version: 1,
-        clearedAt: new Date().toISOString(),
-        learnedIdioms: {}
-      };
+      const key = window.AppSharedStore.buildSharedKey('american-idioms-learner', keyword);
       try {
-        let response = await fetch(SETGET_SET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key, content: payload, expireAfter: 60 })
-        });
-        let text = await response.text();
-        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
-          response = await fetch(SETGET_SET_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ key, content: payload })
-          });
-          text = await response.text();
-        }
-        if (!response.ok) throw new Error(`Shared clear failed (${response.status})${text ? `: ${text}` : ''}`);
+        await window.AppSharedStore.deleteSharedContent(key);
         setTransferStatus(`Shared key cleared (${keyword})`);
       } catch (error) {
         setTransferStatus(error.message || 'Shared clear failed', true);

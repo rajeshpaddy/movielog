@@ -633,6 +633,8 @@
     </div>
   </div>
 
+  <script src="shared-store-config.js"></script>
+  <script src="shared-store.js"></script>
   <script>
     const POKEMON_API = 'https://pokeapi.co/api/v2';
     const TOTAL_POKEMON = 1025;
@@ -641,8 +643,6 @@
     const POKEMON_ARTWORK_TEMPLATE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{num}.png';
     const IMAGE_THEME_KEY = 'pokemonLearnerImageTheme';
     const POKEMON_CACHE_KEY = 'pokemonLearnerAllPokemonCache';
-    const SETGET_SET_URL = 'https://setget.io/api/set';
-    const SETGET_GET_BASE = 'https://setget.io/api/get';
     const IMAGE_THEMES = {
       NORMAL: 'normal',
       ANNIVERSARY: '30th'
@@ -911,7 +911,7 @@
     async function exportLearnedPokemonShared() {
       const keyword = promptSharedKeyword('Shared export');
       if (!keyword) return;
-      const key = `pokemon-learner-${keyword}`;
+      const key = window.AppSharedStore.buildSharedKey('pokemon-learner', keyword);
       const payload = {
         app: 'pokemon-learner',
         version: 1,
@@ -919,21 +919,7 @@
         learnedPokemon
       };
       try {
-        let response = await fetch(SETGET_SET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key, content: payload, expireAfter: 604800 })
-        });
-        let text = await response.text();
-        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
-          response = await fetch(SETGET_SET_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ key, content: payload })
-          });
-          text = await response.text();
-        }
-        if (!response.ok) throw new Error(`Shared export failed (${response.status})${text ? `: ${text}` : ''}`);
+        await window.AppSharedStore.putSharedContent(key, payload);
         setTransferStatus(`Shared export complete (${keyword})`, false);
       } catch (error) {
         setTransferStatus(error.message || 'Shared export failed', true);
@@ -943,13 +929,9 @@
     async function importLearnedPokemonShared() {
       const keyword = promptSharedKeyword('Shared import');
       if (!keyword) return;
-      const key = `pokemon-learner-${keyword}`;
+      const key = window.AppSharedStore.buildSharedKey('pokemon-learner', keyword);
       try {
-        const response = await fetch(`${SETGET_GET_BASE}/${encodeURIComponent(key)}`);
-        const text = await response.text();
-        if (!response.ok) throw new Error(`Shared import failed (${response.status})${text ? `: ${text}` : ''}`);
-        const parsed = JSON.parse(text);
-        learnedPokemon = normalizeImportedLearnedData(parsed?.content ?? parsed);
+        learnedPokemon = normalizeImportedLearnedData(await window.AppSharedStore.getSharedContent(key));
         saveLearnedPokemon();
         calculateStats();
         renderLeftList();
@@ -967,29 +949,9 @@
     async function clearLearnedPokemonShared() {
       const keyword = promptSharedKeyword('Clear shared');
       if (!keyword) return;
-      const key = `pokemon-learner-${keyword}`;
-      const payload = {
-        app: 'pokemon-learner',
-        version: 1,
-        clearedAt: new Date().toISOString(),
-        learnedPokemon: {}
-      };
+      const key = window.AppSharedStore.buildSharedKey('pokemon-learner', keyword);
       try {
-        let response = await fetch(SETGET_SET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key, content: payload, expireAfter: 60 })
-        });
-        let text = await response.text();
-        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
-          response = await fetch(SETGET_SET_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ key, content: payload })
-          });
-          text = await response.text();
-        }
-        if (!response.ok) throw new Error(`Shared clear failed (${response.status})${text ? `: ${text}` : ''}`);
+        await window.AppSharedStore.deleteSharedContent(key);
         setTransferStatus(`Shared key cleared (${keyword})`, false);
       } catch (error) {
         setTransferStatus(error.message || 'Shared clear failed', true);

@@ -157,9 +157,10 @@
   </div>
   <a class="changelog-link" href="changelog.html" title="View per-app changelog">Changelog</a>
 
+  <script src="shared-store-config.js"></script>
+  <script src="shared-store.js"></script>
   <script>
     const CATALOG_LAUNCH_PREFIX = 'ai-app-catalog-telemetry-catalog-launch';
-    const SETGET_GET_BASE = 'https://setget.io/api/get';
     const apps = [
       {
         name: 'Catalog Guide Chat',
@@ -386,10 +387,7 @@
     }
 
     async function fetchTelemetryHitCount(telemetryKey) {
-      const response = await fetch(`${SETGET_GET_BASE}/${encodeURIComponent(telemetryKey)}`, { cache: 'no-store' });
-      if (!response.ok) return 0;
-      const payload = await response.json().catch(() => null);
-      const content = payload && typeof payload === 'object' ? payload.content : null;
+      const content = await window.AppSharedStore.getTelemetry(telemetryKey).catch(() => null);
       return content && typeof content === 'object' ? Number(content.hitCount || 0) : 0;
     }
 

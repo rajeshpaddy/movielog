@@ -984,9 +984,9 @@
         </div>
     </div>
 
+    <script src="shared-store-config.js"></script>
+    <script src="shared-store.js"></script>
     <script>
-        const SETGET_SET_URL = 'https://setget.io/api/set';
-        const SETGET_GET_BASE = 'https://setget.io/api/get';
 
         function safeStorageGet(key) {
             try {
@@ -1515,7 +1515,7 @@
                 alert('Keyword is required for shared export.');
                 return;
             }
-            const key = `movielog-${keyword}`;
+            const key = window.AppSharedStore.buildSharedKey('movielog', keyword);
             const payload = {
                 app: 'movielog',
                 version: 1,
@@ -1523,21 +1523,7 @@
                 movies
             };
             try {
-                let response = await fetch(SETGET_SET_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ key, content: payload, expireAfter: 604800 })
-                });
-                let text = await response.text();
-                if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
-                    response = await fetch(SETGET_SET_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ key, content: payload })
-                    });
-                    text = await response.text();
-                }
-                if (!response.ok) throw new Error(`Shared export failed (${response.status})${text ? `: ${text}` : ''}`);
+                await window.AppSharedStore.putSharedContent(key, payload);
                 alert(`Shared export complete (${keyword}).`);
             } catch (error) {
                 alert(error.message || 'Shared export failed.');
@@ -1552,29 +1538,9 @@
                 alert('Keyword is required for shared clear.');
                 return;
             }
-            const key = `movielog-${keyword}`;
-            const payload = {
-                app: 'movielog',
-                version: 1,
-                clearedAt: new Date().toISOString(),
-                movies: []
-            };
+            const key = window.AppSharedStore.buildSharedKey('movielog', keyword);
             try {
-                let response = await fetch(SETGET_SET_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ key, content: payload, expireAfter: 60 })
-                });
-                let text = await response.text();
-                if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
-                    response = await fetch(SETGET_SET_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ key, content: payload })
-                    });
-                    text = await response.text();
-                }
-                if (!response.ok) throw new Error(`Shared clear failed (${response.status})${text ? `: ${text}` : ''}`);
+                await window.AppSharedStore.deleteSharedContent(key);
                 alert(`Shared key cleared (${keyword}).`);
             } catch (error) {
                 alert(error.message || 'Shared clear failed.');
@@ -1589,13 +1555,10 @@
                 alert('Keyword is required for shared import.');
                 return;
             }
-            const key = `movielog-${keyword}`;
+            const key = window.AppSharedStore.buildSharedKey('movielog', keyword);
             try {
-                const response = await fetch(`${SETGET_GET_BASE}/${encodeURIComponent(key)}`);
-                const text = await response.text();
-                if (!response.ok) throw new Error(`Shared import failed (${response.status})${text ? `: ${text}` : ''}`);
-                const parsed = JSON.parse(text);
-                const source = parsed?.content?.movies ?? parsed?.movies ?? parsed?.content ?? parsed;
+                const payload = await window.AppSharedStore.getSharedContent(key);
+                const source = payload?.movies ?? payload;
                 const { addedCount, skippedCount } = mergeImportedMovies(source);
                 alert(`Shared import complete (${keyword}). Added ${addedCount}, skipped ${skippedCount}.`);
             } catch (error) {

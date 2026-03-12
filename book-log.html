@@ -394,10 +394,10 @@
     </section>
   </div>
 
+  <script src="shared-store-config.js"></script>
+  <script src="shared-store.js"></script>
   <script>
     const STORAGE_KEY = 'bookLogShelves';
-    const SETGET_SET_URL = 'https://setget.io/api/set';
-    const SETGET_GET_BASE = 'https://setget.io/api/get';
     const state = {
       results: [],
       selected: new Set(),
@@ -546,7 +546,7 @@
     async function exportAllDataShared() {
       const keyword = promptSharedKeyword('Shared export');
       if (!keyword) return;
-      const key = `book-log-${keyword}`;
+      const key = window.AppSharedStore.buildSharedKey('book-log', keyword);
       const payload = {
         app: 'book-log',
         version: 1,
@@ -554,21 +554,7 @@
         shelves: state.shelves
       };
       try {
-        let response = await fetch(SETGET_SET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key, content: payload, expireAfter: 604800 })
-        });
-        let text = await response.text();
-        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
-          response = await fetch(SETGET_SET_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ key, content: payload })
-          });
-          text = await response.text();
-        }
-        if (!response.ok) throw new Error(`Shared export failed (${response.status})${text ? `: ${text}` : ''}`);
+        await window.AppSharedStore.putSharedContent(key, payload);
         setStatus(`Shared export complete (${keyword}).`, 'success');
       } catch (error) {
         setStatus(error.message || 'Shared export failed.', 'error');
@@ -578,13 +564,9 @@
     async function importAllDataShared() {
       const keyword = promptSharedKeyword('Shared import');
       if (!keyword) return;
-      const key = `book-log-${keyword}`;
+      const key = window.AppSharedStore.buildSharedKey('book-log', keyword);
       try {
-        const response = await fetch(`${SETGET_GET_BASE}/${encodeURIComponent(key)}`);
-        const text = await response.text();
-        if (!response.ok) throw new Error(`Shared import failed (${response.status})${text ? `: ${text}` : ''}`);
-        const parsed = JSON.parse(text);
-        state.shelves = normalizeImportedShelves(parsed?.content ?? parsed);
+        state.shelves = normalizeImportedShelves(await window.AppSharedStore.getSharedContent(key));
         saveShelves();
         renderShelves();
         setStatus(`Shared import complete (${keyword}).`, 'success');
@@ -596,29 +578,9 @@
     async function clearAllDataShared() {
       const keyword = promptSharedKeyword('Clear shared');
       if (!keyword) return;
-      const key = `book-log-${keyword}`;
-      const payload = {
-        app: 'book-log',
-        version: 1,
-        clearedAt: new Date().toISOString(),
-        shelves: { toRead: [], reading: [], read: [] }
-      };
+      const key = window.AppSharedStore.buildSharedKey('book-log', keyword);
       try {
-        let response = await fetch(SETGET_SET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key, content: payload, expireAfter: 60 })
-        });
-        let text = await response.text();
-        if (!response.ok && response.status === 422 && text.includes('expireAfter')) {
-          response = await fetch(SETGET_SET_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ key, content: payload })
-          });
-          text = await response.text();
-        }
-        if (!response.ok) throw new Error(`Shared clear failed (${response.status})${text ? `: ${text}` : ''}`);
+        await window.AppSharedStore.deleteSharedContent(key);
         setStatus(`Shared key cleared (${keyword}).`, 'success');
       } catch (error) {
         setStatus(error.message || 'Shared clear failed.', 'error');
