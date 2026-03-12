@@ -9,7 +9,7 @@
   const TELEMETRY_VERSION = 3;
   const RECENT_SAMPLE_LIMIT = 20;
   const CATALOG_LAUNCH_PREFIX = `${STORAGE_PREFIX}-catalog-launch`;
-  const SHARED_STORE_CONFIG_ERROR = 'Cloud telemetry storage is not configured. Set window.APP_SHARED_STORE_BASE_URL in shared-store-config.js.';
+  const SHARED_STORE_CONFIG_ERROR = 'Cloud telemetry storage is not configured. Load shared-store.js and set window.APP_SHARED_STORE_INDEX_BLOB_ID in shared-store-config.js.';
 
   if (navigator.doNotTrack === '1' || window.doNotTrack === '1' || navigator.msDoNotTrack === '1') {
     return;
@@ -41,60 +41,22 @@
     }
   }
 
-  function getSharedStoreBaseUrl() {
-    const raw = String(window.APP_SHARED_STORE_BASE_URL || '').trim().replace(/\/+$/, '');
-    if (!raw) {
+  function getSharedStore() {
+    if (!window.AppSharedStore) {
       throw new Error(SHARED_STORE_CONFIG_ERROR);
     }
-    return raw;
+    return window.AppSharedStore;
   }
 
   async function fetchTelemetryPayload(key) {
-    const response = await fetch(`${getSharedStoreBaseUrl()}/v1/telemetry/${encodeURIComponent(key)}`, { cache: 'no-store' });
-    const text = await response.text();
-    let payload = null;
-    if (text) {
-      try {
-        payload = JSON.parse(text);
-      } catch (error) {
-        payload = null;
-      }
-    }
-
-    if (!response.ok) {
-      if (response.status === 404) return null;
-      const message = payload && typeof payload.error === 'string'
-        ? payload.error
-        : `Telemetry fetch failed (${response.status})`;
-      throw new Error(message);
-    }
-
-    return payload && typeof payload === 'object' ? payload.content ?? null : null;
+    return getSharedStore().getTelemetry(key).catch(error => {
+      if (String(error && error.message || '').toLowerCase().includes('not found')) return null;
+      throw error;
+    });
   }
 
   async function writeTelemetryPayload(key, content) {
-    const response = await fetch(`${getSharedStoreBaseUrl()}/v1/telemetry/${encodeURIComponent(key)}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      keepalive: true,
-      body: JSON.stringify({ content })
-    });
-    const text = await response.text();
-    let payload = null;
-    if (text) {
-      try {
-        payload = JSON.parse(text);
-      } catch (error) {
-        payload = null;
-      }
-    }
-
-    if (!response.ok) {
-      const message = payload && typeof payload.error === 'string'
-        ? payload.error
-        : `Telemetry write failed (${response.status})`;
-      throw new Error(message);
-    }
+    return getSharedStore().putTelemetry(key, content, { keepalive: true });
   }
 
   function getIsoWeekInfo(date) {
@@ -230,7 +192,8 @@
 
       let endpoint = 'Unavailable';
       try {
-        endpoint = `${getSharedStoreBaseUrl()}/v1/telemetry/${encodeURIComponent(telemetryKey)}`;
+        const sharedStore = getSharedStore();
+        endpoint = `${sharedStore.getBaseUrl()}/${encodeURIComponent(sharedStore.getIndexBlobId())}#telemetry:${encodeURIComponent(telemetryKey)}`;
         const content = await fetchTelemetryPayload(telemetryKey);
         if (!content) {
           throw new Error('Telemetry not found.');
