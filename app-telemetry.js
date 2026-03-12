@@ -121,8 +121,13 @@
     linkEl.onclick = async (event) => {
       event.preventDefault();
 
-      const viewer = window.open('', '_blank', 'noopener,noreferrer');
+      const viewer = window.open('about:blank', '_blank');
       if (!viewer) return;
+      try {
+        viewer.opener = null;
+      } catch (error) {
+        /* ignore opener hardening failures */
+      }
 
       viewer.document.write(`
         <!DOCTYPE html>
