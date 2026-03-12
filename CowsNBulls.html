@@ -733,7 +733,7 @@
       syncModeButtons();
       modeHint.textContent = mode === MODE_HYBRID
         ? 'Machine guesses. You manually enter Bulls and Cows each turn.'
-        : 'Machine guesses your hidden number. Enter it for auto feedback, or keep it in mind and enter Bulls/Cows yourself.';
+        : 'Machine guesses your hidden number. Enter the number to start machine mode.';
       guessForm.style.display = 'none';
       machineSection.style.display = 'block';
       setMachineControlsEnabled(false);
@@ -746,16 +746,21 @@
       updateAttemptNote();
       renderTurns();
       machineStartBtn.textContent = mode === MODE_HYBRID ? 'Start Hybrid Game' : 'Start Machine Game';
-      machineSecretInput.placeholder = mode === MODE_HYBRID ? 'Optional: your 4-digit number' : 'Optional: your 4-digit number';
+      machineSecretInput.placeholder = mode === MODE_HYBRID ? 'Optional: your 4-digit number' : 'Required: your 4-digit number';
       setStatus(mode === MODE_HYBRID
         ? 'Hybrid mode: You can enter a 4-digit number or keep it in mind. Machine guesses; you enter Bulls/Cows and press Next Turn.'
-        : 'Machine mode: Enter a 4-digit number for auto feedback, or keep it in mind and enter Bulls/Cows manually.');
+        : 'Machine mode: Enter your 4-digit number to start. The machine will use it for auto feedback.');
       machineSecretInput.focus();
     }
 
     function startMachineGame() {
       if (gameMode !== MODE_MACHINE && gameMode !== MODE_HYBRID) return;
       const rawSecret = machineSecretInput.value.trim();
+      if (gameMode === MODE_MACHINE && !rawSecret) {
+        setStatus('Machine mode requires your 4-digit number before the game can start.', 'loss');
+        machineSecretInput.focus();
+        return;
+      }
       let valid = { ok: true, value: '' };
       if (rawSecret) {
         valid = validateNumber(rawSecret);
