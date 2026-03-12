@@ -414,8 +414,8 @@
 
     function formatUsageCount(value) {
       if (value === null) return 'No telemetry';
-      if (!Number.isFinite(value) || value <= 0) return '0 loads';
-      return `${value.toLocaleString()} load${value === 1 ? '' : 's'}`;
+      if (!Number.isFinite(value) || value <= 0) return '0 views';
+      return `${value.toLocaleString()} view${value === 1 ? '' : 's'}`;
     }
 
     function updateUsageBadges() {
@@ -496,12 +496,6 @@
         }).length;
         return { label: win.label, value };
       });
-
-      const lastUpdatedAt = new Date(document.lastModified).getTime();
-      const minutesSinceUpdate = Number.isFinite(lastUpdatedAt) && !Number.isNaN(lastUpdatedAt) && now >= lastUpdatedAt
-        ? Math.floor((now - lastUpdatedAt) / (60 * 1000))
-        : '-';
-      stats.push({ label: 'Minutes since last update', value: minutesSinceUpdate });
 
       catalogStats.innerHTML = stats.map(stat => `
         <div class="catalog-stat">
