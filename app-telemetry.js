@@ -117,7 +117,86 @@
       document.body.appendChild(linkEl);
     }
 
-    linkEl.href = `${SETGET_GET_BASE}/${encodeURIComponent(telemetryKey)}`;
+    linkEl.href = '#';
+    linkEl.onclick = async (event) => {
+      event.preventDefault();
+
+      const viewer = window.open('', '_blank', 'noopener,noreferrer');
+      if (!viewer) return;
+
+      viewer.document.write(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Telemetry</title>
+          <style>
+            body {
+              margin: 0;
+              padding: 20px;
+              background: #0b1220;
+              color: #d8f6ff;
+              font: 14px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            }
+            h1 {
+              margin: 0 0 12px;
+              font-size: 18px;
+              color: #7fe3ff;
+            }
+            p {
+              margin: 0 0 12px;
+              color: #8aa3c0;
+            }
+            pre {
+              margin: 0;
+              padding: 16px;
+              border-radius: 12px;
+              background: #111a2d;
+              border: 1px solid #1d345a;
+              white-space: pre-wrap;
+              word-break: break-word;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Telemetry</h1>
+          <p>Loading ${telemetryKey}...</p>
+          <pre id="telemetryContent"></pre>
+        </body>
+        </html>
+      `);
+      viewer.document.close();
+
+      try {
+        const response = await fetch(`${SETGET_GET_BASE}/${encodeURIComponent(telemetryKey)}`, { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error(`Telemetry fetch failed (${response.status})`);
+        }
+
+        const payload = await response.json();
+        const content = payload && typeof payload === 'object' ? payload.content : payload;
+        viewer.document.title = `Telemetry - ${telemetryKey}`;
+        const message = viewer.document.querySelector('p');
+        const pre = viewer.document.getElementById('telemetryContent');
+        if (message) message.textContent = telemetryKey;
+        if (pre) pre.textContent = JSON.stringify(content, null, 2);
+      } catch (error) {
+        viewer.document.title = 'Telemetry Unavailable';
+        const message = viewer.document.querySelector('p');
+        const pre = viewer.document.getElementById('telemetryContent');
+        if (message) message.textContent = 'Unable to load telemetry.';
+        if (pre) {
+          pre.textContent = [
+            `Key: ${telemetryKey}`,
+            '',
+            String(error && error.message ? error.message : error),
+            '',
+            `Endpoint: ${SETGET_GET_BASE}/${encodeURIComponent(telemetryKey)}`
+          ].join('\n');
+        }
+      }
+    };
   }
 
   function normalizeName(value) {
