@@ -157,8 +157,8 @@
   </div>
   <a class="changelog-link" href="changelog.html" title="View per-app changelog">Changelog</a>
 
-  <script src="shared-store-config.js?v=20260311-worker1"></script>
-  <script src="shared-store.js?v=20260311-worker1"></script>
+  <script src="shared-store-config.js?v=20260311-worker3"></script>
+  <script src="shared-store.js?v=20260311-worker3"></script>
   <script>
     const CATALOG_LAUNCH_PREFIX = 'ai-app-catalog-telemetry-catalog-launch';
     const apps = [
@@ -388,8 +388,16 @@
     }
 
     async function fetchTelemetryHitCount(telemetryKey) {
-      const content = await window.AppSharedStore.getTelemetry(telemetryKey).catch(() => null);
-      return content && typeof content === 'object' ? Number(content.hitCount || 0) : 0;
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        const content = await window.AppSharedStore.getTelemetry(telemetryKey).catch(() => null);
+        if (content && typeof content === 'object') {
+          return Number(content.hitCount || 0);
+        }
+        if (attempt === 0) {
+          await new Promise(resolve => window.setTimeout(resolve, 120));
+        }
+      }
+      return 0;
     }
 
     async function loadTelemetryCountForApp(app) {
@@ -404,11 +412,11 @@
         return;
       }
 
-      const hitCounts = await Promise.all(weekKeys.map(weekKey => {
-        return fetchTelemetryHitCount(buildTelemetryKey(app.telemetryId, weekKey)).catch(() => 0);
-      }));
-
-      const total = hitCounts.reduce((sum, count) => sum + (Number.isFinite(count) ? count : 0), 0);
+      let total = 0;
+      for (const weekKey of weekKeys) {
+        const count = await fetchTelemetryHitCount(buildTelemetryKey(app.telemetryId, weekKey)).catch(() => 0);
+        total += Number.isFinite(count) ? count : 0;
+      }
       telemetryCounts.set(app.name, total);
     }
 
@@ -441,8 +449,10 @@
 
     async function refreshTelemetryCounts() {
       updateUsageBadges();
-      await Promise.all(apps.map(app => loadTelemetryCountForApp(app)));
-      updateUsageBadges();
+      for (const app of apps) {
+        await loadTelemetryCountForApp(app);
+        updateUsageBadges();
+      }
     }
 
     function getAppCategory(app) {
