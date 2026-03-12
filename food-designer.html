@@ -119,6 +119,69 @@
             background: #5568d3;
         }
 
+        .bulk-ingredient-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+            margin-top: 18px;
+        }
+
+        .bulk-ingredient-card {
+            padding: 16px;
+            border: 1px solid #e6e6e6;
+            border-radius: 12px;
+            background: #fafbff;
+        }
+
+        .bulk-ingredient-card h3 {
+            margin-bottom: 6px;
+            color: #333;
+            font-size: 1rem;
+        }
+
+        .bulk-ingredient-card p {
+            margin-bottom: 10px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .bulk-ingredient-card textarea {
+            width: 100%;
+            min-height: 110px;
+            padding: 12px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            resize: vertical;
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+        }
+
+        .bulk-ingredient-card textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .bulk-ingredient-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .bulk-ingredient-actions button {
+            flex: 1;
+            padding: 10px 14px;
+            border: none;
+            border-radius: 8px;
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .bulk-ingredient-actions button:hover {
+            background: #5568d3;
+        }
+
         .suggestions {
             position: absolute;
             top: 100%;
@@ -540,10 +603,30 @@
             <div class="ingredient-input">
                 <label>Your Ingredients</label>
                 <div class="ingredient-input-wrapper">
-                    <input type="text" id="ingredientInput" placeholder="Type an ingredient...">
+                    <input type="text" id="ingredientInput" placeholder="Type an ingredient..." list="ingredientOptions" autocomplete="off">
                     <button id="addIngredient">Add</button>
                 </div>
+                <datalist id="ingredientOptions"></datalist>
                 <div class="suggestions" id="suggestions"></div>
+            </div>
+
+            <div class="bulk-ingredient-grid">
+                <div class="bulk-ingredient-card">
+                    <h3>My Pantry</h3>
+                    <p>Paste pantry staples separated by commas or new lines.</p>
+                    <textarea id="pantryInput" placeholder="rice, pasta, lentils, cumin, olive oil"></textarea>
+                    <div class="bulk-ingredient-actions">
+                        <button type="button" id="addPantry">Add Pantry Items</button>
+                    </div>
+                </div>
+                <div class="bulk-ingredient-card">
+                    <h3>My Fridge</h3>
+                    <p>Paste fridge items separated by commas or new lines.</p>
+                    <textarea id="fridgeInput" placeholder="milk, yogurt, tomato, onion, paneer"></textarea>
+                    <div class="bulk-ingredient-actions">
+                        <button type="button" id="addFridge">Add Fridge Items</button>
+                    </div>
+                </div>
             </div>
 
             <div class="ingredients-list" id="ingredientsList"></div>
@@ -612,23 +695,61 @@
     </div>
 
     <script>
-        const commonIngredients = [
-            'chicken', 'beef', 'pork', 'fish', 'salmon', 'shrimp', 'tuna', 'egg',
-            'rice', 'pasta', 'bread', 'noodles', 'potato', 'tomato', 'onion',
-            'garlic', 'carrot', 'broccoli', 'spinach', 'lettuce', 'cucumber',
-            'pepper', 'mushroom', 'zucchini', 'corn', 'peas', 'beans', 'lentils',
-            'cheese', 'milk', 'butter', 'cream', 'yogurt', 'cream cheese',
-            'chicken breast', 'ground beef', 'bacon', 'ham', 'sausage',
-            'apple', 'banana', 'orange', 'lemon', 'lime', 'avocado',
-            'olive oil', 'vegetable oil', 'soy sauce', 'vinegar', 'honey',
-            'salt', 'pepper', 'basil', 'oregano', 'thyme', 'rosemary', 'cumin',
-            'paprika', 'cinnamon', 'vanilla', 'flour', 'sugar', 'baking powder',
-            'oats', 'cereal', 'pancake', 'maple syrup', 'jam', 'peanut butter',
-            'tofu', 'tempeh', 'quinoa', 'couscous', 'tortilla', 'wrap',
-            'ginger', 'turmeric', 'garam masala', 'curry', 'biryani', 'naan',
-            'paneer', 'chickpeas', 'masala', 'sambar', 'dal', 'roti',
-            'ghee', 'cardamom', 'cloves', 'coriander', 'mint', 'curry leaves',
-            'mustard seeds', 'asafoetida', 'tamarind', 'coconut milk'
+        const pantryStaples = [
+            'rice', 'basmati rice', 'brown rice', 'pasta', 'spaghetti', 'macaroni',
+            'bread', 'sandwich bread', 'tortilla', 'wrap', 'naan', 'roti',
+            'flour', 'whole wheat flour', 'all purpose flour', 'sugar', 'brown sugar',
+            'salt', 'black pepper', 'red chili powder', 'paprika', 'cumin',
+            'coriander powder', 'turmeric', 'garam masala', 'curry powder', 'cinnamon',
+            'cardamom', 'cloves', 'bay leaf', 'oregano', 'basil', 'thyme',
+            'olive oil', 'vegetable oil', 'ghee', 'butter', 'vinegar', 'soy sauce',
+            'honey', 'ketchup', 'mustard', 'mayonnaise', 'hot sauce',
+            'oats', 'cereal', 'peanut butter', 'jam', 'maple syrup',
+            'lentils', 'red lentils', 'dal', 'chickpeas', 'kidney beans', 'black beans',
+            'canned tomatoes', 'tomato sauce', 'coconut milk', 'tamarind'
+        ];
+
+        const fridgeStaples = [
+            'egg', 'milk', 'yogurt', 'greek yogurt', 'cream', 'cream cheese',
+            'cheese', 'mozzarella', 'cheddar', 'paneer',
+            'onion', 'garlic', 'ginger', 'tomato', 'potato', 'sweet potato',
+            'carrot', 'broccoli', 'spinach', 'lettuce', 'cucumber', 'bell pepper',
+            'green chili', 'jalapeno', 'mushroom', 'zucchini', 'corn', 'peas',
+            'cauliflower', 'cabbage', 'green beans', 'spring onion',
+            'lemon', 'lime', 'apple', 'banana', 'orange', 'avocado',
+            'mint', 'cilantro', 'curry leaves'
+        ];
+
+        const proteinStaples = [
+            'chicken', 'chicken breast', 'chicken thighs', 'ground chicken',
+            'beef', 'ground beef', 'pork', 'bacon', 'ham', 'sausage',
+            'fish', 'salmon', 'tuna', 'shrimp', 'tofu', 'tempeh'
+        ];
+
+        const indianStaples = [
+            'paneer', 'chickpeas', 'rajma', 'moong dal', 'urad dal', 'toor dal',
+            'sambar powder', 'chaat masala', 'kasuri methi', 'mustard seeds',
+            'cumin seeds', 'asafoetida', 'fenugreek', 'coriander', 'mint',
+            'curry leaves', 'ghee', 'besan', 'poha', 'semolina', 'idli rice'
+        ];
+
+        const commonIngredients = Array.from(new Set([
+            ...pantryStaples,
+            ...fridgeStaples,
+            ...proteinStaples,
+            ...indianStaples
+        ]));
+
+        const mealCategoryMap = {
+            breakfast: ['Breakfast', 'Vegetarian', 'Starter'],
+            lunch: ['Chicken', 'Vegetarian', 'Lamb', 'Seafood'],
+            dinner: ['Chicken', 'Vegetarian', 'Lamb', 'Seafood', 'Beef']
+        };
+
+        const indianIngredientSignals = [
+            'garam masala', 'turmeric', 'cumin', 'coriander', 'ginger', 'garlic',
+            'paneer', 'ghee', 'chickpeas', 'dal', 'rajma', 'curry leaves',
+            'mustard seeds', 'coconut milk', 'tamarind', 'green chili', 'mint'
         ];
 
         let userIngredients = [];
@@ -636,6 +757,9 @@
 
         const ingredientInput = document.getElementById('ingredientInput');
         const suggestionsEl = document.getElementById('suggestions');
+        const ingredientOptions = document.getElementById('ingredientOptions');
+        const pantryInput = document.getElementById('pantryInput');
+        const fridgeInput = document.getElementById('fridgeInput');
         const ingredientsList = document.getElementById('ingredientsList');
         const generateBtn = document.getElementById('generateBtn');
         const resultsEl = document.getElementById('results');
@@ -644,25 +768,14 @@
         const modalTitle = document.getElementById('modalTitle');
         const modalClose = document.getElementById('modalClose');
 
+        populateIngredientOptions();
+
+        ingredientInput.addEventListener('focus', () => {
+            renderSuggestions(ingredientInput.value);
+        });
+
         ingredientInput.addEventListener('input', (e) => {
-            const value = e.target.value.toLowerCase().trim();
-            if (value.length < 2) {
-                suggestionsEl.classList.remove('active');
-                return;
-            }
-
-            const matches = commonIngredients.filter(ing => 
-                ing.includes(value) && !userIngredients.includes(ing)
-            ).slice(0, 8);
-
-            if (matches.length > 0) {
-                suggestionsEl.innerHTML = matches.map(ing => 
-                    `<div class="suggestion-item" data-ingredient="${ing}">${ing}</div>`
-                ).join('');
-                suggestionsEl.classList.add('active');
-            } else {
-                suggestionsEl.classList.remove('active');
-            }
+            renderSuggestions(e.target.value);
         });
 
         suggestionsEl.addEventListener('click', (e) => {
@@ -677,6 +790,14 @@
             if (value && !userIngredients.includes(value)) {
                 addIngredient(value);
             }
+        });
+
+        document.getElementById('addPantry').addEventListener('click', () => {
+            addBulkIngredients(pantryInput.value);
+        });
+
+        document.getElementById('addFridge').addEventListener('click', () => {
+            addBulkIngredients(fridgeInput.value);
         });
 
         ingredientInput.addEventListener('keypress', (e) => {
@@ -694,6 +815,89 @@
             suggestionsEl.classList.remove('active');
             renderIngredients();
             saveIngredients();
+        }
+
+        function addBulkIngredients(rawValue) {
+            const parsedIngredients = parseIngredientList(rawValue);
+
+            if (!parsedIngredients.length) {
+                return;
+            }
+
+            let changed = false;
+            parsedIngredients.forEach(ingredient => {
+                if (!userIngredients.includes(ingredient)) {
+                    userIngredients.push(ingredient);
+                    changed = true;
+                }
+            });
+
+            if (!changed) {
+                return;
+            }
+
+            ingredientInput.value = '';
+            suggestionsEl.classList.remove('active');
+            renderIngredients();
+            saveIngredients();
+        }
+
+        function parseIngredientList(rawValue) {
+            return Array.from(new Set(
+                rawValue
+                    .split(/[\n,]/)
+                    .map(item => item.toLowerCase().trim())
+                    .filter(Boolean)
+            ));
+        }
+
+        function populateIngredientOptions() {
+            ingredientOptions.innerHTML = commonIngredients.map(ingredient =>
+                `<option value="${ingredient}"></option>`
+            ).join('');
+        }
+
+        function getIngredientMatches(inputValue) {
+            const value = inputValue.toLowerCase().trim();
+            const availableIngredients = commonIngredients.filter(ingredient => !userIngredients.includes(ingredient));
+
+            if (!value) {
+                return availableIngredients.slice(0, 10);
+            }
+
+            return availableIngredients
+                .filter(ingredient => ingredient.includes(value))
+                .sort((a, b) => {
+                    const aStarts = a.startsWith(value) ? 0 : 1;
+                    const bStarts = b.startsWith(value) ? 0 : 1;
+                    if (aStarts !== bStarts) {
+                        return aStarts - bStarts;
+                    }
+                    const aWords = a.split(' ');
+                    const bWords = b.split(' ');
+                    const aWordStart = aWords.some(word => word.startsWith(value)) ? 0 : 1;
+                    const bWordStart = bWords.some(word => word.startsWith(value)) ? 0 : 1;
+                    if (aWordStart !== bWordStart) {
+                        return aWordStart - bWordStart;
+                    }
+                    return a.localeCompare(b);
+                })
+                .slice(0, 8);
+        }
+
+        function renderSuggestions(inputValue) {
+            const matches = getIngredientMatches(inputValue);
+            const hasQuery = inputValue.toLowerCase().trim().length >= 1;
+
+            if (!matches.length || (!hasQuery && userIngredients.length > 0)) {
+                suggestionsEl.classList.remove('active');
+                return;
+            }
+
+            suggestionsEl.innerHTML = matches.map(ingredient =>
+                `<div class="suggestion-item" data-ingredient="${ingredient}">${ingredient}</div>`
+            ).join('');
+            suggestionsEl.classList.add('active');
         }
 
         function removeIngredient(ingredient) {
@@ -715,11 +919,15 @@
             const calories = document.getElementById('calories').value;
             localStorage.setItem('foodDesignerCalories', calories);
             localStorage.setItem('foodDesignerIngredients', JSON.stringify(userIngredients));
+            localStorage.setItem('foodDesignerPantry', pantryInput.value);
+            localStorage.setItem('foodDesignerFridge', fridgeInput.value);
         }
 
         function loadIngredients() {
             const calories = localStorage.getItem('foodDesignerCalories');
             const ingredients = localStorage.getItem('foodDesignerIngredients');
+            const pantry = localStorage.getItem('foodDesignerPantry');
+            const fridge = localStorage.getItem('foodDesignerFridge');
             
             if (calories) {
                 document.getElementById('calories').value = calories;
@@ -728,7 +936,22 @@
                 userIngredients = JSON.parse(ingredients);
                 renderIngredients();
             }
+            if (pantry) {
+                pantryInput.value = pantry;
+            }
+            if (fridge) {
+                fridgeInput.value = fridge;
+            }
         }
+
+        pantryInput.addEventListener('input', saveIngredients);
+        fridgeInput.addEventListener('input', saveIngredients);
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.ingredient-input')) {
+                suggestionsEl.classList.remove('active');
+            }
+        });
 
         generateBtn.addEventListener('click', generateMealPlan);
 
@@ -787,35 +1010,46 @@
         }
 
         async function findRecipes(ingredients, mealType) {
-            const ingredient = ingredients[Math.floor(Math.random() * ingredients.length)];
-            
-            let category = 'Seafood';
-            if (mealType === 'breakfast') {
-                category = ['Breakfast', 'Starter', 'Vegetarian'][Math.floor(Math.random() * 3)];
-            } else if (mealType === 'lunch') {
-                category = ['Beef', 'Chicken', 'Vegetarian', 'Seafood', 'Lamb'][Math.floor(Math.random() * 5)];
-            } else {
-                category = ['Beef', 'Chicken', 'Lamb', 'Pork', 'Seafood', 'Vegetarian'][Math.floor(Math.random() * 6)];
-            }
+            const selectedCategories = mealCategoryMap[mealType] || ['Vegetarian'];
+            const indianPreference = ingredients.some(ingredient =>
+                indianIngredientSignals.some(signal =>
+                    ingredient.includes(signal) || signal.includes(ingredient)
+                )
+            );
 
             try {
-                const [categoryResponse, areaResponse] = await Promise.all([
-                    fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?c=${category}`),
-                    fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?a=Indian`)
+                const [areaResponse, ...categoryResponses] = await Promise.all([
+                    fetch('https://www.themealdb.com/api/json/v1/1/filter.php?a=Indian'),
+                    ...selectedCategories.map(category =>
+                        fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?c=${encodeURIComponent(category)}`)
+                    )
                 ]);
 
-                const categoryData = await categoryResponse.json();
                 const areaData = await areaResponse.json();
+                const categoryResults = await Promise.all(
+                    categoryResponses.map(response => response.json())
+                );
 
-                const allMeals = [
-                    ...(categoryData.meals || []),
-                    ...(areaData.meals || [])
-                ];
+                const mealMap = new Map();
+
+                (areaData.meals || []).forEach(meal => {
+                    mealMap.set(meal.idMeal, meal);
+                });
+
+                categoryResults.forEach(result => {
+                    (result.meals || []).forEach(meal => {
+                        if (!mealMap.has(meal.idMeal)) {
+                            mealMap.set(meal.idMeal, meal);
+                        }
+                    });
+                });
+
+                const allMeals = Array.from(mealMap.values());
 
                 if (allMeals.length === 0) return [];
 
                 const shuffled = allMeals.sort(() => Math.random() - 0.5);
-                const selected = shuffled.slice(0, 8);
+                const selected = shuffled.slice(0, 14);
 
                 const recipesWithDetails = await Promise.all(
                     selected.map(async meal => {
@@ -852,6 +1086,8 @@
                             id: recipe.idMeal,
                             name: recipe.strMeal,
                             image: recipe.strMealThumb,
+                            area: recipe.strArea || '',
+                            category: recipe.strCategory || '',
                             ingredients: recipeIngredients,
                             matched: matchedIngredients,
                             missing: missingIngredients,
@@ -861,12 +1097,20 @@
                         };
                     })
                     .filter(r => r.matched.length > 0)
-                    .sort((a, b) => b.matched.length - a.matched.length)
-                    .slice(0, 3);
+                    .sort((a, b) => recipeScore(b, indianPreference, mealType) - recipeScore(a, indianPreference, mealType))
+                    .slice(0, 4);
             } catch (error) {
                 console.error('Error fetching recipes:', error);
                 return [];
             }
+        }
+
+        function recipeScore(recipe, indianPreference, mealType) {
+            const areaBonus = recipe.area === 'Indian' ? (indianPreference ? 8 : 5) : 0;
+            const categoryBonus = mealCategoryMap[mealType] && mealCategoryMap[mealType].includes(recipe.category) ? 2 : 0;
+            const matchBonus = recipe.matched.length * 3;
+            const missingPenalty = Math.min(recipe.missing.length, 6);
+            return areaBonus + categoryBonus + matchBonus - missingPenalty;
         }
 
         function renderMealRecipes(elementId, recipes, targetCalories) {
