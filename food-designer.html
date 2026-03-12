@@ -294,6 +294,39 @@
             transform: none;
         }
 
+        .action-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .secondary-btn {
+            padding: 12px 18px;
+            border: 1px solid #d7dcf8;
+            border-radius: 10px;
+            background: #f4f6ff;
+            color: #3f4b88;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .secondary-btn:hover {
+            background: #e9edff;
+        }
+
+        .status-message {
+            margin-top: 14px;
+            min-height: 22px;
+            color: #3f4b88;
+            font-size: 0.95rem;
+        }
+
+        .status-message.error {
+            color: #c0392b;
+        }
+
         .results {
             display: none;
         }
@@ -687,6 +720,12 @@
             <div class="ingredients-list" id="ingredientsList"></div>
 
             <button class="generate-btn" id="generateBtn">Generate Meal Plan</button>
+            <div class="action-row">
+                <button class="secondary-btn" id="exportSharedBtn" type="button">Cloud Export</button>
+                <button class="secondary-btn" id="importSharedBtn" type="button">Cloud Import</button>
+                <button class="secondary-btn" id="clearSharedBtn" type="button">Clear Shared</button>
+            </div>
+            <div class="status-message" id="statusMessage" aria-live="polite"></div>
         </div>
 
         <div class="results" id="results">
@@ -858,6 +897,10 @@
         const cuisinePreference = document.getElementById('cuisinePreference');
         const ingredientsList = document.getElementById('ingredientsList');
         const generateBtn = document.getElementById('generateBtn');
+        const exportSharedBtn = document.getElementById('exportSharedBtn');
+        const importSharedBtn = document.getElementById('importSharedBtn');
+        const clearSharedBtn = document.getElementById('clearSharedBtn');
+        const statusMessage = document.getElementById('statusMessage');
         const resultsEl = document.getElementById('results');
         const modal = document.getElementById('recipeModal');
         const modalBody = document.getElementById('modalBody');
@@ -865,6 +908,27 @@
         const modalClose = document.getElementById('modalClose');
 
         populateIngredientOptions();
+
+        function setStatus(message, isError) {
+            statusMessage.textContent = message || '';
+            statusMessage.classList.toggle('error', !!isError);
+        }
+
+        function normalizeSharedKeyword(rawValue) {
+            const raw = String(rawValue || '').trim().toLowerCase();
+            if (!raw) return '';
+            return raw.replaceAll(/\s+/g, '-').replaceAll(/[^a-z0-9-_]/g, '');
+        }
+
+        function promptSharedKeyword(actionLabel) {
+            const value = prompt(`${actionLabel}: enter a keyword`, '');
+            if (value == null) return '';
+            const keyword = normalizeSharedKeyword(value);
+            if (!keyword) {
+                setStatus('Keyword is required and must contain letters or numbers.', true);
+            }
+            return keyword;
+        }
 
         ingredientInput.addEventListener('focus', () => {
             renderSuggestions(ingredientInput.value);
@@ -1021,6 +1085,38 @@
             localStorage.setItem('foodDesignerCuisinePreference', cuisinePreference.value);
         }
 
+        function buildStoredPayload(keyword) {
+            return {
+                app: 'food-designer',
+                version: 1,
+                keyword: keyword || '',
+                exportedAt: new Date().toISOString(),
+                calories: document.getElementById('calories').value || '',
+                ingredients: userIngredients.slice(),
+                pantry: pantryInput.value,
+                fridge: fridgeInput.value,
+                dietPreference: dietPreference.value,
+                cuisinePreference: cuisinePreference.value
+            };
+        }
+
+        function hydrateStoredPayload(payload) {
+            if (!payload || payload.app !== 'food-designer') {
+                throw new Error('Shared data format is invalid.');
+            }
+
+            userIngredients = Array.isArray(payload.ingredients)
+                ? payload.ingredients.map(item => String(item || '').toLowerCase().trim()).filter(Boolean)
+                : [];
+            document.getElementById('calories').value = payload.calories || '';
+            pantryInput.value = payload.pantry || '';
+            fridgeInput.value = payload.fridge || '';
+            dietPreference.value = payload.dietPreference || 'any';
+            cuisinePreference.value = payload.cuisinePreference || 'any';
+            renderIngredients();
+            saveIngredients();
+        }
+
         function loadIngredients() {
             const calories = localStorage.getItem('foodDesignerCalories');
             const ingredients = localStorage.getItem('foodDesignerIngredients');
@@ -1054,6 +1150,9 @@
         fridgeInput.addEventListener('input', saveIngredients);
         dietPreference.addEventListener('change', saveIngredients);
         cuisinePreference.addEventListener('change', saveIngredients);
+        exportSharedBtn.addEventListener('click', exportFoodShared);
+        importSharedBtn.addEventListener('click', importFoodShared);
+        clearSharedBtn.addEventListener('click', clearFoodShared);
 
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.ingredient-input')) {
@@ -1115,6 +1214,47 @@
 
             generateBtn.disabled = false;
             generateBtn.textContent = 'Generate Meal Plan';
+        }
+
+        async function exportFoodShared() {
+            const keyword = promptSharedKeyword('Cloud export');
+            if (!keyword) return;
+            const key = window.AppSharedStore.buildSharedKey('food-designer', keyword);
+            const payload = buildStoredPayload(keyword);
+
+            try {
+                await window.AppSharedStore.putSharedContent(key, payload);
+                setStatus(`Shared export complete (${keyword}).`, false);
+            } catch (error) {
+                setStatus(error.message || 'Shared export failed.', true);
+            }
+        }
+
+        async function importFoodShared() {
+            const keyword = promptSharedKeyword('Cloud import');
+            if (!keyword) return;
+            const key = window.AppSharedStore.buildSharedKey('food-designer', keyword);
+
+            try {
+                const payload = await window.AppSharedStore.getSharedContent(key);
+                hydrateStoredPayload(payload);
+                setStatus(`Shared import complete (${keyword}).`, false);
+            } catch (error) {
+                setStatus(error.message || 'Shared import failed.', true);
+            }
+        }
+
+        async function clearFoodShared() {
+            const keyword = promptSharedKeyword('Clear shared');
+            if (!keyword) return;
+            const key = window.AppSharedStore.buildSharedKey('food-designer', keyword);
+
+            try {
+                await window.AppSharedStore.deleteSharedContent(key);
+                setStatus(`Shared key cleared (${keyword}).`, false);
+            } catch (error) {
+                setStatus(error.message || 'Shared clear failed.', true);
+            }
         }
 
         async function findRecipes(ingredients, mealType) {
