@@ -398,27 +398,37 @@
     }
 
     async function loadTelemetryCounts() {
+      const currentWeekKey = getWeekKey(new Date());
       const appsWithTelemetry = apps.filter(app => app.telemetryId);
-      const params = new URLSearchParams();
-      appsWithTelemetry.forEach(app => {
-        params.append('appId', app.telemetryId);
-      });
 
-      const response = await fetch(`${window.AppSharedStore.getBaseUrl()}/v1/telemetry-summary?${params.toString()}`, {
-        cache: 'no-store'
+      const results = await Promise.allSettled(
+        appsWithTelemetry.map(async app => {
+          const telemetryKey = buildTelemetryKey(app.telemetryId, currentWeekKey);
+          const payload = await window.AppSharedStore.getTelemetry(telemetryKey);
+          const hitCount = payload && typeof payload === 'object'
+            ? Number(payload.hitCount || 0)
+            : 0;
+          return {
+            appName: app.name,
+            hitCount: Number.isFinite(hitCount) ? hitCount : 0
+          };
+        })
+      );
+
+      results.forEach((result, index) => {
+        const app = appsWithTelemetry[index];
+        if (!app) return;
+        if (result.status === 'fulfilled') {
+          telemetryCounts.set(result.value.appName, result.value.hitCount);
+          return;
+        }
+        telemetryCounts.set(app.name, 0);
       });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok || !payload || typeof payload !== 'object' || !payload.summaries) {
-        throw new Error('Telemetry summary fetch failed.');
-      }
 
       apps.forEach(app => {
         if (!app.telemetryId) {
           telemetryCounts.set(app.name, null);
-          return;
         }
-        const summary = payload.summaries[app.telemetryId];
-        telemetryCounts.set(app.name, summary && Number.isFinite(Number(summary.hitCount)) ? Number(summary.hitCount) : 0);
       });
     }
 
@@ -451,7 +461,15 @@
 
     async function refreshTelemetryCounts() {
       updateUsageBadges();
-      await loadTelemetryCounts();
+      try {
+        await loadTelemetryCounts();
+      } catch (error) {
+        apps.forEach(app => {
+          if (app.telemetryId && typeof telemetryCounts.get(app.name) === 'undefined') {
+            telemetryCounts.set(app.name, 0);
+          }
+        });
+      }
       updateUsageBadges();
     }
 
@@ -664,9 +682,7 @@
 
     renderCatalogStats();
     renderApps(filteredApps);
-    refreshTelemetryCounts().catch(() => {
-      updateUsageBadges();
-    });
+    refreshTelemetryCounts();
 
     document.querySelector('.video-tile')?.addEventListener('click', () => {
       rememberCatalogLaunch({
