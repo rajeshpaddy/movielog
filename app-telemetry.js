@@ -9,7 +9,7 @@
   const TELEMETRY_VERSION = 3;
   const RECENT_SAMPLE_LIMIT = 20;
   const CATALOG_LAUNCH_PREFIX = `${STORAGE_PREFIX}-catalog-launch`;
-  const SHARED_STORE_CONFIG_ERROR = 'Cloud telemetry storage is not configured. Load shared-store.js and set window.APP_SHARED_STORE_INDEX_BLOB_ID in shared-store-config.js.';
+  const SHARED_STORE_CONFIG_ERROR = 'Cloud telemetry storage is not configured. Load shared-store.js and set window.APP_SHARED_STORE_BASE_URL in shared-store-config.js.';
 
   if (navigator.doNotTrack === '1' || window.doNotTrack === '1' || navigator.msDoNotTrack === '1') {
     return;
@@ -135,6 +135,7 @@
     }
 
     linkEl.href = '#';
+    linkEl.dataset.telemetryKey = telemetryKey;
     linkEl.onclick = async (event) => {
       event.preventDefault();
 
@@ -179,11 +180,21 @@
               white-space: pre-wrap;
               word-break: break-word;
             }
+            .raw-link {
+              display: inline-block;
+              margin: 0 0 12px;
+              color: #7fe3ff;
+              text-decoration: none;
+            }
+            .raw-link:hover {
+              text-decoration: underline;
+            }
           </style>
         </head>
         <body>
           <h1>Telemetry</h1>
           <p>Loading ${telemetryKey}...</p>
+          <a class="raw-link" id="rawTelemetryLink" href="#" target="_blank" rel="noopener noreferrer">Open raw JSON</a>
           <pre id="telemetryContent"></pre>
         </body>
         </html>
@@ -193,7 +204,7 @@
       let endpoint = 'Unavailable';
       try {
         const sharedStore = getSharedStore();
-        endpoint = `${sharedStore.getBaseUrl()}/${encodeURIComponent(sharedStore.getIndexBlobId())}#telemetry:${encodeURIComponent(telemetryKey)}`;
+        endpoint = await sharedStore.getTelemetryBlobUrl(telemetryKey);
         const content = await fetchTelemetryPayload(telemetryKey);
         if (!content) {
           throw new Error('Telemetry not found.');
@@ -201,13 +212,17 @@
         viewer.document.title = `Telemetry - ${telemetryKey}`;
         const message = viewer.document.querySelector('p');
         const pre = viewer.document.getElementById('telemetryContent');
+        const rawLink = viewer.document.getElementById('rawTelemetryLink');
         if (message) message.textContent = telemetryKey;
+        if (rawLink) rawLink.href = endpoint;
         if (pre) pre.textContent = JSON.stringify(content, null, 2);
       } catch (error) {
         viewer.document.title = 'Telemetry Unavailable';
         const message = viewer.document.querySelector('p');
         const pre = viewer.document.getElementById('telemetryContent');
+        const rawLink = viewer.document.getElementById('rawTelemetryLink');
         if (message) message.textContent = 'Unable to load telemetry.';
+        if (rawLink) rawLink.remove();
         if (pre) {
           pre.textContent = [
             `Key: ${telemetryKey}`,
@@ -219,6 +234,16 @@
         }
       }
     };
+  }
+
+  async function refreshTelemetryLinkHref(telemetryKey) {
+    const linkEl = document.getElementById('telemetryLink');
+    if (!linkEl) return;
+    try {
+      linkEl.href = await getSharedStore().getTelemetryBlobUrl(telemetryKey);
+    } catch (error) {
+      linkEl.href = '#';
+    }
   }
 
   function normalizeName(value) {
@@ -383,6 +408,7 @@
     next.recent = next.recent.slice(0, RECENT_SAMPLE_LIMIT);
 
     await writeTelemetry(telemetryKey, next);
+    await refreshTelemetryLinkHref(telemetryKey);
   }
 
   function scheduleTelemetry() {

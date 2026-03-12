@@ -1,0 +1,8 @@
+name = "movielog-shared-store"
+main = "src/index.js"
+compatibility_date = "2026-03-12"
+account_id = "1e8c3aaa96eb8473fc586dc7bb74ef3b"
+
+[[kv_namespaces]]
+binding = "SHARED_STORE"
+id = "b0112b0789f04c669f90b9834426d27d"
