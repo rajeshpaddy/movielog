@@ -387,37 +387,29 @@
       return Array.from(new Set(weeks));
     }
 
-    async function fetchTelemetryHitCount(telemetryKey) {
-      for (let attempt = 0; attempt < 2; attempt += 1) {
-        const content = await window.AppSharedStore.getTelemetry(telemetryKey).catch(() => null);
-        if (content && typeof content === 'object') {
-          return Number(content.hitCount || 0);
+    async function loadTelemetryCounts() {
+      const appsWithTelemetry = apps.filter(app => app.telemetryId);
+      const params = new URLSearchParams();
+      appsWithTelemetry.forEach(app => {
+        params.append('appId', app.telemetryId);
+      });
+
+      const response = await fetch(`${window.AppSharedStore.getBaseUrl()}/v1/telemetry-summary?${params.toString()}`, {
+        cache: 'no-store'
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload || typeof payload !== 'object' || !payload.summaries) {
+        throw new Error('Telemetry summary fetch failed.');
+      }
+
+      apps.forEach(app => {
+        if (!app.telemetryId) {
+          telemetryCounts.set(app.name, null);
+          return;
         }
-        if (attempt === 0) {
-          await new Promise(resolve => window.setTimeout(resolve, 120));
-        }
-      }
-      return 0;
-    }
-
-    async function loadTelemetryCountForApp(app) {
-      if (!app.telemetryId) {
-        telemetryCounts.set(app.name, null);
-        return;
-      }
-
-      const weekKeys = getTelemetryWeeksSince(app.date);
-      if (weekKeys.length === 0) {
-        telemetryCounts.set(app.name, 0);
-        return;
-      }
-
-      let total = 0;
-      for (const weekKey of weekKeys) {
-        const count = await fetchTelemetryHitCount(buildTelemetryKey(app.telemetryId, weekKey)).catch(() => 0);
-        total += Number.isFinite(count) ? count : 0;
-      }
-      telemetryCounts.set(app.name, total);
+        const summary = payload.summaries[app.telemetryId];
+        telemetryCounts.set(app.name, summary && Number.isFinite(Number(summary.hitCount)) ? Number(summary.hitCount) : 0);
+      });
     }
 
     function formatUsageCount(value) {
@@ -449,10 +441,8 @@
 
     async function refreshTelemetryCounts() {
       updateUsageBadges();
-      for (const app of apps) {
-        await loadTelemetryCountForApp(app);
-        updateUsageBadges();
-      }
+      await loadTelemetryCounts();
+      updateUsageBadges();
     }
 
     function getAppCategory(app) {

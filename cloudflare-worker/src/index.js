@@ -23,6 +23,21 @@ function makeStorageKey(namespace, key) {
   return `${namespace}:${key}`;
 }
 
+function hashAppId(value) {
+  let hash = 2166136261;
+  const input = String(value || '');
+  for (let i = 0; i < input.length; i += 1) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(36).slice(0, 6);
+}
+
+function buildTelemetryPrefix(appId) {
+  const compactApp = String(appId || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 8) || 'app';
+  return makeStorageKey('telemetry', `aat-${compactApp}-${hashAppId(appId)}-`);
+}
+
 async function readJson(request) {
   try {
     return await request.json();
@@ -92,6 +107,48 @@ async function handleDelete(env, namespace, key) {
   return emptyResponse();
 }
 
+async function handleTelemetrySummary(url, env) {
+  const appIds = url.searchParams.getAll('appId')
+    .map(value => String(value || '').trim())
+    .filter(Boolean);
+
+  if (appIds.length === 0) {
+    return jsonResponse({ error: 'At least one appId query parameter is required.' }, 400);
+  }
+
+  const summaries = {};
+
+  for (const appId of appIds) {
+    const prefix = buildTelemetryPrefix(appId);
+    let cursor = undefined;
+    let total = 0;
+    let matchedKeys = 0;
+
+    do {
+      const listing = await env.SHARED_STORE.list({ prefix, cursor, limit: 1000 });
+      for (const keyInfo of listing.keys) {
+        const stored = await env.SHARED_STORE.get(keyInfo.name, 'json');
+        const content = stored && typeof stored === 'object' ? stored.content : null;
+        if (content && typeof content === 'object') {
+          total += Number(content.hitCount || 0);
+          matchedKeys += 1;
+        }
+      }
+      cursor = listing.list_complete ? undefined : listing.cursor;
+    } while (cursor);
+
+    summaries[appId] = {
+      hitCount: total,
+      matchedKeys
+    };
+  }
+
+  return jsonResponse({
+    ok: true,
+    summaries
+  });
+}
+
 export default {
   async fetch(request, env) {
     if (request.method === 'OPTIONS') {
@@ -99,6 +156,10 @@ export default {
     }
 
     const url = new URL(request.url);
+    if (url.pathname === '/v1/telemetry-summary' && request.method === 'GET') {
+      return handleTelemetrySummary(url, env);
+    }
+
     const match = url.pathname.match(/^\/v1\/(shared|telemetry)\/(.+)$/);
     if (!match) {
       return jsonResponse({ error: 'Not found.' }, 404);
