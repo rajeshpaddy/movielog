@@ -51,6 +51,13 @@
             margin-bottom: 20px;
         }
 
+        .preference-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
         .calorie-input label {
             display: block;
             font-weight: 600;
@@ -69,6 +76,28 @@
         }
 
         .calorie-input input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .preference-field label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .preference-field select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+            transition: border-color 0.3s;
+        }
+
+        .preference-field select:focus {
             outline: none;
             border-color: #667eea;
         }
@@ -600,6 +629,32 @@
                 <input type="number" id="calories" placeholder="e.g., 2000" min="500" max="5000">
             </div>
 
+            <div class="preference-grid">
+                <div class="preference-field">
+                    <label for="dietPreference">Recipe Type</label>
+                    <select id="dietPreference">
+                        <option value="any">Any recipe</option>
+                        <option value="vegetarian">Vegetarian only</option>
+                        <option value="vegan">Vegan only</option>
+                        <option value="fat-free">Fat Free</option>
+                        <option value="sugar-free">Sugar Free</option>
+                        <option value="gluten-free">Gluten Free</option>
+                    </select>
+                </div>
+                <div class="preference-field">
+                    <label for="cuisinePreference">Cuisine</label>
+                    <select id="cuisinePreference">
+                        <option value="any">Any cuisine</option>
+                        <option value="mexican">Mexican</option>
+                        <option value="mediterranean">Mediterranean</option>
+                        <option value="italian">Italian</option>
+                        <option value="indian">Indian</option>
+                        <option value="thai">Thai</option>
+                        <option value="chinese">Chinese</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="ingredient-input">
                 <label>Your Ingredients</label>
                 <div class="ingredient-input-wrapper">
@@ -746,10 +801,49 @@
             dinner: ['Chicken', 'Vegetarian', 'Lamb', 'Seafood', 'Beef']
         };
 
+        const cuisineAreaMap = {
+            any: [],
+            mexican: ['Mexican'],
+            mediterranean: ['Greek', 'Italian', 'Moroccan', 'Spanish', 'Turkish'],
+            italian: ['Italian'],
+            indian: ['Indian'],
+            thai: ['Thai'],
+            chinese: ['Chinese']
+        };
+
         const indianIngredientSignals = [
             'garam masala', 'turmeric', 'cumin', 'coriander', 'ginger', 'garlic',
             'paneer', 'ghee', 'chickpeas', 'dal', 'rajma', 'curry leaves',
             'mustard seeds', 'coconut milk', 'tamarind', 'green chili', 'mint'
+        ];
+
+        const vegetarianBlockedTerms = [
+            'chicken', 'beef', 'pork', 'bacon', 'ham', 'sausage', 'lamb', 'turkey',
+            'fish', 'salmon', 'tuna', 'shrimp', 'prawn', 'anchovy', 'sardine',
+            'gelatin', 'meat'
+        ];
+
+        const veganBlockedTerms = [
+            ...vegetarianBlockedTerms,
+            'egg', 'milk', 'butter', 'cream', 'cheese', 'paneer', 'yogurt',
+            'ghee', 'honey', 'mayonnaise'
+        ];
+
+        const fatFreeBlockedTerms = [
+            'butter', 'ghee', 'cream', 'cheese', 'paneer', 'mayonnaise',
+            'oil', 'olive oil', 'vegetable oil', 'coconut milk', 'bacon',
+            'sausage', 'cream cheese', 'heavy cream', 'ground beef'
+        ];
+
+        const sugarFreeBlockedTerms = [
+            'sugar', 'brown sugar', 'honey', 'maple syrup', 'jam', 'sweetened condensed milk',
+            'chocolate', 'caramel', 'molasses', 'corn syrup', 'jaggery'
+        ];
+
+        const glutenFreeBlockedTerms = [
+            'flour', 'all purpose flour', 'whole wheat flour', 'bread', 'pasta',
+            'spaghetti', 'macaroni', 'naan', 'roti', 'soy sauce', 'breadcrumbs',
+            'tortilla', 'wrap', 'semolina', 'couscous', 'noodles'
         ];
 
         let userIngredients = [];
@@ -760,6 +854,8 @@
         const ingredientOptions = document.getElementById('ingredientOptions');
         const pantryInput = document.getElementById('pantryInput');
         const fridgeInput = document.getElementById('fridgeInput');
+        const dietPreference = document.getElementById('dietPreference');
+        const cuisinePreference = document.getElementById('cuisinePreference');
         const ingredientsList = document.getElementById('ingredientsList');
         const generateBtn = document.getElementById('generateBtn');
         const resultsEl = document.getElementById('results');
@@ -921,6 +1017,8 @@
             localStorage.setItem('foodDesignerIngredients', JSON.stringify(userIngredients));
             localStorage.setItem('foodDesignerPantry', pantryInput.value);
             localStorage.setItem('foodDesignerFridge', fridgeInput.value);
+            localStorage.setItem('foodDesignerDietPreference', dietPreference.value);
+            localStorage.setItem('foodDesignerCuisinePreference', cuisinePreference.value);
         }
 
         function loadIngredients() {
@@ -928,6 +1026,8 @@
             const ingredients = localStorage.getItem('foodDesignerIngredients');
             const pantry = localStorage.getItem('foodDesignerPantry');
             const fridge = localStorage.getItem('foodDesignerFridge');
+            const savedDietPreference = localStorage.getItem('foodDesignerDietPreference');
+            const savedCuisinePreference = localStorage.getItem('foodDesignerCuisinePreference');
             
             if (calories) {
                 document.getElementById('calories').value = calories;
@@ -942,10 +1042,18 @@
             if (fridge) {
                 fridgeInput.value = fridge;
             }
+            if (savedDietPreference) {
+                dietPreference.value = savedDietPreference;
+            }
+            if (savedCuisinePreference) {
+                cuisinePreference.value = savedCuisinePreference;
+            }
         }
 
         pantryInput.addEventListener('input', saveIngredients);
         fridgeInput.addEventListener('input', saveIngredients);
+        dietPreference.addEventListener('change', saveIngredients);
+        cuisinePreference.addEventListener('change', saveIngredients);
 
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.ingredient-input')) {
@@ -1011,6 +1119,9 @@
 
         async function findRecipes(ingredients, mealType) {
             const selectedCategories = mealCategoryMap[mealType] || ['Vegetarian'];
+            const selectedCuisine = cuisinePreference.value;
+            const selectedDiet = dietPreference.value;
+            const selectedAreas = cuisineAreaMap[selectedCuisine] || [];
             const indianPreference = ingredients.some(ingredient =>
                 indianIngredientSignals.some(signal =>
                     ingredient.includes(signal) || signal.includes(ingredient)
@@ -1018,17 +1129,26 @@
             );
 
             try {
-                const [areaResponse, ...categoryResponses] = await Promise.all([
-                    fetch('https://www.themealdb.com/api/json/v1/1/filter.php?a=Indian'),
+                const areaRequests = selectedAreas.length
+                    ? selectedAreas.map(area =>
+                        fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?a=${encodeURIComponent(area)}`)
+                    )
+                    : [fetch('https://www.themealdb.com/api/json/v1/1/filter.php?a=Indian')];
+
+                const [primaryAreaResponse, ...otherResponses] = await Promise.all([
+                    areaRequests[0],
                     ...selectedCategories.map(category =>
                         fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?c=${encodeURIComponent(category)}`)
-                    )
+                    ),
+                    ...areaRequests.slice(1)
                 ]);
 
-                const areaData = await areaResponse.json();
-                const categoryResults = await Promise.all(
-                    categoryResponses.map(response => response.json())
+                const areaData = await primaryAreaResponse.json();
+                const remainingResults = await Promise.all(
+                    otherResponses.map(response => response.json())
                 );
+                const categoryResults = remainingResults.slice(0, selectedCategories.length);
+                const additionalAreaResults = remainingResults.slice(selectedCategories.length);
 
                 const mealMap = new Map();
 
@@ -1037,6 +1157,12 @@
                 });
 
                 categoryResults.forEach(result => {
+                    (result.meals || []).forEach(meal => {
+                        mealMap.set(meal.idMeal, meal);
+                    });
+                });
+
+                additionalAreaResults.forEach(result => {
                     (result.meals || []).forEach(meal => {
                         if (!mealMap.has(meal.idMeal)) {
                             mealMap.set(meal.idMeal, meal);
@@ -1097,7 +1223,8 @@
                         };
                     })
                     .filter(r => r.matched.length > 0)
-                    .sort((a, b) => recipeScore(b, indianPreference, mealType) - recipeScore(a, indianPreference, mealType))
+                    .filter(r => recipeMatchesDiet(r, selectedDiet))
+                    .sort((a, b) => recipeScore(b, indianPreference, mealType, selectedCuisine, selectedDiet) - recipeScore(a, indianPreference, mealType, selectedCuisine, selectedDiet))
                     .slice(0, 4);
             } catch (error) {
                 console.error('Error fetching recipes:', error);
@@ -1105,12 +1232,35 @@
             }
         }
 
-        function recipeScore(recipe, indianPreference, mealType) {
+        function recipeMatchesDiet(recipe, selectedDiet) {
+            if (selectedDiet === 'any') {
+                return true;
+            }
+
+            const blockedTermsByDiet = {
+                vegetarian: vegetarianBlockedTerms,
+                vegan: veganBlockedTerms,
+                'fat-free': fatFreeBlockedTerms,
+                'sugar-free': sugarFreeBlockedTerms,
+                'gluten-free': glutenFreeBlockedTerms
+            };
+            const blockedTerms = blockedTermsByDiet[selectedDiet] || [];
+            const recipeIngredientNames = recipe.ingredients.map(ingredient => ingredient.name);
+
+            return !recipeIngredientNames.some(name =>
+                blockedTerms.some(term => name.includes(term))
+            );
+        }
+
+        function recipeScore(recipe, indianPreference, mealType, selectedCuisine, selectedDiet) {
+            const selectedAreas = cuisineAreaMap[selectedCuisine] || [];
             const areaBonus = recipe.area === 'Indian' ? (indianPreference ? 8 : 5) : 0;
+            const cuisineBonus = selectedAreas.includes(recipe.area) ? 7 : 0;
             const categoryBonus = mealCategoryMap[mealType] && mealCategoryMap[mealType].includes(recipe.category) ? 2 : 0;
             const matchBonus = recipe.matched.length * 3;
+            const dietBonus = selectedDiet !== 'any' ? 2 : 0;
             const missingPenalty = Math.min(recipe.missing.length, 6);
-            return areaBonus + categoryBonus + matchBonus - missingPenalty;
+            return areaBonus + cuisineBonus + categoryBonus + matchBonus + dietBonus - missingPenalty;
         }
 
         function renderMealRecipes(elementId, recipes, targetCalories) {
