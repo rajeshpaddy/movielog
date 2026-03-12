@@ -135,6 +135,15 @@
       opacity: 1;
       text-decoration: underline;
     }
+    .build-badge {
+      position: fixed;
+      right: 12px;
+      bottom: 10px;
+      font-size: 11px;
+      color: #8ea6c7;
+      opacity: 0.85;
+      z-index: 100;
+    }
   </style>
 </head>
 <body>
@@ -156,6 +165,7 @@
     <div class="app-grid" id="appGrid"></div>
   </div>
   <a class="changelog-link" href="changelog.html" title="View per-app changelog">Changelog</a>
+  <div class="build-badge" title="Catalog build version">build 20260312-1</div>
 
   <script src="shared-store-config.js?v=20260311-worker3"></script>
   <script src="shared-store.js?v=20260311-worker3"></script>
