@@ -40,6 +40,7 @@
     }
     .video-tile {
       display: block;
+      position: relative;
       background: linear-gradient(135deg, #0f3460, #16213e);
       border: 1px solid #00d9ff;
       border-radius: 15px;
@@ -81,7 +82,7 @@
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
       gap: 20px;
     }
-    .app-card { background: #16213e; border-radius: 15px; padding: 25px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; text-align: center; }
+    .app-card { position: relative; background: #16213e; border-radius: 15px; padding: 25px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; text-align: center; }
     .app-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0, 217, 255, 0.2); }
     .app-card.selected {
       transform: translateY(-5px);
@@ -92,6 +93,28 @@
     .app-name { font-size: 20px; font-weight: bold; margin-bottom: 8px; color: #fff; }
     .app-desc { font-size: 14px; color: #aaa; line-height: 1.4; }
     .app-date { font-size: 12px; color: #666; margin-top: 15px; }
+    .app-usage-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: rgba(5, 20, 44, 0.92);
+      border: 1px solid rgba(0, 217, 255, 0.35);
+      color: #9fe8ff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+    }
+    .app-usage-badge.is-loading {
+      color: #7fa0c0;
+      border-color: rgba(127, 160, 192, 0.3);
+    }
+    .app-usage-badge.is-empty {
+      color: #6d829d;
+      border-color: rgba(109, 130, 157, 0.28);
+    }
     .search-container { margin-bottom: 20px; }
     .search-input { width: 100%; background: #0f3460; border: 1px solid #00d9ff; color: #fff; padding: 12px 20px; border-radius: 30px; font-size: 16px; }
     .search-input::placeholder { color: #666; }
@@ -121,6 +144,7 @@
     <div class="catalog-stats" id="catalogStats"></div>
 
     <a class="video-tile" href="https://rajeshpaddy.github.io/movielog/catalog-guide-chat.html">
+      <span class="app-usage-badge is-loading" data-telemetry-id="catalog-guide-chat">Loading...</span>
       <div class="video-tile-title">🧭 Catalog Guide Chat</div>
       <div class="video-tile-desc">Start here. Ask what the catalog includes, get feature summaries, and jump directly to the right app.</div>
     </a>
@@ -135,13 +159,15 @@
 
   <script>
     const CATALOG_LAUNCH_PREFIX = 'ai-app-catalog-telemetry-catalog-launch';
+    const SETGET_GET_BASE = 'https://setget.io/api/get';
     const apps = [
       {
         name: 'Catalog Guide Chat',
         icon: '🧭',
         desc: 'Chat with the AI App Catalog to discover apps, compare features, and jump to the right tool with quick links',
         file: 'https://rajeshpaddy.github.io/movielog/catalog-guide-chat.html',
-        date: '2026-03-11'
+        date: '2026-03-11',
+        telemetryId: 'catalog-guide-chat'
       },
       {
         name: 'Movie Log',
@@ -155,142 +181,270 @@
         icon: '📋',
         desc: 'Track monthly bills with carryover, yearly overview, and keyboard shortcuts',
         file: 'https://rajeshpaddy.github.io/movielog/bill-tracker.html',
-        date: '2025-02-24'
+        date: '2025-02-24',
+        telemetryId: 'bill-tracker'
       },
       {
         name: 'Ski Tracker',
         icon: '⛷️',
         desc: 'Log ski runs by level, track speed, slope time, lift time, weather & snow conditions',
         file: 'https://rajeshpaddy.github.io/movielog/ski-tracker.html',
-        date: '2025-02-24'
+        date: '2025-02-24',
+        telemetryId: 'ski-tracker'
       },
       {
         name: 'Spanish Flash Cards',
         icon: '🇪🇸',
         desc: 'Learn Spanish with flash cards. Words or sentences, beginner to advanced levels',
         file: 'https://rajeshpaddy.github.io/movielog/spanish-flashcards.html',
-        date: '2025-02-24'
+        date: '2025-02-24',
+        telemetryId: 'spanish-flashcards'
       },
       {
         name: 'Food Designer',
         icon: '🥗',
         desc: 'Enter your daily calorie needs and ingredients to get personalized breakfast, lunch and dinner suggestions with recipes. Thanks to my Buddy Pats!',
         file: 'https://rajeshpaddy.github.io/movielog/food-designer.html',
-        date: '2026-02-26'
+        date: '2026-02-26',
+        telemetryId: 'food-designer'
       },
       {
         name: 'Food Log',
         icon: '🍽️',
         desc: 'Track daily food intake with automatic calorie estimation and exercise burn calculation',
         file: 'https://rajeshpaddy.github.io/movielog/food-log.html',
-        date: '2026-02-26'
+        date: '2026-02-26',
+        telemetryId: 'food-log'
       },
       {
         name: 'Time Tracker',
         icon: '⏱️',
         desc: 'Track time utilization for daily activities with event logging, date navigation, and weekly/monthly/yearly reports',
         file: 'https://rajeshpaddy.github.io/movielog/time-tracker.html',
-        date: '2026-02-26'
+        date: '2026-02-26',
+        telemetryId: 'time-tracker'
       },
       {
         name: 'Scotch & Ghazal Fusion Lounge',
         icon: '🥃',
         desc: 'Unwind with Jagjit Singh & Ghulam Ali ghazals - 5 hours of uninterrupted playback with shuffle and custom playlist',
         file: 'https://rajeshpaddy.github.io/movielog/scotch-ghazal.html',
-        date: '2026-02-26'
+        date: '2026-02-26',
+        telemetryId: 'scotch-ghazal'
       },
       {
         name: 'Pokemon Learner',
         icon: '<span style="font-size:63px;line-height:1;">⚡</span>',
         desc: 'Learn about Pokemon - view details, stats, evolutions and track which Pokemon you have learned',
         file: 'https://rajeshpaddy.github.io/movielog/pokemon-learner.html',
-        date: '2026-03-07'
+        date: '2026-03-07',
+        telemetryId: 'pokemon-learner'
       },
       {
         name: 'American Presidents',
         icon: '🇺🇸',
         desc: 'Learn about US Presidents - view details, party, vice presidents and track which Presidents you have studied',
         file: 'https://rajeshpaddy.github.io/movielog/president-learner.html',
-        date: '2026-03-07'
+        date: '2026-03-07',
+        telemetryId: 'president-learner'
       },
       {
         name: 'American Idioms Learner',
         icon: '🗣️',
         desc: 'Study common American idioms ranked by everyday familiarity, track learned entries, and export or import your progress',
         file: 'https://rajeshpaddy.github.io/movielog/american-idioms-learner.html',
-        date: '2026-03-11'
+        date: '2026-03-11',
+        telemetryId: 'american-idioms-learner'
       },
       {
         name: 'Country Learner',
         icon: '🌍',
         desc: 'Track countries you have visited - view travel advisories, maps, population, and continent statistics',
         file: 'https://rajeshpaddy.github.io/movielog/country-learner.html',
-        date: '2026-03-08'
+        date: '2026-03-08',
+        telemetryId: 'country-learner'
       },
       {
         name: 'USA State Learner',
         icon: '🗽',
         desc: 'Track all 50 US states you have visited with approximate and accurate map modes',
         file: 'https://rajeshpaddy.github.io/movielog/usa-state-learner.html',
-        date: '2026-03-08'
+        date: '2026-03-08',
+        telemetryId: 'usa-state-learner'
       },
       {
         name: 'India States & UT Learner',
         icon: '🇮🇳',
         desc: 'Track all Indian states and union territories with approximate and accurate map modes',
         file: 'https://rajeshpaddy.github.io/movielog/india-state-learner.html',
-        date: '2026-03-08'
+        date: '2026-03-08',
+        telemetryId: 'india-state-learner'
       },
       {
         name: 'FIRE Plans',
         icon: '🔥',
         desc: 'Model FIRE sustainability with years, portfolio, annual spend, and safe withdrawal rate controls',
         file: 'https://rajeshpaddy.github.io/movielog/Fire-Plans.html',
-        date: '2026-03-08'
+        date: '2026-03-08',
+        telemetryId: 'fire-plans'
       },
       {
         name: 'CowsNBulls',
         icon: '🐄',
         desc: 'Guess the secret 4-digit number with cows and bulls clues, 10-attempt limit, and date-based score history',
         file: 'https://rajeshpaddy.github.io/movielog/CowsNBulls.html',
-        date: '2026-03-09'
+        date: '2026-03-09',
+        telemetryId: 'cows-n-bulls'
       },
       {
         name: 'Book Log',
         icon: '📚',
         desc: 'Search books by title, author, ISBN or publisher and organize them into To Read, Reading, and Read lists',
         file: 'https://rajeshpaddy.github.io/movielog/book-log.html',
-        date: '2026-03-10'
+        date: '2026-03-10',
+        telemetryId: 'book-log'
       },
       {
         name: 'Idea Log',
         icon: '💡',
         desc: 'Capture ideas, move them across Experimenting, Discarded, and Launched, with export/import and timeline stats',
         file: 'https://rajeshpaddy.github.io/movielog/idea-log.html?v=20260310-3',
-        date: '2026-03-10'
+        date: '2026-03-10',
+        telemetryId: 'idea-log'
       },
       {
         name: 'Retirement Health Insurance',
         icon: '🏥',
         desc: 'Compare Marketplace, COBRA, retiree coverage, and Medicare paths using ChooseFI-inspired retirement planning prompts',
         file: 'https://rajeshpaddy.github.io/movielog/health-insurance-retirement.html',
-        date: '2026-03-10'
+        date: '2026-03-10',
+        telemetryId: 'health-insurance-retirement'
       },
       {
         name: 'Tic Tac Toe',
         icon: '⭕',
         desc: 'Classic Tic Tac Toe game - play against AI opponent',
         file: 'https://rajeshpaddy.github.io/movielog/tictactoe.html',
-        date: '2026-03-01'
+        date: '2026-03-01',
+        telemetryId: 'tic-tac-toe'
       }
     ];
 
     const grid = document.getElementById('appGrid');
     const searchInput = document.getElementById('searchInput');
     const catalogStats = document.getElementById('catalogStats');
+    const telemetryCounts = new Map();
     let filteredApps = [...apps];
     let renderedApps = [...apps];
     let selectedIndex = -1;
+
+    function getIsoWeekInfo(date) {
+      const utcDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+      const day = utcDate.getUTCDay() || 7;
+      utcDate.setUTCDate(utcDate.getUTCDate() + 4 - day);
+      const yearStart = new Date(Date.UTC(utcDate.getUTCFullYear(), 0, 1));
+      const week = Math.ceil((((utcDate - yearStart) / 86400000) + 1) / 7);
+      return {
+        year: utcDate.getUTCFullYear(),
+        week
+      };
+    }
+
+    function getWeekKey(date) {
+      const info = getIsoWeekInfo(date);
+      return `${info.year}-W${String(info.week).padStart(2, '0')}`;
+    }
+
+    function hashAppId(value) {
+      let hash = 2166136261;
+      const input = String(value || '');
+      for (let i = 0; i < input.length; i += 1) {
+        hash ^= input.charCodeAt(i);
+        hash = Math.imul(hash, 16777619);
+      }
+      return (hash >>> 0).toString(36).slice(0, 6);
+    }
+
+    function buildTelemetryKey(appId, weekKey) {
+      const compactApp = appId.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 8) || 'app';
+      const compactWeek = weekKey.toLowerCase().replace('-', '');
+      return `aat-${compactApp}-${hashAppId(appId)}-${compactWeek}`;
+    }
+
+    function getTelemetryWeeksSince(dateString) {
+      const start = new Date(`${dateString}T00:00:00`);
+      if (Number.isNaN(start.getTime())) return [];
+
+      const weeks = [];
+      const cursor = new Date(start);
+      const now = new Date();
+      while (cursor <= now) {
+        weeks.push(getWeekKey(cursor));
+        cursor.setDate(cursor.getDate() + 7);
+      }
+      return Array.from(new Set(weeks));
+    }
+
+    async function fetchTelemetryHitCount(telemetryKey) {
+      const response = await fetch(`${SETGET_GET_BASE}/${encodeURIComponent(telemetryKey)}`, { cache: 'no-store' });
+      if (!response.ok) return 0;
+      const payload = await response.json().catch(() => null);
+      const content = payload && typeof payload === 'object' ? payload.content : null;
+      return content && typeof content === 'object' ? Number(content.hitCount || 0) : 0;
+    }
+
+    async function loadTelemetryCountForApp(app) {
+      if (!app.telemetryId) {
+        telemetryCounts.set(app.name, null);
+        return;
+      }
+
+      const weekKeys = getTelemetryWeeksSince(app.date);
+      if (weekKeys.length === 0) {
+        telemetryCounts.set(app.name, 0);
+        return;
+      }
+
+      const hitCounts = await Promise.all(weekKeys.map(weekKey => {
+        return fetchTelemetryHitCount(buildTelemetryKey(app.telemetryId, weekKey)).catch(() => 0);
+      }));
+
+      const total = hitCounts.reduce((sum, count) => sum + (Number.isFinite(count) ? count : 0), 0);
+      telemetryCounts.set(app.name, total);
+    }
+
+    function formatUsageCount(value) {
+      if (value === null) return 'No telemetry';
+      if (!Number.isFinite(value) || value <= 0) return '0 loads';
+      return `${value.toLocaleString()} load${value === 1 ? '' : 's'}`;
+    }
+
+    function updateUsageBadges() {
+      document.querySelectorAll('[data-telemetry-id]').forEach(badge => {
+        const app = apps.find(entry => entry.telemetryId === badge.dataset.telemetryId);
+        if (!app) return;
+
+        const count = telemetryCounts.get(app.name);
+        badge.classList.remove('is-loading', 'is-empty');
+
+        if (typeof count === 'undefined') {
+          badge.textContent = 'Loading...';
+          badge.classList.add('is-loading');
+          return;
+        }
+
+        badge.textContent = formatUsageCount(count);
+        if (count === null || count === 0) {
+          badge.classList.add('is-empty');
+        }
+      });
+    }
+
+    async function refreshTelemetryCounts() {
+      updateUsageBadges();
+      await Promise.all(apps.map(app => loadTelemetryCountForApp(app)));
+      updateUsageBadges();
+    }
 
     function getAppCategory(app) {
       const haystack = `${app.name} ${app.desc}`.toLowerCase();
@@ -362,30 +516,12 @@
       if (!app || !app.file || !app.file.includes('rajeshpaddy.github.io/movielog/')) return;
 
       const fileName = app.file.split('/').pop().split('?')[0];
-      const telemetryMap = {
-        'catalog-guide-chat.html': 'catalog-guide-chat',
-        'bill-tracker.html': 'bill-tracker',
-        'ski-tracker.html': 'ski-tracker',
-        'spanish-flashcards.html': 'spanish-flashcards',
-        'food-designer.html': 'food-designer',
-        'food-log.html': 'food-log',
-        'time-tracker.html': 'time-tracker',
-        'scotch-ghazal.html': 'scotch-ghazal',
-        'pokemon-learner.html': 'pokemon-learner',
-        'president-learner.html': 'president-learner',
-        'american-idioms-learner.html': 'american-idioms-learner',
-        'country-learner.html': 'country-learner',
-        'usa-state-learner.html': 'usa-state-learner',
-        'india-state-learner.html': 'india-state-learner',
-        'Fire-Plans.html': 'fire-plans',
-        'CowsNBulls.html': 'cows-n-bulls',
-        'book-log.html': 'book-log',
-        'idea-log.html': 'idea-log',
-        'health-insurance-retirement.html': 'health-insurance-retirement',
-        'tictactoe.html': 'tic-tac-toe',
-        'stock-tracker.html': 'stock-tracker'
-      };
-      const targetAppId = telemetryMap[fileName];
+      const matchedApp = apps.find(entry => {
+        return entry.file
+          && entry.file.includes('rajeshpaddy.github.io/movielog/')
+          && entry.file.split('/').pop().split('?')[0] === fileName;
+      });
+      const targetAppId = matchedApp && matchedApp.telemetryId;
       if (!targetAppId) return;
 
       try {
@@ -469,6 +605,7 @@
           card.className = 'app-card';
           card.tabIndex = -1;
           card.innerHTML = `
+            ${app.telemetryId ? `<div class="app-usage-badge is-loading" data-telemetry-id="${app.telemetryId}">Loading...</div>` : ''}
             <div class="app-icon">${app.icon}</div>
             <div class="app-name">${app.name}</div>
             <div class="app-desc">${app.desc}</div>
@@ -482,6 +619,8 @@
 
         grid.appendChild(section);
       });
+
+      updateUsageBadges();
     }
     
     searchInput.addEventListener('input', (e) => {
@@ -519,9 +658,12 @@
         openApp(renderedApps[selectedIndex], true);
       }
     });
-    
+
     renderCatalogStats();
     renderApps(filteredApps);
+    refreshTelemetryCounts().catch(() => {
+      updateUsageBadges();
+    });
 
     document.querySelector('.video-tile')?.addEventListener('click', () => {
       rememberCatalogLaunch({
