@@ -97,6 +97,15 @@
     return `aat-${compactApp}-${hashAppId(appId)}-${compactWeek}`;
   }
 
+  function filterRecentEntriesToLast24Hours(entries) {
+    if (!Array.isArray(entries)) return [];
+    const cutoff = Date.now() - (24 * 60 * 60 * 1000);
+    return entries.filter(entry => {
+      const timestamp = new Date(entry && entry.at).getTime();
+      return Number.isFinite(timestamp) && timestamp >= cutoff;
+    });
+  }
+
   function ensureTelemetryLink(telemetryKey) {
     let styleEl = document.getElementById('appTelemetryLinkStyles');
     if (!styleEl) {
@@ -209,13 +218,20 @@
         if (!content) {
           throw new Error('Telemetry not found.');
         }
+        const displayContent = content && typeof content === 'object'
+          ? {
+              ...content,
+              recent24HourLoadCount: filterRecentEntriesToLast24Hours(content.recent).length,
+              recent: filterRecentEntriesToLast24Hours(content.recent)
+            }
+          : content;
         viewer.document.title = `Telemetry - ${telemetryKey}`;
         const message = viewer.document.querySelector('p');
         const pre = viewer.document.getElementById('telemetryContent');
         const rawLink = viewer.document.getElementById('rawTelemetryLink');
         if (message) message.textContent = telemetryKey;
         if (rawLink) rawLink.href = endpoint;
-        if (pre) pre.textContent = JSON.stringify(content, null, 2);
+        if (pre) pre.textContent = JSON.stringify(displayContent, null, 2);
       } catch (error) {
         viewer.document.title = 'Telemetry Unavailable';
         const message = viewer.document.querySelector('p');
