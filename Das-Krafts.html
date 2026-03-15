@@ -311,6 +311,21 @@
       letter-spacing: 0.03em;
     }
 
+    .group-tools {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .back-top-btn {
+      padding: 10px 14px;
+      font-size: 0.82rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
     .description-panel {
       border-radius: var(--radius-md);
       background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 238, 245, 0.94));
@@ -696,7 +711,7 @@
   </style>
 </head>
 <body>
-  <main class="shell">
+  <main id="topOfGallery" class="shell">
     <section class="hero">
       <div>
         <p class="eyebrow">Das Krafts</p>
@@ -989,7 +1004,18 @@
           `;
           header.appendChild(titleWrap);
 
-          header.appendChild(createRatingStrip('group', group.name, state.data.groupRatings[group.name] || 0));
+          const tools = document.createElement('div');
+          tools.className = 'group-tools';
+
+          const backTopBtn = document.createElement('button');
+          backTopBtn.type = 'button';
+          backTopBtn.className = 'secondary-btn back-top-btn';
+          backTopBtn.textContent = 'Back to top';
+          backTopBtn.dataset.backToTop = '1';
+          tools.appendChild(backTopBtn);
+
+          tools.appendChild(createRatingStrip('group', group.name, state.data.groupRatings[group.name] || 0));
+          header.appendChild(tools);
           groupCard.appendChild(header);
 
           const descriptionPanel = document.createElement('section');
@@ -1238,6 +1264,14 @@
         target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
 
+      function handleBackToTop(event) {
+        const button = event.target.closest('[data-back-to-top]');
+        if (!button) return;
+        const top = document.getElementById('topOfGallery');
+        if (!top) return;
+        top.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
       function escapeHtml(value) {
         return String(value || '')
           .replace(/&/g, '&amp;')
@@ -1313,6 +1347,7 @@
           handleInlineExpand(event);
           handleRatingClick(event);
           handleDescriptionSave(event);
+          handleBackToTop(event);
         });
         groupIndexEl.addEventListener('click', handleGroupJump);
 
