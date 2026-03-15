@@ -639,23 +639,23 @@
     <section id="catalog" class="catalog" aria-live="polite"></section>
 
     <p class="footer-note">
-      Image files live under <code>image-group-review-images/</code>. Because static hosting cannot list folder contents at runtime,
-      add new image filenames to <code>image-group-review-images/manifest.js</code> when you replace the placeholders.
+      Image files live under <code>Das-Krafts-images/</code>. Because static hosting cannot list folder contents at runtime,
+      add new image filenames to <code>Das-Krafts-images/manifest.js</code> when you replace the placeholders.
     </p>
   </main>
 
   <script src="shared-store-config.js?v=20260311-worker1"></script>
   <script src="shared-store.js?v=20260311-worker1"></script>
-  <script src="image-group-review-images/manifest.js?v=20260315-1"></script>
+  <script src="Das-Krafts-images/manifest.js?v=20260315-1"></script>
   <script>
     (function () {
-      const APP_ID = 'image-group-review';
+      const APP_ID = 'Das-Krafts';
       const SHARED_KEYWORD = 'gallery-state';
       const OWNER_SECRET = 'Amigurami2000';
-      const LOCAL_CACHE_KEY = 'image-group-review-cache-v1';
-      const OWNER_CACHE_KEY = 'image-group-review-owner-unlocked';
-      const manifestEntries = Array.isArray(window.IMAGE_GROUP_REVIEW_MANIFEST)
-        ? window.IMAGE_GROUP_REVIEW_MANIFEST
+      const LOCAL_CACHE_KEY = 'Das-Krafts-cache-v1';
+      const OWNER_CACHE_KEY = 'Das-Krafts-owner-unlocked';
+      const manifestEntries = Array.isArray(window.DAS_KRAFTS_MANIFEST)
+        ? window.DAS_KRAFTS_MANIFEST
         : [];
 
       const catalogEl = document.getElementById('catalog');
