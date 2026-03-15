@@ -332,16 +332,51 @@
     }
 
     .rating-btn {
-      min-width: 42px;
-      padding: 10px 12px;
+      width: 50px;
+      height: 50px;
+      padding: 0;
       border: 1px solid rgba(129, 69, 100, 0.12);
-      background: rgba(255, 255, 255, 0.9);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 233, 243, 0.94));
       color: var(--ink);
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .rating-btn.is-active {
       color: #fff7ef;
       background: linear-gradient(180deg, var(--accent) 0%, var(--accent-strong) 100%);
+    }
+
+    .rating-btn::before {
+      content: "";
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.9) 0 16%, transparent 17%),
+        radial-gradient(circle, currentColor 0 52%, transparent 53%);
+      opacity: 0.9;
+      box-shadow:
+        0 -10px 0 -6px currentColor,
+        0 10px 0 -6px currentColor,
+        -10px 0 0 -6px currentColor,
+        10px 0 0 -6px currentColor;
+      color: rgba(143, 108, 127, 0.95);
+    }
+
+    .rating-btn.is-active::before {
+      color: rgba(255, 247, 239, 0.96);
+    }
+
+    .rating-btn span {
+      position: absolute;
+      bottom: 4px;
+      right: 6px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      line-height: 1;
     }
 
     .rating-note {
@@ -838,8 +873,9 @@
           const btn = document.createElement('button');
           btn.type = 'button';
           btn.className = `rating-btn ${currentValue === value ? 'is-active' : ''}`.trim();
-          btn.textContent = String(value);
           btn.dataset.ratingValue = String(value);
+          btn.setAttribute('aria-label', `Rate ${value} yarn bundle${value === 1 ? '' : 's'}`);
+          btn.innerHTML = `<span>${value}</span>`;
           wrap.appendChild(btn);
         }
 
