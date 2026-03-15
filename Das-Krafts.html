@@ -71,10 +71,6 @@
     .hero {
       border-radius: var(--radius-lg);
       padding: 28px;
-      display: grid;
-      grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.9fr);
-      gap: 24px;
-      align-items: end;
       position: relative;
       overflow: hidden;
     }
@@ -108,37 +104,11 @@
 
     .hero p {
       margin: 14px 0 0;
-      max-width: 58ch;
+      max-width: 90ch;
       color: var(--muted);
       font-size: 1.02rem;
       line-height: 1.6;
-    }
-
-    .hero-stats {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .stat-tile {
-      border-radius: 22px;
-      padding: 16px;
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 232, 242, 0.92));
-      border: 1px solid rgba(129, 69, 100, 0.08);
-    }
-
-    .stat-label {
-      display: block;
-      margin-bottom: 10px;
-      font: 600 0.76rem/1.4 Arial, sans-serif;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .stat-value {
-      font-size: 1.8rem;
-      font-weight: 700;
+      white-space: normal;
     }
 
     .toolbar {
@@ -157,6 +127,14 @@
       gap: 12px;
       flex-wrap: wrap;
       align-items: center;
+    }
+
+    .toolbar-main {
+      flex: 1 1 auto;
+    }
+
+    .bottom-controls {
+      justify-content: center;
     }
 
     .search,
@@ -230,6 +208,66 @@
     .catalog {
       display: grid;
       gap: 18px;
+    }
+
+    .group-index {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 14px;
+    }
+
+    .index-card {
+      display: grid;
+      gap: 0;
+      padding: 3px 3px 0;
+      border-radius: 26px;
+      border: 1px solid rgba(26, 18, 22, 0.9);
+      background:
+        linear-gradient(180deg, rgba(34, 25, 30, 0.98), rgba(10, 8, 10, 0.98));
+      box-shadow:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.75),
+        0 14px 28px rgba(24, 15, 20, 0.24);
+      text-align: left;
+      overflow: hidden;
+    }
+
+    .index-card:hover {
+      transform: translateY(-3px);
+    }
+
+    .index-thumb {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 18px 18px 0 0;
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(27, 20, 24, 0.98), rgba(10, 8, 10, 0.98));
+      border: 1px solid rgba(30, 22, 26, 0.82);
+      border-bottom: 0;
+      box-shadow:
+        inset 0 0 0 1px rgba(16, 12, 15, 0.92);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .index-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      background: transparent;
+    }
+
+    .index-name {
+      margin: 0 -3px 0;
+      padding: 12px 14px 14px;
+      border-top: 0;
+      background: linear-gradient(180deg, rgba(214, 185, 197, 0.96), rgba(188, 154, 170, 0.96));
+      font: 700 0.95rem/1.35 Arial, sans-serif;
+      color: rgba(38, 24, 31, 0.96);
+      text-align: center;
+      letter-spacing: 0.02em;
     }
 
     .group-card {
@@ -332,8 +370,8 @@
     }
 
     .rating-btn {
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      height: 34px;
       padding: 0;
       border: 0;
       background: transparent;
@@ -346,34 +384,66 @@
     }
 
     .rating-btn.is-active {
-      color: var(--accent-strong);
+      transform: translateY(-1px);
     }
 
     .rating-btn::before {
       content: "";
-      width: 22px;
-      height: 22px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
       background:
-        radial-gradient(circle at 34% 34%, rgba(255, 255, 255, 0.92) 0 14%, transparent 15%),
-        radial-gradient(circle at center, currentColor 0 54%, transparent 55%);
+        radial-gradient(circle at 34% 34%, rgba(255, 255, 255, 0.52) 0 16%, transparent 17%),
+        currentColor;
       box-shadow:
-        0 -8px 0 -5px currentColor,
-        0 8px 0 -5px currentColor,
-        -8px 0 0 -5px currentColor,
-        8px 0 0 -5px currentColor;
-      color: rgba(143, 108, 127, 0.32);
-      transition: transform 120ms ease, color 120ms ease;
+        inset 0 2px 4px rgba(255, 255, 255, 0.22),
+        0 4px 10px rgba(61, 33, 50, 0.14);
+      color: rgba(143, 108, 127, 0.24);
+      transition: transform 120ms ease, color 120ms ease, box-shadow 120ms ease, clip-path 120ms ease;
     }
 
     .rating-btn.is-active::before {
-      color: rgba(216, 61, 121, 0.96);
+      box-shadow:
+        inset 0 2px 5px rgba(255, 255, 255, 0.5),
+        0 6px 14px rgba(61, 33, 50, 0.18);
+    }
+
+    .rating-btn[data-rating-value="1"].is-active::before {
+      color: #e65353;
+      clip-path: inset(0 87.5% 0 0 round 50%);
+    }
+
+    .rating-btn[data-rating-value="2"].is-active::before {
+      color: #efc94c;
+      clip-path: inset(0 50% 0 0 round 50%);
+    }
+
+    .rating-btn[data-rating-value="3"].is-active::before {
+      color: #57b66f;
+      clip-path: circle(50%);
     }
 
     .rating-btn:hover::before,
     .rating-btn:focus-visible::before {
       transform: scale(1.08);
-      color: rgba(240, 98, 146, 0.72);
+    }
+
+    .rating-btn[data-rating-value="1"]:hover::before,
+    .rating-btn[data-rating-value="1"]:focus-visible::before {
+      color: rgba(230, 83, 83, 0.72);
+      clip-path: inset(0 87.5% 0 0 round 50%);
+    }
+
+    .rating-btn[data-rating-value="2"]:hover::before,
+    .rating-btn[data-rating-value="2"]:focus-visible::before {
+      color: rgba(239, 201, 76, 0.76);
+      clip-path: inset(0 50% 0 0 round 50%);
+    }
+
+    .rating-btn[data-rating-value="3"]:hover::before,
+    .rating-btn[data-rating-value="3"]:focus-visible::before {
+      color: rgba(87, 182, 111, 0.76);
+      clip-path: circle(50%);
     }
 
     .rating-btn:focus-visible {
@@ -632,35 +702,22 @@
         <p class="eyebrow">Das Krafts</p>
         <h1>Love, Yarn and Needle Stories</h1>
         <p>
-          A gentle review board for Das Krafts creations, where amigurumi, crochet, and knitted yarn projects can live
-          together in one soft catalog of ideas, textures, and handmade detail.
+          Collection of Das Krafts creations - amigurumi, crochet, and knitted yarns
         </p>
-      </div>
-      <div class="hero-stats">
-        <article class="stat-tile">
-          <span class="stat-label">Groups</span>
-          <span class="stat-value" id="groupCount">0</span>
-        </article>
-        <article class="stat-tile">
-          <span class="stat-label">Images</span>
-          <span class="stat-value" id="imageCount">0</span>
-        </article>
-        <article class="stat-tile">
-          <span class="stat-label">Cloud Sync</span>
-          <span class="stat-value" id="syncState">Local</span>
-        </article>
-        <article class="stat-tile">
-          <span class="stat-label">Owner Mode</span>
-          <span class="stat-value" id="ownerState">Locked</span>
-        </article>
       </div>
     </section>
 
     <section class="toolbar">
       <div class="toolbar-main">
-        <input id="searchInput" class="search" type="search" placeholder="Filter groups or filenames" aria-label="Filter groups or filenames" />
-        <div id="statusPill" class="status-pill">Loading local manifest...</div>
+        <input id="searchInput" class="search" type="search" placeholder="Search" aria-label="Search" />
       </div>
+    </section>
+
+    <section id="groupIndex" class="group-index" aria-label="Group index"></section>
+
+    <section id="catalog" class="catalog" aria-live="polite"></section>
+
+    <section class="toolbar bottom-controls">
       <div class="toolbar-actions">
         <div class="owner-gate">
           <input id="ownerPassword" class="password-input" type="password" placeholder="Owner keyword" aria-label="Owner keyword" />
@@ -670,8 +727,6 @@
         <button id="syncBtn" class="secondary-btn" type="button">Sync from cloud</button>
       </div>
     </section>
-
-    <section id="catalog" class="catalog" aria-live="polite"></section>
   </main>
 
   <script src="shared-store-config.js?v=20260311-worker1"></script>
@@ -689,17 +744,13 @@
         : [];
 
       const catalogEl = document.getElementById('catalog');
+      const groupIndexEl = document.getElementById('groupIndex');
       const statusPillEl = document.getElementById('statusPill');
       const searchInputEl = document.getElementById('searchInput');
       const unlockOwnerBtnEl = document.getElementById('unlockOwnerBtn');
       const lockOwnerBtnEl = document.getElementById('lockOwnerBtn');
       const ownerPasswordEl = document.getElementById('ownerPassword');
       const syncBtnEl = document.getElementById('syncBtn');
-      const groupCountEl = document.getElementById('groupCount');
-      const imageCountEl = document.getElementById('imageCount');
-      const syncStateEl = document.getElementById('syncState');
-      const ownerStateEl = document.getElementById('ownerState');
-
       const store = window.AppSharedStore || null;
       const sharedKey = store ? store.buildSharedKey(APP_ID, SHARED_KEYWORD) : null;
 
@@ -835,10 +886,12 @@
         const rating = Number(value);
         if (!Number.isFinite(rating)) return 0;
         const rounded = Math.round(rating);
-        return Math.min(5, Math.max(1, rounded));
+        if (rounded <= 0) return 0;
+        return Math.min(3, Math.max(1, rounded));
       }
 
       function setStatus(message, tone) {
+        if (!statusPillEl) return;
         statusPillEl.textContent = message;
         if (tone) {
           statusPillEl.dataset.tone = tone;
@@ -847,17 +900,8 @@
         }
       }
 
-      function updateSummary() {
-        groupCountEl.textContent = String(state.groups.length);
-        imageCountEl.textContent = String(state.groups.reduce((sum, group) => sum + group.images.length, 0));
-        syncStateEl.textContent = state.cloudAvailable
-          ? (state.cloudLoaded ? 'Cloud + Local' : 'Cloud Ready')
-          : 'Local Only';
-        ownerStateEl.textContent = state.ownerUnlocked ? 'Unlocked' : 'Locked';
-      }
-
       function ratingLabel(value) {
-        return value ? `${value}/5` : 'Unrated';
+        return value ? `${value}/3` : 'Unrated';
       }
 
       function createRatingStrip(kind, key, currentValue) {
@@ -871,12 +915,13 @@
         label.textContent = kind === 'group' ? 'Group rating' : 'Image rating';
         wrap.appendChild(label);
 
-        for (let value = 1; value <= 5; value += 1) {
+        for (let value = 1; value <= 3; value += 1) {
           const btn = document.createElement('button');
           btn.type = 'button';
           btn.className = `rating-btn ${currentValue === value ? 'is-active' : ''}`.trim();
           btn.dataset.ratingValue = String(value);
-          btn.setAttribute('aria-label', `Rate ${value} yarn bundle${value === 1 ? '' : 's'}`);
+          const trafficLabel = value === 1 ? 'red' : value === 2 ? 'yellow' : 'green';
+          btn.setAttribute('aria-label', `Rate ${value} - ${trafficLabel}`);
           wrap.appendChild(btn);
         }
 
@@ -888,7 +933,6 @@
       }
 
       function render() {
-        updateSummary();
         const needle = state.filter.trim().toLowerCase();
 
         const visibleGroups = state.groups.filter((group) => {
@@ -899,18 +943,38 @@
           );
         });
 
+        groupIndexEl.innerHTML = '';
         catalogEl.innerHTML = '';
 
         if (!visibleGroups.length) {
           const empty = document.createElement('div');
           empty.className = 'empty-state';
           empty.textContent = 'No groups match the current filter.';
+          groupIndexEl.style.display = 'none';
           catalogEl.appendChild(empty);
           return;
         }
 
+        groupIndexEl.style.display = '';
+        visibleGroups.forEach((group) => {
+          const firstImage = group.images[0];
+          const indexCard = document.createElement('button');
+          indexCard.type = 'button';
+          indexCard.className = 'index-card';
+          indexCard.dataset.jumpToGroup = group.id;
+          indexCard.setAttribute('aria-label', `Jump to ${group.name}`);
+          indexCard.innerHTML = `
+            <div class="index-thumb">
+              <img src="${escapeHtml(firstImage.path)}" alt="${escapeHtml(group.name)} cover image" loading="lazy" />
+            </div>
+            <div class="index-name">${escapeHtml(group.name)}</div>
+          `;
+          groupIndexEl.appendChild(indexCard);
+        });
+
         visibleGroups.forEach((group) => {
           const groupCard = document.createElement('article');
+          groupCard.id = `group-${group.id}`;
           groupCard.className = 'group-card';
           groupCard.dataset.groupId = group.id;
 
@@ -1087,7 +1151,7 @@
             saveLocalCache();
           }
           state.cloudLoaded = true;
-          setStatus('Loaded ratings and descriptions from cloud.', 'success');
+          setStatus('Loaded from cloud.', 'success');
         } catch (error) {
           if (/Not found/i.test(String(error && error.message))) {
             state.cloudLoaded = true;
@@ -1133,12 +1197,12 @@
 
         if (strip.dataset.ratingKind === 'group') {
           state.data.groupRatings[strip.dataset.ratingKey] = rating;
-          persist(`Group rating ${rating}/5`);
+          persist(`Group rating ${rating}/3`);
           return;
         }
 
         state.data.imageRatings[strip.dataset.ratingKey] = rating;
-        persist(`Image rating ${rating}/5`);
+        persist(`Image rating ${rating}/3`);
       }
 
       function handleDescriptionSave(event) {
@@ -1164,6 +1228,14 @@
         const key = imageButton.dataset.expandImage || '';
         state.expandedImageKey = state.expandedImageKey === key ? '' : key;
         renderLightbox();
+      }
+
+      function handleGroupJump(event) {
+        const jumpButton = event.target.closest('[data-jump-to-group]');
+        if (!jumpButton) return;
+        const target = document.getElementById(`group-${jumpButton.dataset.jumpToGroup}`);
+        if (!target) return;
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
 
       function escapeHtml(value) {
@@ -1242,6 +1314,7 @@
           handleRatingClick(event);
           handleDescriptionSave(event);
         });
+        groupIndexEl.addEventListener('click', handleGroupJump);
 
         document.addEventListener('keydown', (event) => {
           if (event.key === 'Escape') {
