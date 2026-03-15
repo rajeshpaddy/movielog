@@ -628,6 +628,7 @@
         <div class="owner-gate">
           <input id="ownerPassword" class="password-input" type="password" placeholder="Owner keyword" aria-label="Owner keyword" />
           <button id="unlockOwnerBtn" class="primary-btn" type="button">Unlock owner editing</button>
+          <button id="lockOwnerBtn" class="secondary-btn" type="button">Lock</button>
         </div>
         <button id="syncBtn" class="secondary-btn" type="button">Sync from cloud</button>
       </div>
@@ -654,6 +655,7 @@
       const statusPillEl = document.getElementById('statusPill');
       const searchInputEl = document.getElementById('searchInput');
       const unlockOwnerBtnEl = document.getElementById('unlockOwnerBtn');
+      const lockOwnerBtnEl = document.getElementById('lockOwnerBtn');
       const ownerPasswordEl = document.getElementById('ownerPassword');
       const syncBtnEl = document.getElementById('syncBtn');
       const groupCountEl = document.getElementById('groupCount');
@@ -1155,6 +1157,14 @@
         setStatus('Incorrect owner keyword.', 'error');
       }
 
+      function lockOwnerMode() {
+        state.ownerUnlocked = false;
+        sessionStorage.removeItem(OWNER_CACHE_KEY);
+        ownerPasswordEl.value = '';
+        setStatus('Owner mode locked.', 'success');
+        render();
+      }
+
       function init() {
         state.data = loadLocalCache() || state.data;
         setStatus('Loaded local manifest and cache.');
@@ -1168,6 +1178,7 @@
         });
 
         unlockOwnerBtnEl.addEventListener('click', unlockOwnerMode);
+        lockOwnerBtnEl.addEventListener('click', lockOwnerMode);
         ownerPasswordEl.addEventListener('keydown', (event) => {
           if (event.key === 'Enter') unlockOwnerMode();
         });
