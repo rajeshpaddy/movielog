@@ -318,7 +318,7 @@
 
     .rating-strip {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       align-items: center;
       flex-wrap: wrap;
     }
@@ -332,51 +332,53 @@
     }
 
     .rating-btn {
-      width: 50px;
-      height: 50px;
+      width: 32px;
+      height: 32px;
       padding: 0;
-      border: 1px solid rgba(129, 69, 100, 0.12);
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 233, 243, 0.94));
+      border: 0;
+      background: transparent;
       color: var(--ink);
       position: relative;
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      min-width: 32px;
     }
 
     .rating-btn.is-active {
-      color: #fff7ef;
-      background: linear-gradient(180deg, var(--accent) 0%, var(--accent-strong) 100%);
+      color: var(--accent-strong);
     }
 
     .rating-btn::before {
       content: "";
-      width: 26px;
-      height: 26px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
       background:
-        radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.9) 0 16%, transparent 17%),
-        radial-gradient(circle, currentColor 0 52%, transparent 53%);
-      opacity: 0.9;
+        radial-gradient(circle at 34% 34%, rgba(255, 255, 255, 0.92) 0 14%, transparent 15%),
+        radial-gradient(circle at center, currentColor 0 54%, transparent 55%);
       box-shadow:
-        0 -10px 0 -6px currentColor,
-        0 10px 0 -6px currentColor,
-        -10px 0 0 -6px currentColor,
-        10px 0 0 -6px currentColor;
-      color: rgba(143, 108, 127, 0.95);
+        0 -8px 0 -5px currentColor,
+        0 8px 0 -5px currentColor,
+        -8px 0 0 -5px currentColor,
+        8px 0 0 -5px currentColor;
+      color: rgba(143, 108, 127, 0.32);
+      transition: transform 120ms ease, color 120ms ease;
     }
 
     .rating-btn.is-active::before {
-      color: rgba(255, 247, 239, 0.96);
+      color: rgba(216, 61, 121, 0.96);
     }
 
-    .rating-btn span {
-      position: absolute;
-      bottom: 4px;
-      right: 6px;
-      font-size: 0.68rem;
-      font-weight: 700;
-      line-height: 1;
+    .rating-btn:hover::before,
+    .rating-btn:focus-visible::before {
+      transform: scale(1.08);
+      color: rgba(240, 98, 146, 0.72);
+    }
+
+    .rating-btn:focus-visible {
+      outline: 2px solid rgba(240, 98, 146, 0.28);
+      outline-offset: 2px;
     }
 
     .rating-note {
@@ -875,7 +877,6 @@
           btn.className = `rating-btn ${currentValue === value ? 'is-active' : ''}`.trim();
           btn.dataset.ratingValue = String(value);
           btn.setAttribute('aria-label', `Rate ${value} yarn bundle${value === 1 ? '' : 's'}`);
-          btn.innerHTML = `<span>${value}</span>`;
           wrap.appendChild(btn);
         }
 
