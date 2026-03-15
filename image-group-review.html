@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Das Krafts - Yarn Projects</title>
+  <style>
+    :root {
+      --bg: #fff1f7;
+      --paper: rgba(255, 248, 252, 0.86);
+      --ink: #3d2132;
+      --muted: #866775;
+      --line: rgba(129, 69, 100, 0.16);
+      --accent: #f06292;
+      --accent-strong: #d83d79;
+      --accent-soft: rgba(240, 98, 146, 0.14);
+      --olive: #8f6c7f;
+      --shadow: 0 18px 42px rgba(127, 57, 95, 0.14);
+      --radius-lg: 28px;
+      --radius-md: 18px;
+      --radius-sm: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Trebuchet MS", "Gill Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(255, 159, 198, 0.42), transparent 24%),
+        radial-gradient(circle at top right, rgba(255, 212, 232, 0.7), transparent 30%),
+        radial-gradient(circle at bottom left, rgba(233, 150, 183, 0.28), transparent 28%),
+        linear-gradient(180deg, #fff6fb 0%, #ffe3ef 100%);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.55) 0 2px, transparent 3px),
+        radial-gradient(circle at 80% 60%, rgba(255, 255, 255, 0.45) 0 2px, transparent 3px),
+        linear-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.14) 1px, transparent 1px);
+      background-size: 60px 60px, 72px 72px, 24px 24px, 24px 24px;
+      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.7), transparent);
+      opacity: 0.42;
+    }
+
+    .shell {
+      width: min(1240px, calc(100% - 32px));
+      margin: 28px auto 48px;
+      display: grid;
+      gap: 20px;
+    }
+
+    .hero,
+    .toolbar,
+    .group-card {
+      background: var(--paper);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.9fr);
+      gap: 24px;
+      align-items: end;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -90px;
+      top: -120px;
+      width: 340px;
+      height: 340px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(240, 98, 146, 0.2) 0%, rgba(240, 98, 146, 0) 72%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font: 600 0.72rem/1.4 Arial, sans-serif;
+      color: var(--accent-strong);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.3rem, 4vw, 4.5rem);
+      line-height: 0.98;
+      font-weight: 700;
+    }
+
+    .hero p {
+      margin: 14px 0 0;
+      max-width: 58ch;
+      color: var(--muted);
+      font-size: 1.02rem;
+      line-height: 1.6;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .stat-tile {
+      border-radius: 22px;
+      padding: 16px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 232, 242, 0.92));
+      border: 1px solid rgba(129, 69, 100, 0.08);
+    }
+
+    .stat-label {
+      display: block;
+      margin-bottom: 10px;
+      font: 600 0.76rem/1.4 Arial, sans-serif;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+
+    .toolbar {
+      border-radius: 24px;
+      padding: 18px 20px;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .toolbar-main,
+    .toolbar-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search,
+    .password-input,
+    .description-input {
+      width: 100%;
+      border: 1px solid rgba(129, 69, 100, 0.14);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.94);
+      padding: 12px 15px;
+      color: var(--ink);
+      font: 500 0.96rem/1.3 Arial, sans-serif;
+      outline: none;
+    }
+
+    .search {
+      min-width: min(360px, 100%);
+    }
+
+    .search:focus,
+    .password-input:focus,
+    .description-input:focus,
+    textarea:focus {
+      border-color: rgba(240, 98, 146, 0.55);
+      box-shadow: 0 0 0 4px rgba(240, 98, 146, 0.14);
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 11px 15px;
+      cursor: pointer;
+      transition: transform 140ms ease, background 140ms ease, color 140ms ease;
+      font: 700 0.9rem/1 Arial, sans-serif;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .primary-btn {
+      color: #fff7ef;
+      background: linear-gradient(180deg, var(--accent) 0%, var(--accent-strong) 100%);
+    }
+
+    .secondary-btn {
+      color: var(--ink);
+      background: rgba(240, 98, 146, 0.08);
+      border: 1px solid rgba(240, 98, 146, 0.18);
+    }
+
+    .status-pill {
+      padding: 10px 14px;
+      border-radius: 999px;
+      font: 700 0.84rem/1.3 Arial, sans-serif;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(129, 69, 100, 0.1);
+      color: var(--muted);
+    }
+
+    .status-pill[data-tone="success"] {
+      background: rgba(240, 98, 146, 0.14);
+      color: #9b2d5f;
+    }
+
+    .status-pill[data-tone="error"] {
+      background: rgba(180, 58, 90, 0.14);
+      color: #9d234d;
+    }
+
+    .catalog {
+      display: grid;
+      gap: 18px;
+    }
+
+    .group-card {
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      display: grid;
+      gap: 18px;
+      animation: rise 220ms ease both;
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .group-header {
+      display: flex;
+      gap: 16px;
+      justify-content: space-between;
+      align-items: start;
+      flex-wrap: wrap;
+    }
+
+    .group-title-wrap h2 {
+      margin: 0;
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .group-meta {
+      margin-top: 8px;
+      color: var(--muted);
+      font: 600 0.88rem/1.4 Arial, sans-serif;
+      letter-spacing: 0.03em;
+    }
+
+    .description-panel {
+      border-radius: var(--radius-md);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 238, 245, 0.94));
+      border: 1px solid rgba(129, 69, 100, 0.08);
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .description-copy {
+      margin: 0;
+      color: var(--ink);
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .description-empty {
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .owner-editor {
+      display: none;
+      gap: 10px;
+    }
+
+    .owner-editor.is-visible {
+      display: grid;
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+      width: 100%;
+      border-radius: 18px;
+      border: 1px solid rgba(129, 69, 100, 0.14);
+      background: rgba(255, 255, 255, 0.92);
+      padding: 14px;
+      color: var(--ink);
+      font: 500 0.98rem/1.5 Arial, sans-serif;
+      outline: none;
+    }
+
+    .rating-strip {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .rating-label {
+      margin-right: 2px;
+      color: var(--muted);
+      font: 700 0.82rem/1.3 Arial, sans-serif;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .rating-btn {
+      min-width: 42px;
+      padding: 10px 12px;
+      border: 1px solid rgba(129, 69, 100, 0.12);
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--ink);
+    }
+
+    .rating-btn.is-active {
+      color: #fff7ef;
+      background: linear-gradient(180deg, var(--accent) 0%, var(--accent-strong) 100%);
+    }
+
+    .rating-note {
+      color: var(--muted);
+      font: 600 0.84rem/1.4 Arial, sans-serif;
+    }
+
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .image-card {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.86);
+      border: 1px solid rgba(129, 69, 100, 0.08);
+    }
+
+    .image-card img {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: contain;
+      border-radius: 16px;
+      display: block;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 232, 242, 0.7));
+      cursor: zoom-in;
+      padding: 10px;
+    }
+
+    .image-caption {
+      display: grid;
+      gap: 4px;
+    }
+
+    .image-button {
+      padding: 0;
+      border: 0;
+      background: transparent;
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: zoom-in;
+    }
+
+    .image-button:hover img,
+    .image-button:focus-visible img {
+      transform: scale(1.01);
+    }
+
+    .image-button:focus-visible {
+      outline: 3px solid rgba(240, 98, 146, 0.3);
+      outline-offset: 2px;
+    }
+
+    .image-button img {
+      transition: transform 140ms ease;
+    }
+
+    .image-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .image-file {
+      color: var(--muted);
+      font: 600 0.8rem/1.4 Arial, sans-serif;
+      word-break: break-word;
+    }
+
+    .empty-state {
+      padding: 30px 24px;
+      text-align: center;
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.76);
+      border: 1px dashed rgba(129, 69, 100, 0.18);
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .owner-gate {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 26px;
+      background: rgba(61, 33, 50, 0.78);
+      backdrop-filter: blur(14px);
+      z-index: 1000;
+    }
+
+    .lightbox.is-visible {
+      display: flex;
+      animation: fadeIn 180ms ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .lightbox-panel {
+      width: min(1120px, 100%);
+      max-height: calc(100vh - 52px);
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+      border-radius: 28px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 238, 245, 0.96));
+      border: 1px solid rgba(255, 255, 255, 0.42);
+      box-shadow: 0 28px 80px rgba(35, 18, 28, 0.36);
+      transform: scale(0.96);
+      animation: zoomIn 180ms ease forwards;
+    }
+
+    @keyframes zoomIn {
+      from {
+        opacity: 0;
+        transform: scale(0.96);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .lightbox-head {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .lightbox-title {
+      display: grid;
+      gap: 4px;
+    }
+
+    .lightbox-title strong {
+      font-size: 1.12rem;
+    }
+
+    .lightbox-title span {
+      color: var(--muted);
+      font: 600 0.82rem/1.4 Arial, sans-serif;
+      word-break: break-word;
+    }
+
+    .lightbox-media {
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: auto;
+    }
+
+    .lightbox-media img {
+      width: 100%;
+      max-width: 100%;
+      max-height: min(82vh, 980px);
+      object-fit: contain;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 232, 242, 0.7));
+      padding: 14px;
+    }
+
+    .password-input {
+      width: 210px;
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font: 600 0.86rem/1.6 Arial, sans-serif;
+    }
+
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .toolbar {
+        align-items: stretch;
+      }
+
+      .toolbar-main,
+      .toolbar-actions {
+        width: 100%;
+      }
+
+      .search {
+        min-width: 0;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .shell {
+        width: min(100% - 18px, 1240px);
+        margin: 10px auto 36px;
+      }
+
+      .hero,
+      .toolbar,
+      .group-card {
+        padding: 16px;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .group-title-wrap h2 {
+        font-size: 1.6rem;
+      }
+
+      .image-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .owner-gate {
+        width: 100%;
+      }
+
+      .password-input {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Das Krafts</p>
+        <h1>Love, Yarn and Needle Stories</h1>
+        <p>
+          A gentle review board for Das Krafts creations, where amigurumi, crochet, and knitted yarn projects can live
+          together in one soft catalog of ideas, textures, and handmade detail.
+          Drop image files into the dedicated folder, list them in the manifest, and the app groups them automatically by
+          the filename prefix before <code> - </code>. Ratings sync through the shared Cloudflare store, and owner-only
+          descriptions stay gated behind the secret keyword.
+        </p>
+      </div>
+      <div class="hero-stats">
+        <article class="stat-tile">
+          <span class="stat-label">Groups</span>
+          <span class="stat-value" id="groupCount">0</span>
+        </article>
+        <article class="stat-tile">
+          <span class="stat-label">Images</span>
+          <span class="stat-value" id="imageCount">0</span>
+        </article>
+        <article class="stat-tile">
+          <span class="stat-label">Cloud Sync</span>
+          <span class="stat-value" id="syncState">Local</span>
+        </article>
+        <article class="stat-tile">
+          <span class="stat-label">Owner Mode</span>
+          <span class="stat-value" id="ownerState">Locked</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="toolbar">
+      <div class="toolbar-main">
+        <input id="searchInput" class="search" type="search" placeholder="Filter groups or filenames" aria-label="Filter groups or filenames" />
+        <div id="statusPill" class="status-pill">Loading local manifest...</div>
+      </div>
+      <div class="toolbar-actions">
+        <div class="owner-gate">
+          <input id="ownerPassword" class="password-input" type="password" placeholder="Owner keyword" aria-label="Owner keyword" />
+          <button id="unlockOwnerBtn" class="primary-btn" type="button">Unlock owner editing</button>
+        </div>
+        <button id="syncBtn" class="secondary-btn" type="button">Sync from cloud</button>
+      </div>
+    </section>
+
+    <section id="catalog" class="catalog" aria-live="polite"></section>
+
+    <p class="footer-note">
+      Image files live under <code>image-group-review-images/</code>. Because static hosting cannot list folder contents at runtime,
+      add new image filenames to <code>image-group-review-images/manifest.js</code> when you replace the placeholders.
+    </p>
+  </main>
+
+  <script src="shared-store-config.js?v=20260311-worker1"></script>
+  <script src="shared-store.js?v=20260311-worker1"></script>
+  <script src="image-group-review-images/manifest.js?v=20260315-1"></script>
+  <script>
+    (function () {
+      const APP_ID = 'image-group-review';
+      const SHARED_KEYWORD = 'gallery-state';
+      const OWNER_SECRET = 'Amigurami2000';
+      const LOCAL_CACHE_KEY = 'image-group-review-cache-v1';
+      const OWNER_CACHE_KEY = 'image-group-review-owner-unlocked';
+      const manifestEntries = Array.isArray(window.IMAGE_GROUP_REVIEW_MANIFEST)
+        ? window.IMAGE_GROUP_REVIEW_MANIFEST
+        : [];
+
+      const catalogEl = document.getElementById('catalog');
+      const statusPillEl = document.getElementById('statusPill');
+      const searchInputEl = document.getElementById('searchInput');
+      const unlockOwnerBtnEl = document.getElementById('unlockOwnerBtn');
+      const ownerPasswordEl = document.getElementById('ownerPassword');
+      const syncBtnEl = document.getElementById('syncBtn');
+      const groupCountEl = document.getElementById('groupCount');
+      const imageCountEl = document.getElementById('imageCount');
+      const syncStateEl = document.getElementById('syncState');
+      const ownerStateEl = document.getElementById('ownerState');
+
+      const store = window.AppSharedStore || null;
+      const sharedKey = store ? store.buildSharedKey(APP_ID, SHARED_KEYWORD) : null;
+
+      const state = {
+        data: {
+          version: 1,
+          updatedAt: null,
+          groupDescriptions: {},
+          groupRatings: {},
+          imageRatings: {}
+        },
+        groups: buildGroups(manifestEntries),
+        filter: '',
+        expandedImageKey: '',
+        ownerUnlocked: sessionStorage.getItem(OWNER_CACHE_KEY) === '1',
+        cloudAvailable: Boolean(store),
+        cloudLoaded: false
+      };
+
+      function normalizePath(entry) {
+        if (typeof entry === 'string') return entry;
+        if (entry && typeof entry === 'object' && typeof entry.path === 'string') return entry.path;
+        return '';
+      }
+
+      function fileNameFromPath(path) {
+        const cleanPath = String(path || '').split('?')[0];
+        const parts = cleanPath.split('/');
+        return decodeURIComponent(parts[parts.length - 1] || '').trim();
+      }
+
+      function splitNameParts(fileName) {
+        const dotIndex = fileName.lastIndexOf('.');
+        const stem = dotIndex >= 0 ? fileName.slice(0, dotIndex) : fileName;
+        const separator = ' - ';
+        if (stem.includes(separator)) {
+          const [groupName, ...rest] = stem.split(separator);
+          return {
+            groupName: groupName.trim() || 'Ungrouped',
+            displayName: rest.join(separator).trim() || 'Image'
+          };
+        }
+        return {
+          groupName: stem.trim() || 'Ungrouped',
+          displayName: 'Image'
+        };
+      }
+
+      function buildGroups(entries) {
+        const groupsMap = new Map();
+
+        entries.forEach((entry) => {
+          const path = normalizePath(entry);
+          if (!path) return;
+
+          const fileName = fileNameFromPath(path);
+          if (!fileName) return;
+
+          const parts = splitNameParts(fileName);
+          if (!groupsMap.has(parts.groupName)) {
+            groupsMap.set(parts.groupName, {
+              id: slugify(parts.groupName),
+              name: parts.groupName,
+              images: []
+            });
+          }
+
+          groupsMap.get(parts.groupName).images.push({
+            path,
+            fileName,
+            displayName: parts.displayName
+          });
+        });
+
+        return Array.from(groupsMap.values())
+          .map((group) => ({
+            ...group,
+            images: group.images.sort((a, b) => a.displayName.localeCompare(b.displayName))
+          }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+      }
+
+      function slugify(value) {
+        return String(value || '')
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '') || 'group';
+      }
+
+      function loadLocalCache() {
+        try {
+          const raw = localStorage.getItem(LOCAL_CACHE_KEY);
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          return normalizeData(parsed);
+        } catch (error) {
+          return null;
+        }
+      }
+
+      function saveLocalCache() {
+        localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(state.data));
+      }
+
+      function normalizeRatingsMap(value) {
+        const out = {};
+        if (!value || typeof value !== 'object') return out;
+        Object.entries(value).forEach(([key, rating]) => {
+          const parsed = clampRating(rating);
+          if (parsed) out[key] = parsed;
+        });
+        return out;
+      }
+
+      function normalizeData(value) {
+        const source = value && typeof value === 'object' ? value : {};
+        return {
+          version: 1,
+          updatedAt: typeof source.updatedAt === 'string' ? source.updatedAt : null,
+          groupDescriptions: source.groupDescriptions && typeof source.groupDescriptions === 'object'
+            ? Object.fromEntries(
+              Object.entries(source.groupDescriptions)
+                .filter(([key, text]) => key && typeof text === 'string')
+                .map(([key, text]) => [key, text.trim()])
+            )
+            : {},
+          groupRatings: normalizeRatingsMap(source.groupRatings),
+          imageRatings: normalizeRatingsMap(source.imageRatings)
+        };
+      }
+
+      function clampRating(value) {
+        const rating = Number(value);
+        if (!Number.isFinite(rating)) return 0;
+        const rounded = Math.round(rating);
+        return Math.min(5, Math.max(1, rounded));
+      }
+
+      function setStatus(message, tone) {
+        statusPillEl.textContent = message;
+        if (tone) {
+          statusPillEl.dataset.tone = tone;
+        } else {
+          delete statusPillEl.dataset.tone;
+        }
+      }
+
+      function updateSummary() {
+        groupCountEl.textContent = String(state.groups.length);
+        imageCountEl.textContent = String(state.groups.reduce((sum, group) => sum + group.images.length, 0));
+        syncStateEl.textContent = state.cloudAvailable
+          ? (state.cloudLoaded ? 'Cloud + Local' : 'Cloud Ready')
+          : 'Local Only';
+        ownerStateEl.textContent = state.ownerUnlocked ? 'Unlocked' : 'Locked';
+      }
+
+      function ratingLabel(value) {
+        return value ? `${value}/5` : 'Unrated';
+      }
+
+      function createRatingStrip(kind, key, currentValue) {
+        const wrap = document.createElement('div');
+        wrap.className = 'rating-strip';
+        wrap.dataset.ratingKind = kind;
+        wrap.dataset.ratingKey = key;
+
+        const label = document.createElement('span');
+        label.className = 'rating-label';
+        label.textContent = kind === 'group' ? 'Group rating' : 'Image rating';
+        wrap.appendChild(label);
+
+        for (let value = 1; value <= 5; value += 1) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `rating-btn ${currentValue === value ? 'is-active' : ''}`.trim();
+          btn.textContent = String(value);
+          btn.dataset.ratingValue = String(value);
+          wrap.appendChild(btn);
+        }
+
+        const note = document.createElement('span');
+        note.className = 'rating-note';
+        note.textContent = ratingLabel(currentValue);
+        wrap.appendChild(note);
+        return wrap;
+      }
+
+      function render() {
+        updateSummary();
+        const needle = state.filter.trim().toLowerCase();
+
+        const visibleGroups = state.groups.filter((group) => {
+          if (!needle) return true;
+          if (group.name.toLowerCase().includes(needle)) return true;
+          return group.images.some((image) =>
+            image.displayName.toLowerCase().includes(needle) || image.fileName.toLowerCase().includes(needle)
+          );
+        });
+
+        catalogEl.innerHTML = '';
+
+        if (!visibleGroups.length) {
+          const empty = document.createElement('div');
+          empty.className = 'empty-state';
+          empty.textContent = 'No groups match the current filter.';
+          catalogEl.appendChild(empty);
+          return;
+        }
+
+        visibleGroups.forEach((group) => {
+          const groupCard = document.createElement('article');
+          groupCard.className = 'group-card';
+          groupCard.dataset.groupId = group.id;
+
+          const header = document.createElement('div');
+          header.className = 'group-header';
+
+          const titleWrap = document.createElement('div');
+          titleWrap.className = 'group-title-wrap';
+          titleWrap.innerHTML = `
+            <h2>${escapeHtml(group.name)}</h2>
+            <div class="group-meta">${group.images.length} image${group.images.length === 1 ? '' : 's'} in this group</div>
+          `;
+          header.appendChild(titleWrap);
+
+          header.appendChild(createRatingStrip('group', group.name, state.data.groupRatings[group.name] || 0));
+          groupCard.appendChild(header);
+
+          const descriptionPanel = document.createElement('section');
+          descriptionPanel.className = 'description-panel';
+
+          const description = state.data.groupDescriptions[group.name] || '';
+          const copy = document.createElement('p');
+          copy.className = `description-copy ${description ? '' : 'description-empty'}`.trim();
+          copy.textContent = description || 'No owner description has been published for this group yet.';
+          descriptionPanel.appendChild(copy);
+
+          const editor = document.createElement('div');
+          editor.className = `owner-editor ${state.ownerUnlocked ? 'is-visible' : ''}`.trim();
+
+          const textarea = document.createElement('textarea');
+          textarea.value = description;
+          textarea.placeholder = 'Owner description for this group';
+          textarea.dataset.descriptionGroup = group.name;
+          editor.appendChild(textarea);
+
+          const saveBtn = document.createElement('button');
+          saveBtn.type = 'button';
+          saveBtn.className = 'primary-btn';
+          saveBtn.textContent = 'Save description';
+          saveBtn.dataset.saveDescription = group.name;
+          editor.appendChild(saveBtn);
+
+          descriptionPanel.appendChild(editor);
+          groupCard.appendChild(descriptionPanel);
+
+          const imageGrid = document.createElement('div');
+          imageGrid.className = 'image-grid';
+
+          group.images.forEach((image) => {
+            const imageCard = document.createElement('article');
+            imageCard.className = 'image-card';
+
+            const imageButton = document.createElement('button');
+            imageButton.type = 'button';
+            imageButton.className = 'image-button';
+            imageButton.dataset.expandImage = image.fileName;
+            imageButton.dataset.expandGroup = group.name;
+            imageButton.setAttribute('aria-label', `Open ${group.name} ${image.displayName} inline`);
+
+            const img = document.createElement('img');
+            img.src = image.path;
+            img.alt = `${group.name} - ${image.displayName}`;
+            img.loading = 'lazy';
+            imageButton.appendChild(img);
+            imageCard.appendChild(imageButton);
+
+            const caption = document.createElement('div');
+            caption.className = 'image-caption';
+            caption.innerHTML = `
+              <div class="image-name">${escapeHtml(image.displayName)}</div>
+              <div class="image-file">${escapeHtml(image.fileName)}</div>
+            `;
+            imageCard.appendChild(caption);
+
+            imageCard.appendChild(
+              createRatingStrip('image', image.fileName, state.data.imageRatings[image.fileName] || 0)
+            );
+
+            imageGrid.appendChild(imageCard);
+          });
+
+          groupCard.appendChild(imageGrid);
+          catalogEl.appendChild(groupCard);
+        });
+      }
+
+      function findExpandedImage() {
+        if (!state.expandedImageKey) return null;
+        for (const group of state.groups) {
+          const image = group.images.find((entry) => entry.fileName === state.expandedImageKey);
+          if (image) {
+            return {
+              group,
+              image
+            };
+          }
+        }
+        return null;
+      }
+
+      function ensureLightbox() {
+        let lightbox = document.getElementById('imageLightbox');
+        if (lightbox) return lightbox;
+
+        lightbox = document.createElement('div');
+        lightbox.id = 'imageLightbox';
+        lightbox.className = 'lightbox';
+        lightbox.innerHTML = `
+          <div class="lightbox-panel" role="dialog" aria-modal="true" aria-label="Image preview">
+            <div class="lightbox-head">
+              <div class="lightbox-title">
+                <strong id="lightboxHeading"></strong>
+                <span id="lightboxSubheading"></span>
+              </div>
+              <button type="button" class="secondary-btn" data-close-lightbox="true">Close</button>
+            </div>
+            <div class="lightbox-media">
+              <img id="lightboxImage" alt="" />
+            </div>
+          </div>
+        `;
+
+        lightbox.addEventListener('click', (event) => {
+          if (event.target === lightbox || event.target.closest('[data-close-lightbox]')) {
+            closeLightbox();
+          }
+        });
+
+        document.body.appendChild(lightbox);
+        return lightbox;
+      }
+
+      function renderLightbox() {
+        const lightbox = ensureLightbox();
+        const payload = findExpandedImage();
+        const heading = document.getElementById('lightboxHeading');
+        const subheading = document.getElementById('lightboxSubheading');
+        const imageEl = document.getElementById('lightboxImage');
+
+        if (!payload) {
+          lightbox.classList.remove('is-visible');
+          document.body.style.overflow = '';
+          imageEl.removeAttribute('src');
+          imageEl.alt = '';
+          heading.textContent = '';
+          subheading.textContent = '';
+          return;
+        }
+
+        heading.textContent = `${payload.group.name} - ${payload.image.displayName}`;
+        subheading.textContent = payload.image.fileName;
+        imageEl.src = payload.image.path;
+        imageEl.alt = `${payload.group.name} - ${payload.image.displayName}`;
+        lightbox.classList.add('is-visible');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeLightbox() {
+        if (!state.expandedImageKey) return;
+        state.expandedImageKey = '';
+        renderLightbox();
+      }
+
+      async function loadCloudData() {
+        if (!state.cloudAvailable || !sharedKey) {
+          setStatus('Cloud store is unavailable. Ratings stay local only.', 'error');
+          return;
+        }
+
+        try {
+          const payload = await store.getSharedContent(sharedKey);
+          if (payload && typeof payload === 'object') {
+            state.data = normalizeData(payload);
+            saveLocalCache();
+          }
+          state.cloudLoaded = true;
+          setStatus('Loaded ratings and descriptions from cloud.', 'success');
+        } catch (error) {
+          if (/Not found/i.test(String(error && error.message))) {
+            state.cloudLoaded = true;
+            setStatus('No cloud data yet. Local placeholders are ready.', 'success');
+            return;
+          }
+          setStatus(error.message || 'Cloud sync failed. Using local cache.', 'error');
+        }
+      }
+
+      async function persist(reason) {
+        state.data.updatedAt = new Date().toISOString();
+        saveLocalCache();
+
+        if (!state.cloudAvailable || !sharedKey) {
+          setStatus(`${reason} saved locally.`, 'success');
+          render();
+          return;
+        }
+
+        setStatus(`Saving ${reason.toLowerCase()} to cloud...`);
+
+        try {
+          await store.putSharedContent(sharedKey, state.data);
+          state.cloudLoaded = true;
+          setStatus(`${reason} saved to cloud.`, 'success');
+        } catch (error) {
+          setStatus(`${reason} saved locally, but cloud sync failed.`, 'error');
+        }
+
+        render();
+      }
+
+      function handleRatingClick(event) {
+        const button = event.target.closest('[data-rating-value]');
+        if (!button) return;
+
+        const strip = button.closest('[data-rating-kind]');
+        if (!strip) return;
+
+        const rating = clampRating(button.dataset.ratingValue);
+        if (!rating) return;
+
+        if (strip.dataset.ratingKind === 'group') {
+          state.data.groupRatings[strip.dataset.ratingKey] = rating;
+          persist(`Group rating ${rating}/5`);
+          return;
+        }
+
+        state.data.imageRatings[strip.dataset.ratingKey] = rating;
+        persist(`Image rating ${rating}/5`);
+      }
+
+      function handleDescriptionSave(event) {
+        const button = event.target.closest('[data-save-description]');
+        if (!button) return;
+        if (!state.ownerUnlocked) {
+          setStatus('Owner keyword is required before descriptions can be saved.', 'error');
+          return;
+        }
+
+        const groupName = button.dataset.saveDescription;
+        const textarea = document.querySelector(`[data-description-group="${cssEscape(groupName)}"]`);
+        if (!textarea) return;
+
+        state.data.groupDescriptions[groupName] = textarea.value.trim();
+        persist(`Description for ${groupName}`);
+      }
+
+      function handleInlineExpand(event) {
+        const imageButton = event.target.closest('[data-expand-image]');
+        if (!imageButton) return;
+
+        const key = imageButton.dataset.expandImage || '';
+        state.expandedImageKey = state.expandedImageKey === key ? '' : key;
+        renderLightbox();
+      }
+
+      function escapeHtml(value) {
+        return String(value || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function cssEscape(value) {
+        if (window.CSS && typeof window.CSS.escape === 'function') {
+          return window.CSS.escape(value);
+        }
+        return String(value || '').replace(/["\\]/g, '\\$&');
+      }
+
+      function unlockOwnerMode() {
+        if (ownerPasswordEl.value === OWNER_SECRET) {
+          state.ownerUnlocked = true;
+          sessionStorage.setItem(OWNER_CACHE_KEY, '1');
+          ownerPasswordEl.value = '';
+          setStatus('Owner mode unlocked for this tab.', 'success');
+          render();
+          return;
+        }
+        setStatus('Incorrect owner keyword.', 'error');
+      }
+
+      function init() {
+        state.data = loadLocalCache() || state.data;
+        setStatus('Loaded local manifest and cache.');
+        render();
+        renderLightbox();
+        loadCloudData().then(render);
+
+        searchInputEl.addEventListener('input', () => {
+          state.filter = searchInputEl.value;
+          render();
+        });
+
+        unlockOwnerBtnEl.addEventListener('click', unlockOwnerMode);
+        ownerPasswordEl.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter') unlockOwnerMode();
+        });
+
+        syncBtnEl.addEventListener('click', async () => {
+          setStatus('Refreshing from cloud...');
+          await loadCloudData();
+          render();
+        });
+
+        catalogEl.addEventListener('click', (event) => {
+          handleInlineExpand(event);
+          handleRatingClick(event);
+          handleDescriptionSave(event);
+        });
+
+        document.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape') {
+            closeLightbox();
+          }
+        });
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
