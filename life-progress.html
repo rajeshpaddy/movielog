@@ -590,13 +590,14 @@
     </div>
 
     <section class="hero quote-panel">
-      <div class="quote-kicker">A Good Life</div>
-      <div class="quote-text">Live with warmth, stay useful to others, protect your health, and spend your days on work, people, and moments you would gladly choose again.</div>
-      <p class="quote-note">A good life is rarely built from urgency alone. It usually comes from attention: loving people well, keeping your word, staying curious, moving your body, and remembering that ordinary days are most of life.</p>
+      <div class="quote-kicker" id="quoteKicker">A Good Life</div>
+      <div class="quote-text" id="quoteText">Live with warmth, stay useful to others, protect your health, and spend your days on work, people, and moments you would gladly choose again.</div>
+      <p class="quote-note" id="quoteNote">A good life is rarely built from urgency alone. It usually comes from attention: loving people well, keeping your word, staying curious, moving your body, and remembering that ordinary days are most of life.</p>
     </section>
   </main>
 
   <script>
+    const QUOTE_STORAGE_KEY = 'lifeProgressLastQuoteIndex';
     const yearProgress = document.getElementById('yearProgress');
     const decadeProgress = document.getElementById('decadeProgress');
     const centuryProgress = document.getElementById('centuryProgress');
@@ -619,10 +620,41 @@
     const yearsUsed = document.getElementById('yearsUsed');
     const yearsLeft = document.getElementById('yearsLeft');
     const reserveThreshold = document.getElementById('reserveThreshold');
+    const quoteKicker = document.getElementById('quoteKicker');
+    const quoteText = document.getElementById('quoteText');
+    const quoteNote = document.getElementById('quoteNote');
 
     const monthNames = [
       'January', 'February', 'March', 'April', 'May', 'June',
       'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
+    const lifeQuotes = [
+      {
+        kicker: 'A Good Life',
+        text: 'Live with warmth, stay useful to others, protect your health, and spend your days on work, people, and moments you would gladly choose again.',
+        note: 'A good life is rarely built from urgency alone. It usually comes from attention: loving people well, keeping your word, staying curious, moving your body, and remembering that ordinary days are most of life.'
+      },
+      {
+        kicker: 'Daily Practice',
+        text: 'A meaningful life is not only measured by how long it is, but by how honestly, kindly, and fully you inhabit each ordinary day.',
+        note: 'Small habits compound into a character. Sleep well, show up, call the people you love, and keep doing work that leaves your corner of the world a little better.'
+      },
+      {
+        kicker: 'What Matters',
+        text: 'Guard your time for what deepens you: people worth loving, work worth doing, and joys that make you more present rather than more distracted.',
+        note: 'You do not need every opportunity. You need enough space to notice beauty, build trust, and become the kind of person your future self will be grateful for.'
+      },
+      {
+        kicker: 'Live Deliberately',
+        text: 'Spend life like it is precious, because it is: not in panic, but in presence, gratitude, courage, and steady care for your own soul and for others.',
+        note: 'The richest days are often simple ones: a healthy body, a clear conscience, shared laughter, useful effort, and the patience to keep choosing what matters.'
+      },
+      {
+        kicker: 'Long View',
+        text: 'The goal is not only to add years to life, but to fill the years with character, health, friendship, wonder, and the freedom to be generous.',
+        note: 'When you zoom out, a good life looks less like constant acceleration and more like balanced energy: effort, rest, purpose, play, and real human connection.'
+      }
     ];
 
     monthNames.forEach((name, index) => {
@@ -645,6 +677,31 @@
 
     function formatYears(value) {
       return `${value.toFixed(1)}y`;
+    }
+
+    function chooseQuote() {
+      let lastIndex = -1;
+      try {
+        lastIndex = Number(localStorage.getItem(QUOTE_STORAGE_KEY));
+      } catch (error) {
+        lastIndex = -1;
+      }
+
+      let nextIndex = Math.floor(Math.random() * lifeQuotes.length);
+      if (lifeQuotes.length > 1 && nextIndex === lastIndex) {
+        nextIndex = (nextIndex + 1 + Math.floor(Math.random() * (lifeQuotes.length - 1))) % lifeQuotes.length;
+      }
+
+      const quote = lifeQuotes[nextIndex];
+      quoteKicker.textContent = quote.kicker;
+      quoteText.textContent = quote.text;
+      quoteNote.textContent = quote.note;
+
+      try {
+        localStorage.setItem(QUOTE_STORAGE_KEY, String(nextIndex));
+      } catch (error) {
+        /* ignore storage failures */
+      }
     }
 
     function renderHeaderProgress() {
@@ -721,6 +778,7 @@
     }
 
     initializeDefaults();
+    chooseQuote();
     renderHeaderProgress();
     updateTimeline();
 
