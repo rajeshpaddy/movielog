@@ -416,11 +416,17 @@
       position: relative;
       padding: 18px 20px 20px;
       background:
-        linear-gradient(135deg, rgba(16, 76, 95, 0.96), rgba(12, 116, 116, 0.92) 48%, rgba(255, 140, 107, 0.88));
-      color: #f8fffd;
+        radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.05), transparent 18%),
+        radial-gradient(circle at 80% 30%, rgba(255, 255, 255, 0.04), transparent 16%),
+        linear-gradient(135deg, rgba(22, 30, 33, 0.98), rgba(30, 39, 42, 0.98));
+      color: #fbfbf8;
       text-align: center;
       display: grid;
       justify-items: center;
+      border: 3px solid rgba(255, 248, 230, 0.18);
+      box-shadow:
+        inset 0 0 0 2px rgba(255, 255, 255, 0.04),
+        0 24px 50px rgba(27, 24, 19, 0.24);
     }
 
     .quote-panel::after {
@@ -428,37 +434,50 @@
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.14), transparent 22%),
-        radial-gradient(circle at 85% 18%, rgba(255, 230, 164, 0.18), transparent 20%);
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0)),
+        repeating-linear-gradient(
+          0deg,
+          rgba(255, 255, 255, 0.015) 0px,
+          rgba(255, 255, 255, 0.015) 1px,
+          transparent 1px,
+          transparent 7px
+        );
       pointer-events: none;
+      mix-blend-mode: screen;
     }
 
     .quote-kicker {
       position: relative;
       z-index: 1;
-      color: rgba(241, 255, 253, 0.82);
-      font: 700 11px/1 "Avenir Next", "Segoe UI", sans-serif;
-      letter-spacing: 0.14em;
+      color: rgba(255, 255, 249, 0.84);
+      font: 700 12px/1 "Avenir Next", "Segoe UI", sans-serif;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
     }
 
     .quote-text {
       position: relative;
       z-index: 1;
       margin-top: 10px;
-      max-width: 740px;
-      font-size: clamp(20px, 2.3vw, 28px);
-      line-height: 1.18;
-      letter-spacing: -0.03em;
+      max-width: 860px;
+      font-size: clamp(28px, 3.3vw, 42px);
+      line-height: 1.22;
+      letter-spacing: -0.02em;
+      color: rgba(255, 255, 251, 0.98);
+      text-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.14),
+        0 0 8px rgba(255, 255, 255, 0.08);
     }
 
     .quote-note {
       position: relative;
       z-index: 1;
-      margin-top: 10px;
-      max-width: 640px;
-      color: rgba(241, 255, 253, 0.84);
-      font: 500 13px/1.55 "Avenir Next", "Segoe UI", sans-serif;
+      margin-top: 12px;
+      max-width: 760px;
+      color: rgba(255, 255, 250, 0.9);
+      font: 500 15px/1.7 "Avenir Next", "Segoe UI", sans-serif;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
     }
 
     @keyframes floatTag {
@@ -744,6 +763,33 @@
       }
     }
 
+    function getNumericQueryParam(params, keys, min, max) {
+      for (const key of keys) {
+        const rawValue = params.get(key);
+        if (rawValue === null || rawValue === '') continue;
+        const parsed = Number(rawValue);
+        if (!Number.isFinite(parsed)) continue;
+        const rounded = Math.round(parsed);
+        if (rounded < min || rounded > max) continue;
+        return rounded;
+      }
+      return null;
+    }
+
+    function applyQueryParams() {
+      const params = new URLSearchParams(window.location.search);
+      const birthYearFromUrl = getNumericQueryParam(params, ['birthYear', 'birthyear', 'year'], 1900, 2200);
+      const lifeExpectancyFromUrl = getNumericQueryParam(params, ['lifeExpectancy', 'lifeexpectancy', 'expectancy'], 1, 130);
+
+      if (birthYearFromUrl !== null) {
+        birthYear.value = String(birthYearFromUrl);
+      }
+
+      if (lifeExpectancyFromUrl !== null) {
+        lifeExpectancy.value = String(lifeExpectancyFromUrl);
+      }
+    }
+
     function renderHeaderProgress() {
       const now = new Date();
 
@@ -818,6 +864,7 @@
     }
 
     initializeDefaults();
+    applyQueryParams();
     chooseQuote();
     renderHeaderProgress();
     updateTimeline();
