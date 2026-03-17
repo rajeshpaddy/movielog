@@ -201,9 +201,54 @@
     }
 
     .field label {
-      display: block;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       margin-bottom: 6px;
       font-weight: 700;
+    }
+
+    .help-tip {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(15, 118, 110, 0.24);
+      background: rgba(15, 118, 110, 0.08);
+      color: var(--teal);
+      cursor: help;
+      font: 700 11px/1 "Avenir Next", "Segoe UI", sans-serif;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    .help-tip::after {
+      content: attr(data-help);
+      position: absolute;
+      left: calc(100% + 10px);
+      top: 50%;
+      transform: translateY(-50%);
+      width: min(280px, 58vw);
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(31, 36, 48, 0.96);
+      color: #f6f7f9;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.22);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.16s ease;
+      font: 500 12px/1.45 "Avenir Next", "Segoe UI", sans-serif;
+      text-transform: none;
+      letter-spacing: 0;
+      z-index: 20;
+    }
+
+    .help-tip:hover::after,
+    .help-tip:focus-visible::after {
+      opacity: 1;
     }
 
     .field input,
@@ -429,6 +474,12 @@
       accent-color: var(--teal);
     }
 
+    .th-help {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     .delete-btn {
       border: none;
       border-radius: 999px;
@@ -551,6 +602,13 @@
       .flow-table .checkbox-cell::before {
         content: attr(data-label);
       }
+
+      .help-tip::after {
+        left: 0;
+        top: calc(100% + 8px);
+        transform: none;
+        width: min(240px, 75vw);
+      }
     }
   </style>
 </head>
@@ -579,43 +637,43 @@
           <div class="field-stack">
             <div class="field two-up">
               <div>
-                <label for="currentAge">Current age</label>
+                <label for="currentAge">Current age <span class="help-tip" tabindex="0" data-help="Your age today. The planner uses this as the starting point for all future income, expense, and portfolio calculations.">?</span></label>
                 <input id="currentAge" name="currentAge" type="number" min="18" max="100" step="1">
               </div>
               <div>
-                <label for="planToAge">Plan until age</label>
+                <label for="planToAge">Plan until age <span class="help-tip" tabindex="0" data-help="The age you want this plan to cover. A higher age means your money needs to last longer.">?</span></label>
                 <input id="planToAge" name="planToAge" type="number" min="30" max="110" step="1">
               </div>
             </div>
             <div class="field">
-              <label for="corpus">Current corpus</label>
+              <label for="corpus">Current corpus <span class="help-tip" tabindex="0" data-help="Your current investable retirement assets or nest egg. This is the pool the planner grows and draws from over time.">?</span></label>
               <input id="corpus" name="corpus" type="number" min="0" step="1000">
             </div>
             <div class="field">
-              <label for="baseExpense">Core annual living expenses</label>
+              <label for="baseExpense">Core annual living expenses <span class="help-tip" tabindex="0" data-help="Your regular yearly spending in today’s dollars before adding separate recurring or one-time items like pensions, healthcare, travel, or major repairs.">?</span></label>
               <input id="baseExpense" name="baseExpense" type="number" min="0" step="1000">
             </div>
             <div class="field">
-              <label for="legacyTarget">Desired ending balance</label>
+              <label for="legacyTarget">Desired ending balance <span class="help-tip" tabindex="0" data-help="How much money you want left at the end of the plan. Use zero if you only care about not running out of money.">?</span></label>
               <input id="legacyTarget" name="legacyTarget" type="number" min="0" step="1000">
             </div>
             <div class="field two-up">
               <div>
-                <label for="returnMean">Expected annual return %</label>
+                <label for="returnMean">Expected annual return % <span class="help-tip" tabindex="0" data-help="The average yearly portfolio return you expect over the long run before inflation. The simulation varies around this number.">?</span></label>
                 <input id="returnMean" name="returnMean" type="number" step="0.1">
               </div>
               <div>
-                <label for="returnStdDev">Return volatility %</label>
+                <label for="returnStdDev">Return volatility % <span class="help-tip" tabindex="0" data-help="How much annual returns can swing up or down around the average. Higher volatility means more uncertainty and more sequence-of-returns risk.">?</span></label>
                 <input id="returnStdDev" name="returnStdDev" type="number" step="0.1">
               </div>
             </div>
             <div class="field two-up">
               <div>
-                <label for="inflation">Inflation %</label>
+                <label for="inflation">Inflation % <span class="help-tip" tabindex="0" data-help="The yearly increase applied to inflation-linked spending and income entered in today’s dollars.">?</span></label>
                 <input id="inflation" name="inflation" type="number" step="0.1">
               </div>
               <div>
-                <label for="simulations">Simulation runs</label>
+                <label for="simulations">Simulation runs <span class="help-tip" tabindex="0" data-help="How many random market paths to test. More runs give a steadier confidence estimate but may make the page recalculate a bit slower.">?</span></label>
                 <input id="simulations" name="simulations" type="number" min="200" max="4000" step="100">
               </div>
             </div>
@@ -889,16 +947,16 @@
         return;
       }
 
-      els.recurringFlowsWrap.innerHTML = `
+        els.recurringFlowsWrap.innerHTML = `
         <table class="flow-table">
           <thead>
             <tr>
-              <th>Label</th>
-              <th>Type</th>
-              <th>Annual amount</th>
-              <th>Start age</th>
-              <th>End age</th>
-              <th>Inflation linked</th>
+              <th><span class="th-help">Label <span class="help-tip" tabindex="0" data-help="A short name for this recurring cash flow, such as Social Security, pension, rent, or healthcare premiums.">?</span></span></th>
+              <th><span class="th-help">Type <span class="help-tip" tabindex="0" data-help="Choose income if money comes in each year, or expense if this amount increases what you need to spend each year.">?</span></span></th>
+              <th><span class="th-help">Annual amount <span class="help-tip" tabindex="0" data-help="The yearly amount for this cash flow in today’s dollars unless inflation-linked is turned off.">?</span></span></th>
+              <th><span class="th-help">Start age <span class="help-tip" tabindex="0" data-help="The first age when this recurring income or expense starts affecting the plan.">?</span></span></th>
+              <th><span class="th-help">End age <span class="help-tip" tabindex="0" data-help="The last age when this recurring item applies. Leave blank if it should continue for the rest of the plan.">?</span></span></th>
+              <th><span class="th-help">Inflation linked <span class="help-tip" tabindex="0" data-help="Turn this on if the amount should rise with inflation over time, like living costs. Turn it off for flat nominal amounts.">?</span></span></th>
               <th></th>
             </tr>
           </thead>
@@ -927,14 +985,14 @@
         return;
       }
 
-      els.oneTimeFlowsWrap.innerHTML = `
+        els.oneTimeFlowsWrap.innerHTML = `
         <table class="flow-table">
           <thead>
             <tr>
-              <th>Label</th>
-              <th>Type</th>
-              <th>Amount</th>
-              <th>Age</th>
+              <th><span class="th-help">Label <span class="help-tip" tabindex="0" data-help="A short name for the one-time event, such as inheritance, home sale, car purchase, or roof repair.">?</span></span></th>
+              <th><span class="th-help">Type <span class="help-tip" tabindex="0" data-help="Choose income for a one-time cash inflow or expense for a one-time cost.">?</span></span></th>
+              <th><span class="th-help">Amount <span class="help-tip" tabindex="0" data-help="The one-time dollar amount that hits the plan at the selected age.">?</span></span></th>
+              <th><span class="th-help">Age <span class="help-tip" tabindex="0" data-help="The exact age when this one-time event happens in the model.">?</span></span></th>
               <th></th>
             </tr>
           </thead>
