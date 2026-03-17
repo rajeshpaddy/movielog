@@ -160,6 +160,12 @@
       grid-template-columns: 380px minmax(0, 1fr);
       gap: 16px;
       align-items: start;
+      position: relative;
+    }
+
+    .planner-panel {
+      position: relative;
+      z-index: 8;
     }
 
     .panel {
@@ -320,6 +326,8 @@
     .results-grid {
       display: grid;
       gap: 16px;
+      position: relative;
+      z-index: 1;
     }
 
     .summary-grid {
@@ -640,7 +648,7 @@
     </section>
 
     <div class="layout">
-      <section class="panel">
+      <section class="panel planner-panel">
         <div class="panel-head">
           <p class="panel-kicker">Inputs</p>
           <h2 class="panel-title">Plan details</h2>
