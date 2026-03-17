@@ -460,11 +460,18 @@
       searchInput.value = query;
       applySearchQuery(query);
 
+      const matchedApp = findBestAppMatch(query);
+      if (matchedApp) {
+        const matchedIndex = renderedApps.findIndex(app => app.name === matchedApp.name && app.file === matchedApp.file);
+        if (matchedIndex >= 0) {
+          setSelectedCard(matchedIndex);
+        }
+      }
+
       if (!shouldOpen) {
         return;
       }
 
-      const matchedApp = findBestAppMatch(query);
       if (matchedApp) {
         openApp(matchedApp);
       }
