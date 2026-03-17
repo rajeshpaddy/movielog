@@ -379,6 +379,56 @@
       line-height: 1.45;
     }
 
+    .session-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 2px;
+    }
+
+    .session-nav-label {
+      color: #d9f8ff;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .session-nav-meta {
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 3px;
+    }
+
+    .session-nav-buttons {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .session-nav-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      border: 1px solid rgba(103, 232, 249, 0.22);
+      background: rgba(255, 255, 255, 0.04);
+      color: #defaff;
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .session-nav-btn:hover:not(:disabled) {
+      background: rgba(103, 232, 249, 0.12);
+      border-color: rgba(103, 232, 249, 0.4);
+    }
+
+    .session-nav-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
     .trend-summary {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -777,12 +827,32 @@
           <article class="trend-card">
             <h2>Current drain session</h2>
             <p class="trend-copy">Line chart for the active unplugged session with time on the x-axis and battery level on the y-axis.</p>
+            <div class="session-nav">
+              <div>
+                <div class="session-nav-label" id="currentDrainSessionLabel">Current session</div>
+                <div class="session-nav-meta" id="currentDrainSessionMeta">No session loaded yet.</div>
+              </div>
+              <div class="session-nav-buttons">
+                <button class="session-nav-btn" id="currentDrainPrev" type="button" aria-label="Show previous drain session">←</button>
+                <button class="session-nav-btn" id="currentDrainNext" type="button" aria-label="Show newer drain session">→</button>
+              </div>
+            </div>
             <div class="chart-frame" id="currentDrainChart"></div>
           </article>
 
           <article class="trend-card">
             <h2>Current charge session</h2>
             <p class="trend-copy">Line chart for the active plugged-in session with time on the x-axis and battery level on the y-axis.</p>
+            <div class="session-nav">
+              <div>
+                <div class="session-nav-label" id="currentChargeSessionLabel">Current session</div>
+                <div class="session-nav-meta" id="currentChargeSessionMeta">No session loaded yet.</div>
+              </div>
+              <div class="session-nav-buttons">
+                <button class="session-nav-btn" id="currentChargePrev" type="button" aria-label="Show previous charge session">←</button>
+                <button class="session-nav-btn" id="currentChargeNext" type="button" aria-label="Show newer charge session">→</button>
+              </div>
+            </div>
             <div class="chart-frame" id="currentChargeChart"></div>
           </article>
         </div>
@@ -838,6 +908,14 @@
     const chargeChart = document.getElementById('chargeChart');
     const currentDrainChart = document.getElementById('currentDrainChart');
     const currentChargeChart = document.getElementById('currentChargeChart');
+    const currentDrainPrev = document.getElementById('currentDrainPrev');
+    const currentDrainNext = document.getElementById('currentDrainNext');
+    const currentChargePrev = document.getElementById('currentChargePrev');
+    const currentChargeNext = document.getElementById('currentChargeNext');
+    const currentDrainSessionLabel = document.getElementById('currentDrainSessionLabel');
+    const currentDrainSessionMeta = document.getElementById('currentDrainSessionMeta');
+    const currentChargeSessionLabel = document.getElementById('currentChargeSessionLabel');
+    const currentChargeSessionMeta = document.getElementById('currentChargeSessionMeta');
     const snapshotMeta = document.getElementById('snapshotMeta');
     const chartModal = document.getElementById('chartModal');
     const chartModalClose = document.getElementById('chartModalClose');
@@ -849,6 +927,10 @@
     let loggingIntervalId = null;
     let lastLoggedAt = 0;
     let activeExpandedChart = null;
+    const sessionHistoryOffset = {
+      drain: 0,
+      charge: 0
+    };
 
     function getStoredSnapshots() {
       try {
@@ -1033,6 +1115,35 @@
       }
 
       return current;
+    }
+
+    function getRecentLineChartSessions(snapshots, chargingValue) {
+      const now = Date.now();
+      const oneWeekAgo = now - (7 * 24 * 60 * 60 * 1000);
+
+      return buildSessions(snapshots, chargingValue)
+        .map(session => ({
+          ...session,
+          sessionLabel: session.end.timestamp >= now - (3 * 60 * 60 * 1000) ? 'Current session' : formatDateTime(session.end.timestamp),
+          metaLabel: `${session.delta}% over ${formatHours(session.durationHours)} · ${formatRate(session.rate)}`
+        }))
+        .filter(session => session.end.timestamp >= oneWeekAgo)
+        .sort((a, b) => a.end.timestamp - b.end.timestamp);
+    }
+
+    function clampSessionOffset(kind, sessions) {
+      const maxOffset = Math.max(0, sessions.length - 1);
+      sessionHistoryOffset[kind] = Math.max(0, Math.min(sessionHistoryOffset[kind], maxOffset));
+    }
+
+    function getSessionForOffset(kind, sessions) {
+      if (!sessions.length) {
+        sessionHistoryOffset[kind] = 0;
+        return null;
+      }
+
+      clampSessionOffset(kind, sessions);
+      return sessions[sessions.length - 1 - sessionHistoryOffset[kind]];
     }
 
     function averageRate(sessions) {
@@ -1223,12 +1334,52 @@
       `;
     }
 
+    function renderLineChartSessionViewer(options) {
+      const {
+        container,
+        sessions,
+        kind,
+        color,
+        emptyMessage,
+        labelPrefix,
+        labelElement,
+        metaElement,
+        prevButton,
+        nextButton
+      } = options;
+
+      const session = getSessionForOffset(kind, sessions);
+      prevButton.disabled = !session || sessionHistoryOffset[kind] >= Math.max(0, sessions.length - 1);
+      nextButton.disabled = !session || sessionHistoryOffset[kind] === 0;
+
+      if (!session) {
+        labelElement.textContent = 'No session yet';
+        metaElement.textContent = 'Capture at least two readings in the last week to browse sessions.';
+        renderCurrentSessionLineChart(container, [], color, emptyMessage, `${labelPrefix} line chart`);
+        return;
+      }
+
+      const newestIndex = sessions.length - 1;
+      const currentIndex = newestIndex - sessionHistoryOffset[kind];
+      const isNewest = currentIndex === newestIndex;
+      labelElement.textContent = isNewest ? 'Current session' : `Previous session ${sessionHistoryOffset[kind]}`;
+      metaElement.textContent = `${session.sessionLabel} · ${session.metaLabel}`;
+
+      renderCurrentSessionLineChart(
+        container,
+        session.points,
+        color,
+        emptyMessage,
+        `${labelPrefix} line chart`
+      );
+    }
+
     function renderHistory() {
       const snapshots = getStoredSnapshots();
       const drainData = buildSessions(snapshots, false);
       const chargeData = buildSessions(snapshots, true);
-      const currentDrainPoints = buildCurrentSession(snapshots, false);
-      const currentChargePoints = buildCurrentSession(snapshots, true);
+      const recentDrainSessions = getRecentLineChartSessions(snapshots, false);
+      const recentChargeSessions = getRecentLineChartSessions(snapshots, true);
 
       drainAverage.textContent = formatRate(averageRate(drainData));
       drainFastest.textContent = formatRate(fastestRate(drainData));
@@ -1250,20 +1401,30 @@
         'url(#chargeGradient)',
         'Charge sessions appear here after the app captures at least two charging readings with a percentage increase.'
       );
-      renderCurrentSessionLineChart(
-        currentDrainChart,
-        currentDrainPoints,
-        '#fb7185',
-        'Current drain session will appear after at least two unplugged snapshots are collected.',
-        'Current drain session line chart'
-      );
-      renderCurrentSessionLineChart(
-        currentChargeChart,
-        currentChargePoints,
-        '#67e8f9',
-        'Current charge session will appear after at least two charging snapshots are collected.',
-        'Current charge session line chart'
-      );
+      renderLineChartSessionViewer({
+        container: currentDrainChart,
+        sessions: recentDrainSessions,
+        kind: 'drain',
+        color: '#fb7185',
+        emptyMessage: 'Drain sessions from the last week will appear after at least two unplugged snapshots are collected.',
+        labelPrefix: 'Drain session',
+        labelElement: currentDrainSessionLabel,
+        metaElement: currentDrainSessionMeta,
+        prevButton: currentDrainPrev,
+        nextButton: currentDrainNext
+      });
+      renderLineChartSessionViewer({
+        container: currentChargeChart,
+        sessions: recentChargeSessions,
+        kind: 'charge',
+        color: '#67e8f9',
+        emptyMessage: 'Charge sessions from the last week will appear after at least two charging snapshots are collected.',
+        labelPrefix: 'Charge session',
+        labelElement: currentChargeSessionLabel,
+        metaElement: currentChargeSessionMeta,
+        prevButton: currentChargePrev,
+        nextButton: currentChargeNext
+      });
 
       const first = snapshots[0];
       const last = snapshots[snapshots.length - 1];
@@ -1398,6 +1559,25 @@
 
     clearHistoryButton.addEventListener('click', () => {
       localStorage.removeItem(STORAGE_KEY);
+      sessionHistoryOffset.drain = 0;
+      sessionHistoryOffset.charge = 0;
+      renderHistory();
+    });
+
+    currentDrainPrev.addEventListener('click', () => {
+      sessionHistoryOffset.drain += 1;
+      renderHistory();
+    });
+    currentDrainNext.addEventListener('click', () => {
+      sessionHistoryOffset.drain = Math.max(0, sessionHistoryOffset.drain - 1);
+      renderHistory();
+    });
+    currentChargePrev.addEventListener('click', () => {
+      sessionHistoryOffset.charge += 1;
+      renderHistory();
+    });
+    currentChargeNext.addEventListener('click', () => {
+      sessionHistoryOffset.charge = Math.max(0, sessionHistoryOffset.charge - 1);
       renderHistory();
     });
 
