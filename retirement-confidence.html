@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retirement Confidence Planner</title>
+  <style>
+    :root {
+      --bg: #f5f0e6;
+      --ink: #1f2430;
+      --muted: #5c6575;
+      --panel: rgba(255, 250, 242, 0.9);
+      --panel-strong: #fffaf4;
+      --line: rgba(57, 69, 83, 0.14);
+      --teal: #0f766e;
+      --teal-deep: #0a4f54;
+      --sun: #d17b2d;
+      --sage: #8ba97f;
+      --good: #1d8751;
+      --warn: #b86a1d;
+      --bad: #a73f3f;
+      --shadow: 0 24px 60px rgba(47, 39, 22, 0.12);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.16), transparent 26%),
+        radial-gradient(circle at right 10%, rgba(209, 123, 45, 0.18), transparent 22%),
+        linear-gradient(180deg, #ebe2d0 0%, #f6f1e7 44%, #f2ede2 100%);
+      padding: 18px;
+    }
+
+    button,
+    input,
+    select {
+      font: 600 15px/1.2 "Avenir Next", "Segoe UI", sans-serif;
+    }
+
+    .app-home-link {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 30;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(15, 118, 110, 0.24);
+      background: rgba(255, 250, 244, 0.94);
+      color: var(--teal);
+      text-decoration: none;
+      font: 600 14px/1 "Avenir Next", "Segoe UI", sans-serif;
+      box-shadow: 0 12px 30px rgba(31, 36, 48, 0.08);
+    }
+
+    .app-home-link:hover { border-color: rgba(15, 118, 110, 0.4); }
+
+    .shell {
+      max-width: 1480px;
+      margin: 0 auto;
+      padding-top: 48px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .hero,
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, rgba(255, 250, 244, 0.96), rgba(244, 235, 220, 0.92));
+      padding: 28px;
+      position: relative;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -80px;
+      top: -60px;
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(209, 123, 45, 0.34), rgba(209, 123, 45, 0));
+      pointer-events: none;
+    }
+
+    .eyebrow,
+    .panel-kicker,
+    .metric-label,
+    .field label,
+    .flow-table th {
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--teal);
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 880px;
+      font-size: clamp(34px, 6vw, 60px);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+    }
+
+    .hero-copy {
+      margin: 16px 0 0;
+      max-width: 920px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.6;
+    }
+
+    .hero-stats {
+      margin-top: 22px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .hero-stat {
+      background: rgba(255, 255, 255, 0.66);
+      border: 1px solid rgba(15, 118, 110, 0.12);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .hero-stat-value {
+      margin-top: 6px;
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 380px minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      backdrop-filter: blur(5px);
+    }
+
+    .panel-head {
+      padding: 18px 20px 10px;
+      background: linear-gradient(180deg, rgba(15, 118, 110, 0.08), rgba(15, 118, 110, 0));
+      border-bottom: 1px solid rgba(57, 69, 83, 0.08);
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 21px;
+      line-height: 1.1;
+    }
+
+    .panel-note {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font: 500 13px/1.5 "Avenir Next", "Segoe UI", sans-serif;
+    }
+
+    .panel-body {
+      padding: 18px 20px 20px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .field-grid,
+    .field-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .field.two-up {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      border: 1px solid rgba(57, 69, 83, 0.16);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.84);
+      color: var(--ink);
+      padding: 12px 13px;
+      outline: none;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: rgba(15, 118, 110, 0.5);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+    }
+
+    .mini-note,
+    .disclaimer,
+    .table-note {
+      color: var(--muted);
+      font: 500 12px/1.55 "Avenir Next", "Segoe UI", sans-serif;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 11px 16px;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--teal), var(--teal-deep));
+      color: #f6fffd;
+      box-shadow: 0 14px 26px rgba(15, 118, 110, 0.2);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.8);
+      color: var(--ink);
+      border: 1px solid rgba(57, 69, 83, 0.12);
+    }
+
+    .results-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric-card {
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid rgba(57, 69, 83, 0.1);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .metric-value {
+      margin-top: 8px;
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .metric-foot {
+      margin-top: 8px;
+      color: var(--muted);
+      font: 500 12px/1.45 "Avenir Next", "Segoe UI", sans-serif;
+    }
+
+    .confidence-banner {
+      display: grid;
+      grid-template-columns: 180px minmax(0, 1fr);
+      gap: 18px;
+      align-items: center;
+      border-radius: 22px;
+      padding: 20px;
+      background: linear-gradient(135deg, rgba(255, 248, 240, 0.94), rgba(243, 235, 223, 0.96));
+      border: 1px solid rgba(57, 69, 83, 0.1);
+    }
+
+    .confidence-gauge {
+      aspect-ratio: 1;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: conic-gradient(var(--ring-color) calc(var(--confidence) * 1%), rgba(15, 118, 110, 0.1) 0);
+      padding: 14px;
+    }
+
+    .confidence-core {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: var(--panel-strong);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      border: 1px solid rgba(57, 69, 83, 0.08);
+    }
+
+    .confidence-score {
+      font-size: 42px;
+      line-height: 0.9;
+      font-weight: 700;
+    }
+
+    .confidence-text h2 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1;
+    }
+
+    .confidence-text p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font: 500 14px/1.6 "Avenir Next", "Segoe UI", sans-serif;
+    }
+
+    .chart-card,
+    .flows-card,
+    .snapshot-card {
+      background: rgba(255, 255, 255, 0.74);
+      border: 1px solid rgba(57, 69, 83, 0.1);
+      border-radius: 22px;
+      padding: 18px;
+    }
+
+    .chart-wrap {
+      margin-top: 14px;
+      border-radius: 18px;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(15, 118, 110, 0.04), rgba(15, 118, 110, 0));
+      border: 1px solid rgba(57, 69, 83, 0.08);
+      padding: 12px;
+    }
+
+    .chart-legend {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+      font: 600 12px/1.3 "Avenir Next", "Segoe UI", sans-serif;
+      color: var(--muted);
+    }
+
+    .legend-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+    }
+
+    .flow-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .flow-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+    }
+
+    .flow-table th,
+    .flow-table td {
+      padding: 10px 8px;
+      border-bottom: 1px solid rgba(57, 69, 83, 0.08);
+      vertical-align: top;
+    }
+
+    .flow-table td input,
+    .flow-table td select {
+      width: 100%;
+      min-width: 0;
+      border: 1px solid rgba(57, 69, 83, 0.16);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.86);
+      padding: 10px 11px;
+      color: var(--ink);
+      outline: none;
+    }
+
+    .flow-table td input:focus,
+    .flow-table td select:focus {
+      border-color: rgba(15, 118, 110, 0.5);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+    }
+
+    .flow-table .checkbox-cell {
+      text-align: center;
+      width: 78px;
+    }
+
+    .flow-table .checkbox-cell input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--teal);
+    }
+
+    .delete-btn {
+      border: none;
+      border-radius: 999px;
+      padding: 9px 11px;
+      background: rgba(167, 63, 63, 0.12);
+      color: var(--bad);
+      cursor: pointer;
+      font: 700 13px/1 "Avenir Next", "Segoe UI", sans-serif;
+    }
+
+    .snapshot-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+
+    .snapshot-table th,
+    .snapshot-table td {
+      padding: 10px 8px;
+      border-bottom: 1px solid rgba(57, 69, 83, 0.08);
+      text-align: left;
+      font: 600 13px/1.4 "Avenir Next", "Segoe UI", sans-serif;
+    }
+
+    .snapshot-table td:last-child,
+    .snapshot-table th:last-child {
+      text-align: right;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font: 700 12px/1 "Avenir Next", "Segoe UI", sans-serif;
+    }
+
+    .pill.good { color: var(--good); background: rgba(29, 135, 81, 0.1); }
+    .pill.warn { color: var(--warn); background: rgba(184, 106, 29, 0.1); }
+    .pill.bad { color: var(--bad); background: rgba(167, 63, 63, 0.1); }
+
+    .empty-row {
+      padding: 18px;
+      text-align: center;
+      color: var(--muted);
+      font: 500 13px/1.5 "Avenir Next", "Segoe UI", sans-serif;
+      border: 1px dashed rgba(57, 69, 83, 0.16);
+      border-radius: 16px;
+      margin-top: 14px;
+    }
+
+    .disclaimer {
+      padding: 0 2px;
+    }
+
+    @media (max-width: 1120px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-grid,
+      .hero-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      body { padding: 12px; }
+
+      .hero,
+      .panel-head,
+      .panel-body {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .hero-stats,
+      .summary-grid,
+      .confidence-banner {
+        grid-template-columns: 1fr;
+      }
+
+      .flow-table,
+      .flow-table thead,
+      .flow-table tbody,
+      .flow-table tr,
+      .flow-table th,
+      .flow-table td {
+        display: block;
+        width: 100%;
+      }
+
+      .flow-table thead {
+        display: none;
+      }
+
+      .flow-table tr {
+        border: 1px solid rgba(57, 69, 83, 0.08);
+        border-radius: 16px;
+        padding: 10px;
+        margin-bottom: 12px;
+        background: rgba(255, 255, 255, 0.58);
+      }
+
+      .flow-table td {
+        border-bottom: none;
+        padding: 6px 0;
+      }
+
+      .flow-table td::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 6px;
+        color: var(--muted);
+        font: 700 10px/1.2 "Avenir Next", "Segoe UI", sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+      }
+
+      .flow-table .checkbox-cell::before {
+        content: attr(data-label);
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="app-home-link" href="app-catalog.html" title="Back to App Catalog">Home</a>
+
+  <div class="shell">
+    <section class="hero">
+      <p class="eyebrow">Retirement Planning</p>
+      <h1>Pressure-test a retirement plan before real life does.</h1>
+      <p class="hero-copy">
+        Enter your current corpus, spending, recurring income and expense streams, and any one-time future events.
+        The planner runs a Monte Carlo style projection to estimate how often your retirement plan stays funded through your target age.
+      </p>
+      <div class="hero-stats" id="heroStats"></div>
+    </section>
+
+    <div class="layout">
+      <section class="panel">
+        <div class="panel-head">
+          <p class="panel-kicker">Inputs</p>
+          <h2 class="panel-title">Plan details</h2>
+          <p class="panel-note">Use annual amounts. Inflation-linked items are entered in today’s dollars and automatically grow with inflation in the model.</p>
+        </div>
+        <div class="panel-body">
+          <div class="field-stack">
+            <div class="field two-up">
+              <div>
+                <label for="currentAge">Current age</label>
+                <input id="currentAge" name="currentAge" type="number" min="18" max="100" step="1">
+              </div>
+              <div>
+                <label for="planToAge">Plan until age</label>
+                <input id="planToAge" name="planToAge" type="number" min="30" max="110" step="1">
+              </div>
+            </div>
+            <div class="field">
+              <label for="corpus">Current corpus</label>
+              <input id="corpus" name="corpus" type="number" min="0" step="1000">
+            </div>
+            <div class="field">
+              <label for="baseExpense">Core annual living expenses</label>
+              <input id="baseExpense" name="baseExpense" type="number" min="0" step="1000">
+            </div>
+            <div class="field">
+              <label for="legacyTarget">Desired ending balance</label>
+              <input id="legacyTarget" name="legacyTarget" type="number" min="0" step="1000">
+            </div>
+            <div class="field two-up">
+              <div>
+                <label for="returnMean">Expected annual return %</label>
+                <input id="returnMean" name="returnMean" type="number" step="0.1">
+              </div>
+              <div>
+                <label for="returnStdDev">Return volatility %</label>
+                <input id="returnStdDev" name="returnStdDev" type="number" step="0.1">
+              </div>
+            </div>
+            <div class="field two-up">
+              <div>
+                <label for="inflation">Inflation %</label>
+                <input id="inflation" name="inflation" type="number" step="0.1">
+              </div>
+              <div>
+                <label for="simulations">Simulation runs</label>
+                <input id="simulations" name="simulations" type="number" min="200" max="4000" step="100">
+              </div>
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button class="btn btn-primary" id="loadExampleBtn" type="button">Load example</button>
+            <button class="btn btn-secondary" id="resetBtn" type="button">Reset planner</button>
+          </div>
+
+          <p class="disclaimer">This is a planning aid, not financial advice. Taxes, sequence risk, fees, healthcare shocks, and lifestyle changes can materially change outcomes.</p>
+        </div>
+      </section>
+
+      <section class="results-grid">
+        <div class="panel">
+          <div class="panel-head">
+            <p class="panel-kicker">Results</p>
+            <h2 class="panel-title">Retirement confidence</h2>
+            <p class="panel-note">Confidence means the share of simulation runs that never ran out of money and still met your desired ending balance.</p>
+          </div>
+          <div class="panel-body">
+            <div class="confidence-banner" id="confidenceBanner"></div>
+            <div class="summary-grid" id="summaryGrid"></div>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="flow-header">
+            <div>
+              <p class="panel-kicker">Projection</p>
+              <h3 class="panel-title">Portfolio range over time</h3>
+            </div>
+            <div class="pill" id="statusPill"></div>
+          </div>
+          <p class="table-note">Band shows the 10th to 90th percentile of outcomes. The center line is the median path.</p>
+          <div class="chart-wrap" id="chartWrap"></div>
+          <div class="chart-legend">
+            <span class="legend-chip"><span class="legend-dot" style="background:#0f766e;"></span>Median</span>
+            <span class="legend-chip"><span class="legend-dot" style="background:#cfe7e2;"></span>10th-90th percentile band</span>
+            <span class="legend-chip"><span class="legend-dot" style="background:#d17b2d;"></span>Target floor</span>
+          </div>
+        </div>
+
+        <div class="flows-card">
+          <div class="flow-header">
+            <div>
+              <p class="panel-kicker">Cash flows</p>
+              <h3 class="panel-title">Recurring income and expenses</h3>
+            </div>
+            <button class="btn btn-secondary" id="addRecurringBtn" type="button">Add recurring flow</button>
+          </div>
+          <p class="table-note">Examples: pension, Social Security, rent, healthcare premiums, travel budget.</p>
+          <div id="recurringFlowsWrap"></div>
+        </div>
+
+        <div class="flows-card">
+          <div class="flow-header">
+            <div>
+              <p class="panel-kicker">Future events</p>
+              <h3 class="panel-title">One-time income and expenses</h3>
+            </div>
+            <button class="btn btn-secondary" id="addOneTimeBtn" type="button">Add one-time flow</button>
+          </div>
+          <p class="table-note">Examples: home sale, inheritance, roof replacement, new car, wedding support.</p>
+          <div id="oneTimeFlowsWrap"></div>
+        </div>
+
+        <div class="snapshot-card">
+          <div class="flow-header">
+            <div>
+              <p class="panel-kicker">Snapshot</p>
+              <h3 class="panel-title">Median yearly balances</h3>
+            </div>
+          </div>
+          <p class="table-note">A compact view of the median path at major checkpoints.</p>
+          <div id="snapshotWrap"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'retirementConfidencePlannerState';
+
+    const DEFAULT_STATE = {
+      currentAge: 52,
+      planToAge: 95,
+      corpus: 1800000,
+      baseExpense: 82000,
+      legacyTarget: 250000,
+      returnMean: 6.5,
+      returnStdDev: 11,
+      inflation: 2.8,
+      simulations: 1200,
+      recurringFlows: [
+        { id: makeId(), label: 'Social Security', type: 'income', amount: 36000, startAge: 67, endAge: '', inflationLinked: true },
+        { id: makeId(), label: 'Healthcare bridge', type: 'expense', amount: 14000, startAge: 55, endAge: 65, inflationLinked: true }
+      ],
+      oneTimeFlows: [
+        { id: makeId(), label: 'Roof replacement', type: 'expense', amount: 18000, age: 72 },
+        { id: makeId(), label: 'Downsize home sale', type: 'income', amount: 220000, age: 74 }
+      ]
+    };
+
+    const state = loadState();
+    const els = {
+      heroStats: document.getElementById('heroStats'),
+      confidenceBanner: document.getElementById('confidenceBanner'),
+      summaryGrid: document.getElementById('summaryGrid'),
+      chartWrap: document.getElementById('chartWrap'),
+      statusPill: document.getElementById('statusPill'),
+      recurringFlowsWrap: document.getElementById('recurringFlowsWrap'),
+      oneTimeFlowsWrap: document.getElementById('oneTimeFlowsWrap'),
+      snapshotWrap: document.getElementById('snapshotWrap')
+    };
+
+    let projectionTimer = 0;
+
+    bindCoreInputs();
+    bindButtons();
+    renderAll();
+
+    function makeId() {
+      return `id-${Math.random().toString(36).slice(2, 9)}`;
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return structuredClone(DEFAULT_STATE);
+        const parsed = JSON.parse(raw);
+        return mergeState(parsed);
+      } catch (error) {
+        return structuredClone(DEFAULT_STATE);
+      }
+    }
+
+    function mergeState(source) {
+      const recurringFlows = Array.isArray(source.recurringFlows) ? source.recurringFlows.map(flow => ({
+        id: flow.id || makeId(),
+        label: flow.label || '',
+        type: flow.type === 'expense' ? 'expense' : 'income',
+        amount: toNumber(flow.amount, 0),
+        startAge: flow.startAge === '' ? '' : toNumber(flow.startAge, DEFAULT_STATE.currentAge),
+        endAge: flow.endAge === '' || flow.endAge == null ? '' : toNumber(flow.endAge, ''),
+        inflationLinked: Boolean(flow.inflationLinked)
+      })) : structuredClone(DEFAULT_STATE.recurringFlows);
+
+      const oneTimeFlows = Array.isArray(source.oneTimeFlows) ? source.oneTimeFlows.map(flow => ({
+        id: flow.id || makeId(),
+        label: flow.label || '',
+        type: flow.type === 'expense' ? 'expense' : 'income',
+        amount: toNumber(flow.amount, 0),
+        age: toNumber(flow.age, DEFAULT_STATE.currentAge)
+      })) : structuredClone(DEFAULT_STATE.oneTimeFlows);
+
+      return {
+        currentAge: toNumber(source.currentAge, DEFAULT_STATE.currentAge),
+        planToAge: toNumber(source.planToAge, DEFAULT_STATE.planToAge),
+        corpus: toNumber(source.corpus, DEFAULT_STATE.corpus),
+        baseExpense: toNumber(source.baseExpense, DEFAULT_STATE.baseExpense),
+        legacyTarget: toNumber(source.legacyTarget, DEFAULT_STATE.legacyTarget),
+        returnMean: toNumber(source.returnMean, DEFAULT_STATE.returnMean),
+        returnStdDev: toNumber(source.returnStdDev, DEFAULT_STATE.returnStdDev),
+        inflation: toNumber(source.inflation, DEFAULT_STATE.inflation),
+        simulations: toNumber(source.simulations, DEFAULT_STATE.simulations),
+        recurringFlows,
+        oneTimeFlows
+      };
+    }
+
+    function bindCoreInputs() {
+      ['currentAge', 'planToAge', 'corpus', 'baseExpense', 'legacyTarget', 'returnMean', 'returnStdDev', 'inflation', 'simulations'].forEach(key => {
+        const input = document.getElementById(key);
+        input.value = state[key];
+        input.addEventListener('input', () => {
+          state[key] = toNumber(input.value, 0);
+          scheduleProjection();
+        });
+      });
+    }
+
+    function bindButtons() {
+      document.getElementById('addRecurringBtn').addEventListener('click', () => {
+        state.recurringFlows.push({
+          id: makeId(),
+          label: '',
+          type: 'income',
+          amount: 0,
+          startAge: state.currentAge,
+          endAge: '',
+          inflationLinked: true
+        });
+        saveState();
+        renderRecurringFlows();
+        scheduleProjection();
+      });
+
+      document.getElementById('addOneTimeBtn').addEventListener('click', () => {
+        state.oneTimeFlows.push({
+          id: makeId(),
+          label: '',
+          type: 'expense',
+          amount: 0,
+          age: state.currentAge + 1
+        });
+        saveState();
+        renderOneTimeFlows();
+        scheduleProjection();
+      });
+
+      document.getElementById('loadExampleBtn').addEventListener('click', () => {
+        const fresh = structuredClone(DEFAULT_STATE);
+        Object.assign(state, fresh);
+        syncInputs();
+        saveState();
+        renderAll();
+      });
+
+      document.getElementById('resetBtn').addEventListener('click', () => {
+        state.currentAge = 55;
+        state.planToAge = 95;
+        state.corpus = 0;
+        state.baseExpense = 0;
+        state.legacyTarget = 0;
+        state.returnMean = 6;
+        state.returnStdDev = 10;
+        state.inflation = 3;
+        state.simulations = 1000;
+        state.recurringFlows = [];
+        state.oneTimeFlows = [];
+        syncInputs();
+        saveState();
+        renderAll();
+      });
+    }
+
+    function syncInputs() {
+      ['currentAge', 'planToAge', 'corpus', 'baseExpense', 'legacyTarget', 'returnMean', 'returnStdDev', 'inflation', 'simulations'].forEach(key => {
+        document.getElementById(key).value = state[key];
+      });
+    }
+
+    function scheduleProjection() {
+      saveState();
+      window.clearTimeout(projectionTimer);
+      projectionTimer = window.setTimeout(renderAll, 120);
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function toNumber(value, fallback) {
+      if (value === '') return '';
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : fallback;
+    }
+
+    function renderAll() {
+      renderRecurringFlows();
+      renderOneTimeFlows();
+      renderProjection();
+      saveState();
+    }
+
+    function renderRecurringFlows() {
+      if (!state.recurringFlows.length) {
+        els.recurringFlowsWrap.innerHTML = '<div class="empty-row">No recurring flows yet. Add pension income, Social Security, rent, insurance premiums, or any repeating future cash flow.</div>';
+        return;
+      }
+
+      els.recurringFlowsWrap.innerHTML = `
+        <table class="flow-table">
+          <thead>
+            <tr>
+              <th>Label</th>
+              <th>Type</th>
+              <th>Annual amount</th>
+              <th>Start age</th>
+              <th>End age</th>
+              <th>Inflation linked</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${state.recurringFlows.map(flow => `
+              <tr data-id="${flow.id}">
+                <td data-label="Label"><input data-flow-id="${flow.id}" data-key="label" data-kind="recurring" type="text" value="${escapeHtml(flow.label)}" placeholder="Social Security"></td>
+                <td data-label="Type"><select data-flow-id="${flow.id}" data-key="type" data-kind="recurring"><option value="income" ${flow.type === 'income' ? 'selected' : ''}>Income</option><option value="expense" ${flow.type === 'expense' ? 'selected' : ''}>Expense</option></select></td>
+                <td data-label="Annual amount"><input data-flow-id="${flow.id}" data-key="amount" data-kind="recurring" type="number" min="0" step="1000" value="${flow.amount}"></td>
+                <td data-label="Start age"><input data-flow-id="${flow.id}" data-key="startAge" data-kind="recurring" type="number" min="0" step="1" value="${flow.startAge}"></td>
+                <td data-label="End age"><input data-flow-id="${flow.id}" data-key="endAge" data-kind="recurring" type="number" min="0" step="1" value="${flow.endAge}"></td>
+                <td data-label="Inflation linked" class="checkbox-cell"><input data-flow-id="${flow.id}" data-key="inflationLinked" data-kind="recurring" type="checkbox" ${flow.inflationLinked ? 'checked' : ''}></td>
+                <td data-label="Remove"><button class="delete-btn" data-delete-flow="${flow.id}" data-kind="recurring" type="button">Remove</button></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+
+      bindFlowInputs('recurring');
+    }
+
+    function renderOneTimeFlows() {
+      if (!state.oneTimeFlows.length) {
+        els.oneTimeFlowsWrap.innerHTML = '<div class="empty-row">No one-time events yet. Add a house sale, inheritance, vehicle purchase, home repair, or any single future cash event.</div>';
+        return;
+      }
+
+      els.oneTimeFlowsWrap.innerHTML = `
+        <table class="flow-table">
+          <thead>
+            <tr>
+              <th>Label</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Age</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${state.oneTimeFlows.map(flow => `
+              <tr data-id="${flow.id}">
+                <td data-label="Label"><input data-flow-id="${flow.id}" data-key="label" data-kind="oneTime" type="text" value="${escapeHtml(flow.label)}" placeholder="Roof replacement"></td>
+                <td data-label="Type"><select data-flow-id="${flow.id}" data-key="type" data-kind="oneTime"><option value="income" ${flow.type === 'income' ? 'selected' : ''}>Income</option><option value="expense" ${flow.type === 'expense' ? 'selected' : ''}>Expense</option></select></td>
+                <td data-label="Amount"><input data-flow-id="${flow.id}" data-key="amount" data-kind="oneTime" type="number" min="0" step="1000" value="${flow.amount}"></td>
+                <td data-label="Age"><input data-flow-id="${flow.id}" data-key="age" data-kind="oneTime" type="number" min="0" step="1" value="${flow.age}"></td>
+                <td data-label="Remove"><button class="delete-btn" data-delete-flow="${flow.id}" data-kind="oneTime" type="button">Remove</button></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+
+      bindFlowInputs('oneTime');
+    }
+
+    function bindFlowInputs(kind) {
+      const wrap = kind === 'recurring' ? els.recurringFlowsWrap : els.oneTimeFlowsWrap;
+      wrap.querySelectorAll('input, select').forEach(input => {
+        input.addEventListener('input', updateFlowFromInput);
+        input.addEventListener('change', updateFlowFromInput);
+      });
+      wrap.querySelectorAll('[data-delete-flow]').forEach(button => {
+        button.addEventListener('click', () => {
+          const id = button.dataset.deleteFlow;
+          if (kind === 'recurring') {
+            state.recurringFlows = state.recurringFlows.filter(flow => flow.id !== id);
+            renderRecurringFlows();
+          } else {
+            state.oneTimeFlows = state.oneTimeFlows.filter(flow => flow.id !== id);
+            renderOneTimeFlows();
+          }
+          scheduleProjection();
+        });
+      });
+    }
+
+    function updateFlowFromInput(event) {
+      const input = event.currentTarget;
+      const kind = input.dataset.kind;
+      const collection = kind === 'recurring' ? state.recurringFlows : state.oneTimeFlows;
+      const flow = collection.find(item => item.id === input.dataset.flowId);
+      if (!flow) return;
+
+      const key = input.dataset.key;
+      if (input.type === 'checkbox') {
+        flow[key] = input.checked;
+      } else if (input.type === 'number') {
+        flow[key] = input.value === '' ? '' : toNumber(input.value, 0);
+      } else {
+        flow[key] = input.value;
+      }
+
+      scheduleProjection();
+    }
+
+    function renderProjection() {
+      const model = runProjection(state);
+      renderHeroStats(model);
+      renderConfidence(model);
+      renderSummary(model);
+      renderChart(model);
+      renderSnapshot(model);
+    }
+
+    function runProjection(input) {
+      const currentAge = clamp(toNumber(input.currentAge, 55), 18, 100);
+      const planToAge = Math.max(currentAge + 1, clamp(toNumber(input.planToAge, 95), currentAge + 1, 110));
+      const years = planToAge - currentAge + 1;
+      const simulations = clamp(Math.round(toNumber(input.simulations, 1000)), 200, 4000);
+      const startCorpus = Math.max(0, toNumber(input.corpus, 0));
+      const baseExpense = Math.max(0, toNumber(input.baseExpense, 0));
+      const legacyTarget = Math.max(0, toNumber(input.legacyTarget, 0));
+      const mean = toNumber(input.returnMean, 6) / 100;
+      const stdDev = Math.max(0, toNumber(input.returnStdDev, 10)) / 100;
+      const inflation = Math.max(-0.02, toNumber(input.inflation, 3) / 100);
+      const ages = Array.from({ length: years }, (_, index) => currentAge + index);
+      const annualBalances = Array.from({ length: years }, () => []);
+      const failureAges = [];
+      const finalBalances = [];
+      const medianSnapshot = [];
+      const seedBase = hashString(JSON.stringify({
+        currentAge,
+        planToAge,
+        startCorpus,
+        baseExpense,
+        legacyTarget,
+        mean,
+        stdDev,
+        inflation,
+        recurringFlows: input.recurringFlows,
+        oneTimeFlows: input.oneTimeFlows
+      }));
+
+      let successCount = 0;
+
+      for (let sim = 0; sim < simulations; sim += 1) {
+        const rng = mulberry32(seedBase + sim * 1013);
+        let inflationIndex = 1;
+        let balance = startCorpus;
+        let failed = false;
+        let failureAge = null;
+
+        annualBalances[0].push(balance);
+
+        for (let yearIndex = 1; yearIndex < years; yearIndex += 1) {
+          const age = ages[yearIndex - 1];
+          const annualReturn = clamp(normalSample(rng, mean, stdDev), -0.85, 0.35);
+          const recurringIncome = activeRecurringTotal(input.recurringFlows, 'income', age, inflationIndex);
+          const recurringExpense = activeRecurringTotal(input.recurringFlows, 'expense', age, inflationIndex);
+          const oneTimeIncome = activeOneTimeTotal(input.oneTimeFlows, 'income', age);
+          const oneTimeExpense = activeOneTimeTotal(input.oneTimeFlows, 'expense', age);
+          const annualNeed = (baseExpense * inflationIndex) + recurringExpense + oneTimeExpense - recurringIncome - oneTimeIncome;
+
+          balance = (balance * (1 + annualReturn)) - annualNeed;
+          annualBalances[yearIndex].push(balance);
+
+          if (!failed && balance < 0) {
+            failed = true;
+            failureAge = age + 1;
+          }
+
+          inflationIndex *= (1 + inflation);
+        }
+
+        finalBalances.push(balance);
+        if (!failed && balance >= legacyTarget) successCount += 1;
+        if (failureAge != null) failureAges.push(failureAge);
+      }
+
+      const percentiles = annualBalances.map(values => percentileSet(values));
+      percentiles.forEach((entry, index) => {
+        if (index === 0 || index === years - 1 || index % Math.max(1, Math.round((years - 1) / 6)) === 0) {
+          medianSnapshot.push({ age: ages[index], balance: entry.p50 });
+        }
+      });
+
+      const confidence = (successCount / simulations) * 100;
+      const endingStats = percentileSet(finalBalances);
+      const medianFailureAge = failureAges.length ? percentile(failureAges, 0.5) : null;
+      const firstYearIncome = activeRecurringTotal(input.recurringFlows, 'income', currentAge, 1) + activeOneTimeTotal(input.oneTimeFlows, 'income', currentAge);
+      const firstYearExpenses = baseExpense + activeRecurringTotal(input.recurringFlows, 'expense', currentAge, 1) + activeOneTimeTotal(input.oneTimeFlows, 'expense', currentAge);
+      const fundedGap = firstYearExpenses - firstYearIncome;
+
+      return {
+        ages,
+        currentAge,
+        planToAge,
+        startCorpus,
+        baseExpense,
+        legacyTarget,
+        simulations,
+        confidence,
+        percentiles,
+        endingStats,
+        medianFailureAge,
+        fundedGap,
+        firstYearIncome,
+        firstYearExpenses,
+        successCount,
+        medianSnapshot
+      };
+    }
+
+    function activeRecurringTotal(flows, type, age, inflationIndex) {
+      return flows.reduce((sum, flow) => {
+        if (flow.type !== type) return sum;
+        const startAge = toNumber(flow.startAge, 0);
+        const endAge = flow.endAge === '' ? Infinity : toNumber(flow.endAge, Infinity);
+        if (age < startAge || age > endAge) return sum;
+        const amount = Math.max(0, toNumber(flow.amount, 0));
+        return sum + (flow.inflationLinked ? amount * inflationIndex : amount);
+      }, 0);
+    }
+
+    function activeOneTimeTotal(flows, type, age) {
+      return flows.reduce((sum, flow) => {
+        if (flow.type !== type) return sum;
+        return age === toNumber(flow.age, -1) ? sum + Math.max(0, toNumber(flow.amount, 0)) : sum;
+      }, 0);
+    }
+
+    function renderHeroStats(model) {
+      const heroItems = [
+        { label: 'Confidence', value: `${model.confidence.toFixed(0)}%` },
+        { label: 'Median ending corpus', value: formatCompactCurrency(model.endingStats.p50) },
+        { label: 'First-year net withdrawal', value: formatCompactCurrency(model.fundedGap) },
+        { label: 'Plan horizon', value: `${model.currentAge}-${model.planToAge}` }
+      ];
+
+      els.heroStats.innerHTML = heroItems.map(item => `
+        <div class="hero-stat">
+          <div class="metric-label">${item.label}</div>
+          <div class="hero-stat-value">${item.value}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderConfidence(model) {
+      const tone = getConfidenceTone(model.confidence);
+      const summary = tone.key === 'good'
+        ? 'This plan has a healthy margin in most simulations. You still want to test taxes, bad return sequences, and spending shocks before relying on it.'
+        : tone.key === 'warn'
+          ? 'The plan works in a fair number of runs, but it is carrying real risk. Lower spending, more guaranteed income, or a larger starting corpus would improve resilience.'
+          : 'This version of the plan fails too often in the simulation. It likely needs a material change in spending, timing, or funding before it becomes dependable.';
+
+      els.confidenceBanner.innerHTML = `
+        <div class="confidence-gauge" style="--confidence:${model.confidence.toFixed(1)};--ring-color:${tone.color};">
+          <div class="confidence-core">
+            <div>
+              <div class="confidence-score">${model.confidence.toFixed(0)}%</div>
+              <div class="metric-label">Success rate</div>
+            </div>
+          </div>
+        </div>
+        <div class="confidence-text">
+          <div class="pill ${tone.key}">${tone.label}</div>
+          <h2>${tone.headline}</h2>
+          <p>${summary}</p>
+        </div>
+      `;
+
+      els.statusPill.className = `pill ${tone.key}`;
+      els.statusPill.textContent = `${tone.label} plan`;
+    }
+
+    function renderSummary(model) {
+      const cards = [
+        {
+          label: '10th percentile ending corpus',
+          value: formatCompactCurrency(model.endingStats.p10),
+          foot: 'A rough stress-case ending balance'
+        },
+        {
+          label: '90th percentile ending corpus',
+          value: formatCompactCurrency(model.endingStats.p90),
+          foot: 'Upside case if markets cooperate'
+        },
+        {
+          label: 'Runs that succeeded',
+          value: `${model.successCount.toLocaleString()} / ${model.simulations.toLocaleString()}`,
+          foot: 'Must stay solvent and hit ending target'
+        },
+        {
+          label: 'Typical failure age',
+          value: model.medianFailureAge ? `${Math.round(model.medianFailureAge)}` : 'None',
+          foot: model.medianFailureAge ? 'Median age where failed runs depleted' : 'No depletion in any run'
+        }
+      ];
+
+      els.summaryGrid.innerHTML = cards.map(card => `
+        <div class="metric-card">
+          <div class="metric-label">${card.label}</div>
+          <div class="metric-value">${card.value}</div>
+          <div class="metric-foot">${card.foot}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderChart(model) {
+      const width = 900;
+      const height = 320;
+      const pad = { top: 16, right: 20, bottom: 32, left: 66 };
+      const data = model.percentiles;
+      const minY = Math.min(model.legacyTarget, ...data.map(item => item.p10));
+      const maxY = Math.max(model.legacyTarget, ...data.map(item => item.p90));
+      const floor = minY > 0 ? 0 : minY;
+      const ceiling = maxY <= 0 ? 1 : maxY;
+      const xFor = index => pad.left + (index / Math.max(1, data.length - 1)) * (width - pad.left - pad.right);
+      const yFor = value => {
+        const ratio = (value - floor) / Math.max(1, ceiling - floor);
+        return height - pad.bottom - ratio * (height - pad.top - pad.bottom);
+      };
+
+      const p90Path = data.map((item, index) => `${index === 0 ? 'M' : 'L'} ${xFor(index).toFixed(2)} ${yFor(item.p90).toFixed(2)}`).join(' ');
+      const p10Reverse = data.slice().reverse().map((item, reverseIndex) => {
+        const index = data.length - 1 - reverseIndex;
+        return `L ${xFor(index).toFixed(2)} ${yFor(item.p10).toFixed(2)}`;
+      }).join(' ');
+      const bandPath = `${p90Path} ${p10Reverse} Z`;
+      const medianPath = data.map((item, index) => `${index === 0 ? 'M' : 'L'} ${xFor(index).toFixed(2)} ${yFor(item.p50).toFixed(2)}`).join(' ');
+      const targetY = yFor(model.legacyTarget);
+      const tickIndexes = Array.from({ length: Math.min(6, data.length) }, (_, idx) => Math.round((idx / Math.max(1, Math.min(5, data.length - 1))) * (data.length - 1)));
+      const yTicks = [0, 0.25, 0.5, 0.75, 1].map(step => floor + ((ceiling - floor) * step));
+
+      els.chartWrap.innerHTML = `
+        <svg viewBox="0 0 ${width} ${height}" width="100%" height="320" role="img" aria-label="Retirement portfolio projection">
+          <rect x="0" y="0" width="${width}" height="${height}" fill="transparent"></rect>
+          ${yTicks.map(value => `
+            <g>
+              <line x1="${pad.left}" y1="${yFor(value).toFixed(2)}" x2="${width - pad.right}" y2="${yFor(value).toFixed(2)}" stroke="rgba(57,69,83,0.10)" stroke-width="1"></line>
+              <text x="${pad.left - 10}" y="${(yFor(value) + 4).toFixed(2)}" text-anchor="end" fill="#5c6575" font-size="11" font-family="Avenir Next, Segoe UI, sans-serif">${escapeHtml(formatAxisCurrency(value))}</text>
+            </g>
+          `).join('')}
+          ${tickIndexes.map(index => `
+            <g>
+              <line x1="${xFor(index).toFixed(2)}" y1="${pad.top}" x2="${xFor(index).toFixed(2)}" y2="${height - pad.bottom}" stroke="rgba(57,69,83,0.05)" stroke-width="1"></line>
+              <text x="${xFor(index).toFixed(2)}" y="${height - 10}" text-anchor="middle" fill="#5c6575" font-size="11" font-family="Avenir Next, Segoe UI, sans-serif">Age ${model.ages[index]}</text>
+            </g>
+          `).join('')}
+          <line x1="${pad.left}" y1="${targetY.toFixed(2)}" x2="${width - pad.right}" y2="${targetY.toFixed(2)}" stroke="#d17b2d" stroke-width="2" stroke-dasharray="7 6"></line>
+          <path d="${bandPath}" fill="rgba(15, 118, 110, 0.18)"></path>
+          <path d="${medianPath}" fill="none" stroke="#0f766e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+      `;
+    }
+
+    function renderSnapshot(model) {
+      els.snapshotWrap.innerHTML = `
+        <table class="snapshot-table">
+          <thead>
+            <tr>
+              <th>Age</th>
+              <th>Median balance</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${model.medianSnapshot.map(item => `
+              <tr>
+                <td>${item.age}</td>
+                <td>${formatCurrency(item.balance)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function getConfidenceTone(confidence) {
+      if (confidence >= 85) return { key: 'good', label: 'Strong', headline: 'Your plan looks resilient.', color: '#1d8751' };
+      if (confidence >= 65) return { key: 'warn', label: 'Watchlist', headline: 'Your plan is workable but fragile.', color: '#b86a1d' };
+      return { key: 'bad', label: 'At risk', headline: 'Your plan needs reinforcement.', color: '#a73f3f' };
+    }
+
+    function percentileSet(values) {
+      return {
+        p10: percentile(values, 0.1),
+        p50: percentile(values, 0.5),
+        p90: percentile(values, 0.9)
+      };
+    }
+
+    function percentile(values, p) {
+      if (!values.length) return 0;
+      const sorted = values.slice().sort((a, b) => a - b);
+      const index = (sorted.length - 1) * p;
+      const lower = Math.floor(index);
+      const upper = Math.ceil(index);
+      if (lower === upper) return sorted[lower];
+      const weight = index - lower;
+      return sorted[lower] * (1 - weight) + sorted[upper] * weight;
+    }
+
+    function normalSample(rng, mean, stdDev) {
+      if (stdDev === 0) return mean;
+      let u = 0;
+      let v = 0;
+      while (u === 0) u = rng();
+      while (v === 0) v = rng();
+      const z = Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+      return mean + z * stdDev;
+    }
+
+    function mulberry32(seed) {
+      let t = seed >>> 0;
+      return function() {
+        t += 0x6D2B79F5;
+        let x = Math.imul(t ^ (t >>> 15), t | 1);
+        x ^= x + Math.imul(x ^ (x >>> 7), x | 61);
+        return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function hashString(value) {
+      let hash = 2166136261;
+      for (let index = 0; index < value.length; index += 1) {
+        hash ^= value.charCodeAt(index);
+        hash = Math.imul(hash, 16777619);
+      }
+      return hash >>> 0;
+    }
+
+    function formatCurrency(value) {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 0
+      }).format(Number.isFinite(value) ? value : 0);
+    }
+
+    function formatCompactCurrency(value) {
+      const sign = value < 0 ? '-' : '';
+      const abs = Math.abs(value);
+      if (abs >= 1000000) return `${sign}$${(abs / 1000000).toFixed(abs >= 10000000 ? 0 : 1)}M`;
+      if (abs >= 1000) return `${sign}$${(abs / 1000).toFixed(abs >= 100000 ? 0 : 1)}k`;
+      return `${sign}$${Math.round(abs)}`;
+    }
+
+    function formatAxisCurrency(value) {
+      const sign = value < 0 ? '-' : '';
+      const abs = Math.abs(value);
+      if (abs >= 1000000) return `${sign}$${(abs / 1000000).toFixed(1)}M`;
+      if (abs >= 1000) return `${sign}$${Math.round(abs / 1000)}k`;
+      return `${sign}$${Math.round(abs)}`;
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+  </script>
+</body>
+</html>
