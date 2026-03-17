@@ -93,12 +93,12 @@
       background: var(--panel);
       border: 1px solid var(--panel-border);
       border-radius: 26px;
-      padding: 20px;
+      padding: 22px;
       box-shadow: var(--shadow);
       backdrop-filter: blur(16px);
       display: grid;
       grid-template-rows: auto auto 1fr auto;
-      gap: 14px;
+      gap: 18px;
       overflow: hidden;
     }
 
@@ -117,15 +117,15 @@
 
     .subtitle {
       color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
+      font-size: 14px;
+      line-height: 1.5;
       max-width: 72ch;
     }
 
     .hero {
       display: grid;
-      grid-template-columns: minmax(240px, 320px) 1fr;
-      gap: 16px;
+      grid-template-columns: 1fr;
+      gap: 18px;
       align-items: stretch;
     }
 
@@ -133,7 +133,7 @@
       background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
       border: 1px solid rgba(255, 255, 255, 0.06);
       border-radius: 22px;
-      padding: 18px;
+      padding: 20px;
     }
 
     .battery-frame {
@@ -182,7 +182,7 @@
     }
 
     .battery-percent {
-      margin-top: 14px;
+      margin-top: 16px;
       font-size: clamp(38px, 5vw, 56px);
       font-weight: 800;
       line-height: 0.95;
@@ -190,26 +190,28 @@
 
     .battery-status {
       color: var(--muted);
-      font-size: 13px;
-      margin-top: 6px;
+      font-size: 14px;
+      margin-top: 8px;
     }
 
     .hero-copy {
       display: grid;
-      gap: 10px;
+      gap: 14px;
     }
 
     .status-pill {
       display: inline-flex;
-      width: fit-content;
+      width: 100%;
       align-items: center;
       gap: 10px;
-      padding: 8px 12px;
-      border-radius: 999px;
+      justify-content: center;
+      padding: 10px 14px;
+      border-radius: 16px;
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.08);
       color: #dff7ff;
       font-weight: 600;
+      text-align: center;
     }
 
     .status-dot {
@@ -223,15 +225,16 @@
     .stats {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-      margin-top: 4px;
+      gap: 12px;
+      margin-top: 0;
     }
 
     .stat-card {
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid rgba(255, 255, 255, 0.06);
       border-radius: 16px;
-      padding: 12px;
+      padding: 14px;
+      min-width: 0;
     }
 
     .stat-label {
@@ -248,21 +251,27 @@
     }
 
     .refresh-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) auto;
+      align-items: start;
+      gap: 16px;
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
     }
 
     .refresh-meta {
       color: var(--muted);
       font-size: 12px;
+      line-height: 1.5;
+      padding-top: 2px;
     }
 
     .refresh-button {
       border: none;
-      border-radius: 999px;
-      padding: 10px 16px;
+      border-radius: 12px;
+      padding: 11px 16px;
       background: linear-gradient(135deg, #67e8f9, #3b82f6);
       color: #04101c;
       font-size: 13px;
@@ -298,7 +307,7 @@
       min-height: 0;
       display: grid;
       grid-template-rows: auto auto 1fr auto;
-      gap: 12px;
+      gap: 16px;
       overflow: hidden;
     }
 
@@ -306,7 +315,7 @@
       display: flex;
       align-items: end;
       justify-content: space-between;
-      gap: 10px;
+      gap: 14px;
       flex-wrap: wrap;
     }
 
@@ -317,8 +326,8 @@
 
     .history-subtitle {
       color: var(--muted);
-      font-size: 12px;
-      line-height: 1.4;
+      font-size: 13px;
+      line-height: 1.5;
       max-width: 74ch;
     }
 
@@ -330,8 +339,8 @@
 
     .ghost-button {
       border: 1px solid rgba(103, 232, 249, 0.24);
-      border-radius: 999px;
-      padding: 8px 12px;
+      border-radius: 12px;
+      padding: 11px 14px;
       background: rgba(255, 255, 255, 0.04);
       color: #dff7ff;
       font-size: 12px;
@@ -346,18 +355,18 @@
     .trend-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
+      gap: 14px;
     }
 
     .trend-card {
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid rgba(255, 255, 255, 0.06);
       border-radius: 18px;
-      padding: 12px;
+      padding: 14px;
       min-height: 0;
       display: grid;
       grid-template-rows: auto auto auto 1fr;
-      gap: 8px;
+      gap: 10px;
     }
 
     .trend-card h2 {
@@ -367,7 +376,7 @@
     .trend-copy {
       color: var(--muted);
       font-size: 12px;
-      line-height: 1.35;
+      line-height: 1.45;
     }
 
     .trend-summary {
@@ -427,7 +436,7 @@
     .live-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
+      gap: 14px;
     }
 
     .header-copy {
@@ -438,8 +447,8 @@
     .dashboard-grid {
       min-height: 0;
       display: grid;
-      grid-template-columns: minmax(300px, 340px) 1fr;
-      gap: 14px;
+      grid-template-columns: minmax(340px, 390px) 1fr;
+      gap: 18px;
       overflow: hidden;
     }
 
@@ -447,13 +456,19 @@
       min-height: 0;
       display: grid;
       grid-template-rows: auto auto;
-      gap: 12px;
+      gap: 14px;
     }
 
     .compact-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, max-content));
+      justify-content: end;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .compact-actions > button {
+      white-space: nowrap;
     }
 
     @media (max-width: 1100px) {
@@ -471,6 +486,9 @@
         display: block;
         padding: 22px;
       }
+      .refresh-row {
+        grid-template-columns: 1fr;
+      }
       .dashboard-grid {
         grid-template-columns: 1fr;
         overflow: visible;
@@ -478,6 +496,13 @@
       .history-section {
         display: block;
         overflow: visible;
+      }
+      .compact-actions {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        justify-content: stretch;
+      }
+      .compact-actions > button {
+        width: 100%;
       }
     }
 
@@ -488,11 +513,12 @@
       .trend-grid { grid-template-columns: 1fr; }
       .live-grid { grid-template-columns: 1fr; }
       .trend-summary { grid-template-columns: 1fr; }
-      .refresh-row {
-        flex-direction: column;
-        align-items: flex-start;
-      }
+      .refresh-row { padding: 14px; }
+      .compact-actions { grid-template-columns: 1fr; }
       .refresh-button {
+        width: 100%;
+      }
+      .ghost-button {
         width: 100%;
       }
     }
