@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI App Catalog</title>
+  <link
+    rel="search"
+    type="application/opensearchdescription+xml"
+    title="AI App Catalog Search"
+    href="https://rajeshpaddy.github.io/movielog/opensearch-app-catalog.xml">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; padding: 20px; }
@@ -165,7 +170,7 @@
     <div class="app-grid" id="appGrid"></div>
   </div>
   <a class="changelog-link" href="changelog.html" title="View per-app changelog">Changelog</a>
-  <div class="build-badge" title="Catalog build version">build 20260316-1</div>
+  <div class="build-badge" title="Catalog build version">build 20260317-1</div>
 
   <script src="shared-store-config.js?v=20260311-worker3"></script>
   <script src="shared-store.js?v=20260311-worker3"></script>
@@ -365,6 +370,105 @@
     let filteredApps = [...apps];
     let renderedApps = [...apps];
     let selectedIndex = -1;
+
+    function normalizeSearchText(value) {
+      return String(value || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim();
+    }
+
+    function getSearchableText(app) {
+      return normalizeSearchText(`${app.name} ${app.desc} ${getAppCategory(app).label}`);
+    }
+
+    function filterAppsByQuery(query) {
+      const normalizedQuery = normalizeSearchText(query);
+      if (!normalizedQuery) {
+        return [...apps];
+      }
+
+      return apps.filter(app => getSearchableText(app).includes(normalizedQuery));
+    }
+
+    function scoreAppMatch(app, query) {
+      const normalizedQuery = normalizeSearchText(query);
+      if (!normalizedQuery) return 0;
+
+      const normalizedName = normalizeSearchText(app.name);
+      const normalizedDesc = normalizeSearchText(app.desc);
+      const normalizedCategory = normalizeSearchText(getAppCategory(app).label);
+      const queryWords = normalizedQuery.split(' ').filter(Boolean);
+
+      let score = 0;
+      if (normalizedName === normalizedQuery) score += 1000;
+      if (normalizedName.startsWith(normalizedQuery)) score += 700;
+      if (normalizedName.includes(normalizedQuery)) score += 500;
+      if (normalizedDesc.includes(normalizedQuery)) score += 180;
+      if (normalizedCategory.includes(normalizedQuery)) score += 120;
+
+      queryWords.forEach(word => {
+        if (normalizedName.split(' ').includes(word)) score += 110;
+        else if (normalizedName.includes(word)) score += 70;
+
+        if (normalizedDesc.includes(word)) score += 24;
+        if (normalizedCategory.includes(word)) score += 18;
+      });
+
+      return score;
+    }
+
+    function findBestAppMatch(query) {
+      const ranked = apps
+        .map(app => ({ app, score: scoreAppMatch(app, query) }))
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score || a.app.name.localeCompare(b.app.name));
+
+      if (ranked.length === 0) {
+        return null;
+      }
+
+      const [best, second] = ranked;
+      const normalizedQuery = normalizeSearchText(query);
+      const normalizedBestName = normalizeSearchText(best.app.name);
+      const isExactName = normalizedBestName === normalizedQuery;
+      const isStrongPrefix = normalizedBestName.startsWith(normalizedQuery) && normalizedQuery.length >= 3;
+      const hasComfortableLead = !second || best.score >= second.score + 120;
+
+      if (isExactName || isStrongPrefix || hasComfortableLead) {
+        return best.app;
+      }
+
+      return null;
+    }
+
+    function applySearchQuery(query) {
+      filteredApps = filterAppsByQuery(query);
+      selectedIndex = -1;
+      renderApps(filteredApps);
+    }
+
+    function handleCatalogQueryParams() {
+      const params = new URLSearchParams(window.location.search);
+      const query = (params.get('q') || params.get('query') || '').trim();
+      const shouldOpen = ['1', 'true', 'yes'].includes((params.get('open') || '').toLowerCase());
+
+      if (!query) {
+        return;
+      }
+
+      searchInput.value = query;
+      applySearchQuery(query);
+
+      if (!shouldOpen) {
+        return;
+      }
+
+      const matchedApp = findBestAppMatch(query);
+      if (matchedApp) {
+        openApp(matchedApp);
+      }
+    }
 
     function getIsoWeekInfo(date) {
       const utcDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -661,14 +765,7 @@
     }
     
     searchInput.addEventListener('input', (e) => {
-      const query = e.target.value.toLowerCase();
-      filteredApps = apps.filter(app => 
-        app.name.toLowerCase().includes(query) || 
-        app.desc.toLowerCase().includes(query) ||
-        getAppCategory(app).label.toLowerCase().includes(query)
-      );
-      selectedIndex = -1;
-      renderApps(filteredApps);
+      applySearchQuery(e.target.value);
     });
 
     searchInput.addEventListener('keydown', (e) => {
@@ -698,6 +795,7 @@
 
     renderCatalogStats();
     renderApps(filteredApps);
+    handleCatalogQueryParams();
     refreshTelemetryCounts();
 
     document.querySelector('.video-tile')?.addEventListener('click', () => {
