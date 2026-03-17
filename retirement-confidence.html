@@ -256,6 +256,13 @@
       opacity: 1;
     }
 
+    .help-tip--below::after {
+      left: auto;
+      right: 0;
+      top: calc(100% + 8px);
+      transform: none;
+    }
+
     .field input,
     .field select {
       width: 100%;
@@ -669,7 +676,7 @@
                 <input id="returnMean" name="returnMean" type="number" step="0.1">
               </div>
               <div>
-                <label for="returnStdDev">Return volatility % <span class="help-tip" tabindex="0" data-help="How much annual returns can swing up or down around the average. Higher volatility means more uncertainty and more sequence-of-returns risk.">?</span></label>
+                <label for="returnStdDev">Return volatility % <span class="help-tip help-tip--below" tabindex="0" data-help="How much annual returns can swing up or down around the average. Higher volatility means more uncertainty and more sequence-of-returns risk.">?</span></label>
                 <input id="returnStdDev" name="returnStdDev" type="number" step="0.1">
               </div>
             </div>
