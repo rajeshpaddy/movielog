@@ -411,6 +411,38 @@
       overflow: hidden;
       border: 1px solid rgba(255, 255, 255, 0.05);
       min-height: 0;
+      position: relative;
+      cursor: zoom-in;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .chart-frame:hover {
+      transform: translateY(-1px);
+      border-color: rgba(103, 232, 249, 0.28);
+      box-shadow: 0 14px 26px rgba(0, 0, 0, 0.22);
+    }
+
+    .chart-frame:focus-visible {
+      outline: 2px solid rgba(103, 232, 249, 0.9);
+      outline-offset: 3px;
+    }
+
+    .chart-frame::after {
+      content: "Open";
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 2;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: rgba(8, 19, 31, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: rgba(236, 248, 255, 0.78);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      pointer-events: none;
     }
 
     .chart-svg {
@@ -471,6 +503,91 @@
       white-space: nowrap;
     }
 
+    .chart-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 9998;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 28px;
+      background: rgba(3, 8, 15, 0.74);
+      backdrop-filter: blur(10px);
+    }
+
+    .chart-modal.is-open {
+      display: flex;
+    }
+
+    .chart-modal-dialog {
+      width: min(1100px, 100%);
+      max-height: min(88vh, 920px);
+      border-radius: 24px;
+      overflow: hidden;
+      background: rgba(9, 18, 31, 0.95);
+      border: 1px solid rgba(103, 232, 249, 0.16);
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.45);
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .chart-modal-head {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .chart-modal-title {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+
+    .chart-modal-copy {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .chart-modal-close {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .chart-modal-body {
+      padding: 18px 20px 20px;
+      overflow: auto;
+    }
+
+    .chart-modal-chart {
+      min-height: 420px;
+      border-radius: 18px;
+      overflow: hidden;
+      background: rgba(3, 10, 20, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .chart-modal-chart .chart-svg {
+      height: auto;
+      min-height: 420px;
+    }
+
+    .chart-modal-chart .empty-chart {
+      min-height: 420px;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+    }
+
     @media (max-width: 1100px) {
       body {
         height: auto;
@@ -520,6 +637,20 @@
       }
       .ghost-button {
         width: 100%;
+      }
+      .chart-modal {
+        padding: 14px;
+      }
+      .chart-modal-head {
+        padding: 16px;
+      }
+      .chart-modal-body {
+        padding: 14px 16px 16px;
+      }
+      .chart-modal-chart,
+      .chart-modal-chart .chart-svg,
+      .chart-modal-chart .empty-chart {
+        min-height: 280px;
       }
     }
   </style>
@@ -663,6 +794,21 @@
     </section>
   </main>
 
+  <div class="chart-modal" id="chartModal" aria-hidden="true">
+    <div class="chart-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="chartModalTitle">
+      <div class="chart-modal-head">
+        <div>
+          <div class="chart-modal-title" id="chartModalTitle">Chart</div>
+          <div class="chart-modal-copy" id="chartModalCopy">Expanded chart view.</div>
+        </div>
+        <button class="chart-modal-close" id="chartModalClose" type="button" aria-label="Close expanded chart">Close</button>
+      </div>
+      <div class="chart-modal-body">
+        <div class="chart-modal-chart" id="chartModalChart"></div>
+      </div>
+    </div>
+  </div>
+
   <script>
     const STORAGE_KEY = 'batteryLevelHistoryV1';
     const MAX_SNAPSHOTS = 3000;
@@ -693,10 +839,16 @@
     const currentDrainChart = document.getElementById('currentDrainChart');
     const currentChargeChart = document.getElementById('currentChargeChart');
     const snapshotMeta = document.getElementById('snapshotMeta');
+    const chartModal = document.getElementById('chartModal');
+    const chartModalClose = document.getElementById('chartModalClose');
+    const chartModalTitle = document.getElementById('chartModalTitle');
+    const chartModalCopy = document.getElementById('chartModalCopy');
+    const chartModalChart = document.getElementById('chartModalChart');
 
     let batteryManager = null;
     let loggingIntervalId = null;
     let lastLoggedAt = 0;
+    let activeExpandedChart = null;
 
     function getStoredSnapshots() {
       try {
@@ -901,6 +1053,55 @@
         .replaceAll('"', '&quot;');
     }
 
+    function getChartMeta(container) {
+      const card = container.closest('.trend-card');
+      const title = card ? card.querySelector('h2')?.textContent || 'Chart' : 'Chart';
+      const copy = card ? card.querySelector('.trend-copy')?.textContent || 'Expanded chart view.' : 'Expanded chart view.';
+      return { title, copy };
+    }
+
+    function syncExpandedChart() {
+      if (!activeExpandedChart) return;
+      chartModalChart.innerHTML = activeExpandedChart.innerHTML;
+    }
+
+    function openChartModal(container) {
+      activeExpandedChart = container;
+      const meta = getChartMeta(container);
+      chartModalTitle.textContent = meta.title;
+      chartModalCopy.textContent = meta.copy;
+      syncExpandedChart();
+      chartModal.classList.add('is-open');
+      chartModal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      chartModalClose.focus();
+    }
+
+    function closeChartModal() {
+      chartModal.classList.remove('is-open');
+      chartModal.setAttribute('aria-hidden', 'true');
+      chartModalChart.innerHTML = '';
+      activeExpandedChart = null;
+      document.body.style.overflow = '';
+    }
+
+    function registerChartFrame(container) {
+      if (!container) return;
+      container.setAttribute('role', 'button');
+      container.setAttribute('tabindex', '0');
+      container.setAttribute('aria-label', `${getChartMeta(container).title}. Open expanded view.`);
+      if (container.dataset.modalBound === 'true') return;
+
+      container.addEventListener('click', () => openChartModal(container));
+      container.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          openChartModal(container);
+        }
+      });
+      container.dataset.modalBound = 'true';
+    }
+
     function renderSessionChart(container, sessions, color, emptyMessage) {
       if (!sessions.length) {
         container.innerHTML = `<div class="empty-chart">${emptyMessage}</div>`;
@@ -1098,6 +1299,9 @@
         defs.appendChild(chargeGradient);
         svg.insertBefore(defs, svg.firstChild);
       });
+
+      [drainChart, chargeChart, currentDrainChart, currentChargeChart].forEach(registerChartFrame);
+      syncExpandedChart();
     }
 
     function startLoggingLoop() {
@@ -1195,6 +1399,18 @@
     clearHistoryButton.addEventListener('click', () => {
       localStorage.removeItem(STORAGE_KEY);
       renderHistory();
+    });
+
+    chartModalClose.addEventListener('click', closeChartModal);
+    chartModal.addEventListener('click', event => {
+      if (event.target === chartModal) {
+        closeChartModal();
+      }
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && chartModal.classList.contains('is-open')) {
+        closeChartModal();
+      }
     });
 
     refreshButton.addEventListener('click', loadBattery);
