@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laptop Battery Level</title>
+  <style>
+    :root {
+      --bg-top: #08131f;
+      --bg-bottom: #13283b;
+      --panel: rgba(10, 22, 37, 0.78);
+      --panel-border: rgba(124, 221, 255, 0.22);
+      --text: #ecf8ff;
+      --muted: #92abc0;
+      --cyan: #67e8f9;
+      --green: #4ade80;
+      --amber: #fbbf24;
+      --red: #fb7185;
+      --track: rgba(255, 255, 255, 0.08);
+      --shadow: 0 24px 50px rgba(0, 0, 0, 0.34);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      padding: 24px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(103, 232, 249, 0.18), transparent 30%),
+        radial-gradient(circle at 85% 20%, rgba(74, 222, 128, 0.12), transparent 24%),
+        linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+      display: grid;
+      place-items: center;
+      overflow-x: hidden;
+    }
+
+    .orb {
+      position: fixed;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      filter: blur(40px);
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    .orb-one {
+      top: -80px;
+      left: -60px;
+      background: rgba(103, 232, 249, 0.2);
+    }
+
+    .orb-two {
+      right: -90px;
+      bottom: -70px;
+      background: rgba(74, 222, 128, 0.14);
+    }
+
+    .app-home-link {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 10;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(103, 232, 249, 0.35);
+      background: rgba(8, 19, 31, 0.86);
+      color: #e6f9ff;
+      text-decoration: none;
+      font: 600 14px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      backdrop-filter: blur(6px);
+    }
+
+    .app-home-link:hover {
+      background: rgba(19, 40, 59, 0.95);
+    }
+
+    .shell {
+      width: min(100%, 760px);
+      position: relative;
+      z-index: 1;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 28px;
+      padding: 32px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .eyebrow {
+      color: var(--cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      font-size: 11px;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-size: clamp(34px, 8vw, 64px);
+      line-height: 0.95;
+      margin-bottom: 14px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.6;
+      max-width: 58ch;
+      margin-bottom: 28px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(230px, 320px) 1fr;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .battery-art {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 24px;
+      padding: 28px;
+    }
+
+    .battery-frame {
+      position: relative;
+      height: 180px;
+      border-radius: 30px;
+      border: 4px solid rgba(236, 248, 255, 0.82);
+      padding: 14px;
+      background: rgba(0, 0, 0, 0.14);
+      overflow: hidden;
+    }
+
+    .battery-frame::after {
+      content: "";
+      position: absolute;
+      top: 58px;
+      right: -16px;
+      width: 12px;
+      height: 56px;
+      border-radius: 0 10px 10px 0;
+      background: rgba(236, 248, 255, 0.82);
+    }
+
+    .battery-fill {
+      position: absolute;
+      inset: 14px;
+      width: 0%;
+      border-radius: 16px;
+      background: linear-gradient(90deg, #60a5fa, #67e8f9);
+      box-shadow: inset 0 0 24px rgba(255, 255, 255, 0.14);
+      transition: width 0.5s ease, background 0.5s ease;
+    }
+
+    .battery-grid {
+      position: absolute;
+      inset: 14px;
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 6px;
+      pointer-events: none;
+    }
+
+    .battery-grid span {
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .battery-percent {
+      margin-top: 20px;
+      font-size: clamp(44px, 10vw, 72px);
+      font-weight: 800;
+      line-height: 0.95;
+    }
+
+    .battery-status {
+      color: var(--muted);
+      font-size: 16px;
+      margin-top: 8px;
+    }
+
+    .hero-copy {
+      display: grid;
+      gap: 14px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #dff7ff;
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 18px rgba(74, 222, 128, 0.6);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 12px;
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .refresh-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .refresh-meta {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .refresh-button {
+      border: none;
+      border-radius: 999px;
+      padding: 12px 18px;
+      background: linear-gradient(135deg, #67e8f9, #3b82f6);
+      color: #04101c;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .refresh-button:hover {
+      filter: brightness(1.05);
+    }
+
+    .note {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .warning {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 16px;
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.24);
+      color: #fde68a;
+      display: none;
+    }
+
+    .warning.show {
+      display: block;
+    }
+
+    @media (max-width: 760px) {
+      body { padding: 16px; }
+      .panel { padding: 22px; border-radius: 22px; }
+      .hero { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: 1fr; }
+      .refresh-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .refresh-button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="orb orb-one"></div>
+  <div class="orb orb-two"></div>
+
+  <a class="app-home-link" href="app-catalog.html" title="Back to App Catalog">Home</a>
+
+  <main class="shell">
+    <section class="panel">
+      <div class="eyebrow">Device status</div>
+      <h1>Laptop Battery Level</h1>
+      <p class="subtitle">A quick readout of your current battery percentage, charging state, and estimated time remaining when your browser exposes that information.</p>
+
+      <div class="hero">
+        <div class="battery-art">
+          <div class="battery-frame">
+            <div class="battery-fill" id="batteryFill"></div>
+            <div class="battery-grid" aria-hidden="true">
+              <span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="battery-percent" id="batteryPercent">--%</div>
+          <div class="battery-status" id="batteryStatus">Waiting for battery data...</div>
+        </div>
+
+        <div class="hero-copy">
+          <div class="status-pill">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusPillText">Detecting battery state</span>
+          </div>
+
+          <div class="stats">
+            <div class="stat-card">
+              <div class="stat-label">Charge State</div>
+              <div class="stat-value" id="chargeState">Unknown</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Time to Full</div>
+              <div class="stat-value" id="chargeTime">--</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Time Remaining</div>
+              <div class="stat-value" id="dischargeTime">--</div>
+            </div>
+          </div>
+
+          <div class="warning" id="warningBox"></div>
+        </div>
+      </div>
+
+      <div class="refresh-row">
+        <div class="refresh-meta" id="lastUpdated">Last updated: not yet</div>
+        <button class="refresh-button" id="refreshButton" type="button">Refresh Battery Data</button>
+      </div>
+
+      <p class="note">This app uses the browser Battery Status API when available. Some browsers intentionally disable it for privacy or security reasons, so unsupported environments will show a clear fallback message instead of guessing.</p>
+    </section>
+  </main>
+
+  <script>
+    const batteryPercent = document.getElementById('batteryPercent');
+    const batteryStatus = document.getElementById('batteryStatus');
+    const batteryFill = document.getElementById('batteryFill');
+    const statusDot = document.getElementById('statusDot');
+    const statusPillText = document.getElementById('statusPillText');
+    const chargeState = document.getElementById('chargeState');
+    const chargeTime = document.getElementById('chargeTime');
+    const dischargeTime = document.getElementById('dischargeTime');
+    const lastUpdated = document.getElementById('lastUpdated');
+    const refreshButton = document.getElementById('refreshButton');
+    const warningBox = document.getElementById('warningBox');
+
+    let batteryManager = null;
+
+    function formatDuration(seconds) {
+      if (!Number.isFinite(seconds) || seconds <= 0) {
+        return '--';
+      }
+
+      const totalMinutes = Math.round(seconds / 60);
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+
+      if (hours === 0) {
+        return `${minutes}m`;
+      }
+
+      if (minutes === 0) {
+        return `${hours}h`;
+      }
+
+      return `${hours}h ${minutes}m`;
+    }
+
+    function setWarning(message) {
+      warningBox.textContent = message;
+      warningBox.classList.toggle('show', Boolean(message));
+    }
+
+    function getLevelColor(level) {
+      if (level <= 0.2) return 'linear-gradient(90deg, #ef4444, #fb7185)';
+      if (level <= 0.5) return 'linear-gradient(90deg, #f59e0b, #fbbf24)';
+      return 'linear-gradient(90deg, #34d399, #67e8f9)';
+    }
+
+    function updateTimestamp() {
+      lastUpdated.textContent = `Last updated: ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' })}`;
+    }
+
+    function renderBattery(battery) {
+      const level = Number.isFinite(battery.level) ? battery.level : 0;
+      const percent = Math.round(level * 100);
+      const charging = Boolean(battery.charging);
+
+      batteryPercent.textContent = `${percent}%`;
+      batteryStatus.textContent = charging
+        ? (percent === 100 ? 'Fully charged and connected to power' : 'Currently charging')
+        : 'Running on battery';
+      batteryFill.style.width = `${percent}%`;
+      batteryFill.style.background = getLevelColor(level);
+
+      statusDot.style.background = charging ? 'var(--green)' : (percent <= 20 ? 'var(--red)' : 'var(--amber)');
+      statusDot.style.boxShadow = charging
+        ? '0 0 18px rgba(74, 222, 128, 0.6)'
+        : (percent <= 20 ? '0 0 18px rgba(251, 113, 133, 0.6)' : '0 0 18px rgba(251, 191, 36, 0.6)');
+
+      statusPillText.textContent = charging
+        ? (percent === 100 ? 'Power connected, battery full' : 'Power connected, battery rising')
+        : (percent <= 20 ? 'Low battery, unplugged' : 'On battery power');
+
+      chargeState.textContent = charging ? (percent === 100 ? 'Full' : 'Charging') : 'Discharging';
+      chargeTime.textContent = battery.charging && battery.chargingTime !== Infinity
+        ? formatDuration(battery.chargingTime)
+        : '--';
+      dischargeTime.textContent = !battery.charging && battery.dischargingTime !== Infinity
+        ? formatDuration(battery.dischargingTime)
+        : '--';
+
+      setWarning(percent <= 15 && !charging ? 'Battery is low. Plugging in soon is a good idea.' : '');
+      updateTimestamp();
+    }
+
+    function attachBatteryListeners(battery) {
+      ['chargingchange', 'levelchange', 'chargingtimechange', 'dischargingtimechange'].forEach(eventName => {
+        battery.addEventListener(eventName, () => renderBattery(battery));
+      });
+    }
+
+    async function loadBattery() {
+      if (!('getBattery' in navigator)) {
+        batteryPercent.textContent = 'N/A';
+        batteryStatus.textContent = 'Battery information is not available in this browser.';
+        statusPillText.textContent = 'Battery API unavailable';
+        chargeState.textContent = 'Unsupported';
+        chargeTime.textContent = '--';
+        dischargeTime.textContent = '--';
+        batteryFill.style.width = '0%';
+        setWarning('Try opening this page in a browser that supports the Battery Status API. Many browsers disable it by default.');
+        updateTimestamp();
+        return;
+      }
+
+      try {
+        if (!batteryManager) {
+          batteryManager = await navigator.getBattery();
+          attachBatteryListeners(batteryManager);
+        }
+        renderBattery(batteryManager);
+      } catch (error) {
+        batteryPercent.textContent = 'Err';
+        batteryStatus.textContent = 'Could not read battery data.';
+        statusPillText.textContent = 'Read failed';
+        chargeState.textContent = 'Unavailable';
+        chargeTime.textContent = '--';
+        dischargeTime.textContent = '--';
+        batteryFill.style.width = '0%';
+        setWarning('The browser reported an error while loading battery information.');
+        updateTimestamp();
+      }
+    }
+
+    refreshButton.addEventListener('click', loadBattery);
+    loadBattery();
+  </script>
+</body>
+</html>
