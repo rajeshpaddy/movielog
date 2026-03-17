@@ -24,7 +24,8 @@
 
     body {
       min-height: 100vh;
-      padding: 24px;
+      height: 100vh;
+      padding: 14px;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       color: var(--text);
       background:
@@ -33,7 +34,7 @@
         linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
       display: grid;
       place-items: center;
-      overflow-x: hidden;
+      overflow: hidden;
     }
 
     .orb {
@@ -81,62 +82,66 @@
     }
 
     .shell {
-      width: min(100%, 760px);
+      width: min(100%, 1440px);
+      height: min(100vh - 28px, 940px);
       position: relative;
       z-index: 1;
     }
 
     .panel {
+      height: 100%;
       background: var(--panel);
       border: 1px solid var(--panel-border);
-      border-radius: 28px;
-      padding: 32px;
+      border-radius: 26px;
+      padding: 20px;
       box-shadow: var(--shadow);
       backdrop-filter: blur(16px);
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 14px;
+      overflow: hidden;
     }
 
     .eyebrow {
       color: var(--cyan);
       text-transform: uppercase;
       letter-spacing: 0.22em;
-      font-size: 11px;
-      margin-bottom: 14px;
+      font-size: 10px;
     }
 
     h1 {
-      font-size: clamp(34px, 8vw, 64px);
-      line-height: 0.95;
-      margin-bottom: 14px;
+      font-size: clamp(26px, 3.2vw, 44px);
+      line-height: 0.98;
+      margin-bottom: 8px;
     }
 
     .subtitle {
       color: var(--muted);
-      font-size: 16px;
-      line-height: 1.6;
-      max-width: 58ch;
-      margin-bottom: 28px;
+      font-size: 13px;
+      line-height: 1.45;
+      max-width: 72ch;
     }
 
     .hero {
       display: grid;
-      grid-template-columns: minmax(230px, 320px) 1fr;
-      gap: 28px;
-      align-items: center;
+      grid-template-columns: minmax(240px, 320px) 1fr;
+      gap: 16px;
+      align-items: stretch;
     }
 
     .battery-art {
       background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
       border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 24px;
-      padding: 28px;
+      border-radius: 22px;
+      padding: 18px;
     }
 
     .battery-frame {
       position: relative;
-      height: 180px;
-      border-radius: 30px;
+      height: 118px;
+      border-radius: 26px;
       border: 4px solid rgba(236, 248, 255, 0.82);
-      padding: 14px;
+      padding: 12px;
       background: rgba(0, 0, 0, 0.14);
       overflow: hidden;
     }
@@ -144,17 +149,17 @@
     .battery-frame::after {
       content: "";
       position: absolute;
-      top: 58px;
+      top: 34px;
       right: -16px;
       width: 12px;
-      height: 56px;
+      height: 42px;
       border-radius: 0 10px 10px 0;
       background: rgba(236, 248, 255, 0.82);
     }
 
     .battery-fill {
       position: absolute;
-      inset: 14px;
+      inset: 12px;
       width: 0%;
       border-radius: 16px;
       background: linear-gradient(90deg, #60a5fa, #67e8f9);
@@ -164,7 +169,7 @@
 
     .battery-grid {
       position: absolute;
-      inset: 14px;
+      inset: 12px;
       display: grid;
       grid-template-columns: repeat(10, 1fr);
       gap: 6px;
@@ -177,21 +182,21 @@
     }
 
     .battery-percent {
-      margin-top: 20px;
-      font-size: clamp(44px, 10vw, 72px);
+      margin-top: 14px;
+      font-size: clamp(38px, 5vw, 56px);
       font-weight: 800;
       line-height: 0.95;
     }
 
     .battery-status {
       color: var(--muted);
-      font-size: 16px;
-      margin-top: 8px;
+      font-size: 13px;
+      margin-top: 6px;
     }
 
     .hero-copy {
       display: grid;
-      gap: 14px;
+      gap: 10px;
     }
 
     .status-pill {
@@ -199,7 +204,7 @@
       width: fit-content;
       align-items: center;
       gap: 10px;
-      padding: 10px 14px;
+      padding: 8px 12px;
       border-radius: 999px;
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -219,14 +224,14 @@
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 14px;
-      margin-top: 12px;
+      margin-top: 4px;
     }
 
     .stat-card {
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 18px;
-      padding: 16px;
+      border-radius: 16px;
+      padding: 12px;
     }
 
     .stat-label {
@@ -238,7 +243,7 @@
     }
 
     .stat-value {
-      font-size: 22px;
+      font-size: 18px;
       font-weight: 700;
     }
 
@@ -246,24 +251,21 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
-      margin-top: 24px;
-      padding-top: 20px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      gap: 10px;
     }
 
     .refresh-meta {
       color: var(--muted);
-      font-size: 14px;
+      font-size: 12px;
     }
 
     .refresh-button {
       border: none;
       border-radius: 999px;
-      padding: 12px 18px;
+      padding: 10px 16px;
       background: linear-gradient(135deg, #67e8f9, #3b82f6);
       color: #04101c;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 800;
       cursor: pointer;
     }
@@ -273,15 +275,14 @@
     }
 
     .note {
-      margin-top: 18px;
       color: var(--muted);
-      font-size: 13px;
-      line-height: 1.5;
+      font-size: 11px;
+      line-height: 1.4;
     }
 
     .warning {
-      margin-top: 18px;
-      padding: 16px;
+      margin-top: 8px;
+      padding: 12px;
       border-radius: 16px;
       background: rgba(251, 191, 36, 0.1);
       border: 1px solid rgba(251, 191, 36, 0.24);
@@ -294,30 +295,31 @@
     }
 
     .history-section {
-      margin-top: 28px;
-      padding-top: 26px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 12px;
+      overflow: hidden;
     }
 
     .history-head {
       display: flex;
       align-items: end;
       justify-content: space-between;
-      gap: 16px;
+      gap: 10px;
       flex-wrap: wrap;
-      margin-bottom: 18px;
     }
 
     .history-title {
-      font-size: 24px;
-      margin-bottom: 6px;
+      font-size: 18px;
+      margin-bottom: 4px;
     }
 
     .history-subtitle {
       color: var(--muted);
-      font-size: 14px;
-      line-height: 1.5;
-      max-width: 58ch;
+      font-size: 12px;
+      line-height: 1.4;
+      max-width: 74ch;
     }
 
     .history-actions {
@@ -329,10 +331,10 @@
     .ghost-button {
       border: 1px solid rgba(103, 232, 249, 0.24);
       border-radius: 999px;
-      padding: 10px 14px;
+      padding: 8px 12px;
       background: rgba(255, 255, 255, 0.04);
       color: #dff7ff;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       cursor: pointer;
     }
@@ -344,39 +346,39 @@
     .trend-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 18px;
-      margin-bottom: 18px;
+      gap: 12px;
     }
 
     .trend-card {
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 22px;
-      padding: 18px;
+      border-radius: 18px;
+      padding: 12px;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto auto auto 1fr;
+      gap: 8px;
     }
 
     .trend-card h2 {
-      font-size: 20px;
-      margin-bottom: 6px;
+      font-size: 16px;
     }
 
     .trend-copy {
       color: var(--muted);
-      font-size: 14px;
-      line-height: 1.5;
-      margin-bottom: 16px;
+      font-size: 12px;
+      line-height: 1.35;
     }
 
     .trend-summary {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-      margin-bottom: 14px;
+      gap: 8px;
     }
 
     .summary-chip {
-      padding: 12px;
-      border-radius: 16px;
+      padding: 10px;
+      border-radius: 14px;
       background: rgba(0, 0, 0, 0.16);
       border: 1px solid rgba(255, 255, 255, 0.05);
     }
@@ -390,44 +392,101 @@
     }
 
     .summary-chip-value {
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 700;
     }
 
     .chart-frame {
       background: rgba(3, 10, 20, 0.42);
-      border-radius: 18px;
+      border-radius: 14px;
       overflow: hidden;
       border: 1px solid rgba(255, 255, 255, 0.05);
+      min-height: 0;
     }
 
     .chart-svg {
       display: block;
       width: 100%;
-      height: 260px;
+      height: 150px;
     }
 
     .empty-chart {
-      padding: 44px 18px;
+      padding: 24px 14px;
       text-align: center;
       color: var(--muted);
-      font-size: 14px;
-      line-height: 1.6;
+      font-size: 12px;
+      line-height: 1.45;
     }
 
     .snapshot-meta {
-      margin-top: 16px;
       color: var(--muted);
-      font-size: 13px;
-      line-height: 1.6;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .live-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .header-copy {
+      display: grid;
+      gap: 8px;
+    }
+
+    .dashboard-grid {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(300px, 340px) 1fr;
+      gap: 14px;
+      overflow: hidden;
+    }
+
+    .overview-stack {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto auto;
+      gap: 12px;
+    }
+
+    .compact-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 1100px) {
+      body {
+        height: auto;
+        min-height: 100vh;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
+      .shell {
+        height: auto;
+      }
+      .panel {
+        height: auto;
+        display: block;
+        padding: 22px;
+      }
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+        overflow: visible;
+      }
+      .history-section {
+        display: block;
+        overflow: visible;
+      }
     }
 
     @media (max-width: 760px) {
       body { padding: 16px; }
-      .panel { padding: 22px; border-radius: 22px; }
       .hero { grid-template-columns: 1fr; }
       .stats { grid-template-columns: 1fr; }
       .trend-grid { grid-template-columns: 1fr; }
+      .live-grid { grid-template-columns: 1fr; }
       .trend-summary { grid-template-columns: 1fr; }
       .refresh-row {
         flex-direction: column;
@@ -447,62 +506,71 @@
 
   <main class="shell">
     <section class="panel">
-      <div class="eyebrow">Device status</div>
-      <h1>Laptop Battery Level</h1>
-      <p class="subtitle">A quick readout of your current battery percentage, charging state, and estimated time remaining when your browser exposes that information.</p>
-
-      <div class="hero">
-        <div class="battery-art">
-          <div class="battery-frame">
-            <div class="battery-fill" id="batteryFill"></div>
-            <div class="battery-grid" aria-hidden="true">
-              <span></span><span></span><span></span><span></span><span></span>
-              <span></span><span></span><span></span><span></span><span></span>
-            </div>
-          </div>
-          <div class="battery-percent" id="batteryPercent">--%</div>
-          <div class="battery-status" id="batteryStatus">Waiting for battery data...</div>
-        </div>
-
-        <div class="hero-copy">
-          <div class="status-pill">
-            <span class="status-dot" id="statusDot"></span>
-            <span id="statusPillText">Detecting battery state</span>
-          </div>
-
-          <div class="stats">
-            <div class="stat-card">
-              <div class="stat-label">Charge State</div>
-              <div class="stat-value" id="chargeState">Unknown</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Time to Full</div>
-              <div class="stat-value" id="chargeTime">--</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Time Remaining</div>
-              <div class="stat-value" id="dischargeTime">--</div>
-            </div>
-          </div>
-
-          <div class="warning" id="warningBox"></div>
+      <div class="header-copy">
+        <div class="eyebrow">Device status</div>
+        <div>
+          <h1>Laptop Battery Level</h1>
+          <p class="subtitle">Live battery status, local history, and charging or draining trends in a single screen dashboard.</p>
         </div>
       </div>
 
       <div class="refresh-row">
         <div class="refresh-meta" id="lastUpdated">Last updated: not yet</div>
-        <button class="refresh-button" id="refreshButton" type="button">Refresh Battery Data</button>
+        <div class="compact-actions">
+          <button class="ghost-button" id="forceLogButton" type="button">Log Snapshot Now</button>
+          <button class="ghost-button" id="clearHistoryButton" type="button">Clear Local History</button>
+          <button class="refresh-button" id="refreshButton" type="button">Refresh Battery Data</button>
+        </div>
       </div>
 
-      <section class="history-section">
+      <div class="dashboard-grid">
+        <div class="overview-stack">
+          <div class="hero">
+            <div class="battery-art">
+              <div class="battery-frame">
+                <div class="battery-fill" id="batteryFill"></div>
+                <div class="battery-grid" aria-hidden="true">
+                  <span></span><span></span><span></span><span></span><span></span>
+                  <span></span><span></span><span></span><span></span><span></span>
+                </div>
+              </div>
+              <div class="battery-percent" id="batteryPercent">--%</div>
+              <div class="battery-status" id="batteryStatus">Waiting for battery data...</div>
+            </div>
+
+            <div class="hero-copy">
+              <div class="status-pill">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusPillText">Detecting battery state</span>
+              </div>
+
+              <div class="stats">
+                <div class="stat-card">
+                  <div class="stat-label">Charge State</div>
+                  <div class="stat-value" id="chargeState">Unknown</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-label">Time to Full</div>
+                  <div class="stat-value" id="chargeTime">--</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-label">Time Remaining</div>
+                  <div class="stat-value" id="dischargeTime">--</div>
+                </div>
+              </div>
+
+              <div class="warning" id="warningBox"></div>
+            </div>
+          </div>
+
+          <div class="snapshot-meta" id="snapshotMeta">No local history yet.</div>
+        </div>
+
+        <section class="history-section">
         <div class="history-head">
           <div>
             <h2 class="history-title">Battery history</h2>
-            <p class="history-subtitle">The app stores local snapshots in your browser and groups them into charging and draining sessions. As long as this page stays open, it will keep logging in the background on a best-effort basis.</p>
-          </div>
-          <div class="history-actions">
-            <button class="ghost-button" id="forceLogButton" type="button">Log Snapshot Now</button>
-            <button class="ghost-button" id="clearHistoryButton" type="button">Clear Local History</button>
+            <p class="history-subtitle">Local snapshots are grouped into charging and draining sessions while the page stays open.</p>
           </div>
         </div>
 
@@ -548,8 +616,22 @@
           </article>
         </div>
 
-        <div class="snapshot-meta" id="snapshotMeta">No local history yet.</div>
-      </section>
+        <div class="live-grid">
+          <article class="trend-card">
+            <h2>Current drain session</h2>
+            <p class="trend-copy">Line chart for the active unplugged session with time on the x-axis and battery level on the y-axis.</p>
+            <div class="chart-frame" id="currentDrainChart"></div>
+          </article>
+
+          <article class="trend-card">
+            <h2>Current charge session</h2>
+            <p class="trend-copy">Line chart for the active plugged-in session with time on the x-axis and battery level on the y-axis.</p>
+            <div class="chart-frame" id="currentChargeChart"></div>
+          </article>
+        </div>
+
+        </section>
+      </div>
 
       <p class="note">This app uses the browser Battery Status API when available. Some browsers intentionally disable it for privacy or security reasons, so unsupported environments will show a clear fallback message instead of guessing.</p>
     </section>
@@ -582,6 +664,8 @@
     const chargeSessions = document.getElementById('chargeSessions');
     const drainChart = document.getElementById('drainChart');
     const chargeChart = document.getElementById('chargeChart');
+    const currentDrainChart = document.getElementById('currentDrainChart');
+    const currentChargeChart = document.getElementById('currentChargeChart');
     const snapshotMeta = document.getElementById('snapshotMeta');
 
     let batteryManager = null;
@@ -752,6 +836,27 @@
         .slice(-12);
     }
 
+    function buildCurrentSession(snapshots, chargingValue) {
+      const filtered = snapshots.filter(snapshot => snapshot.charging === chargingValue);
+      if (!filtered.length) return [];
+
+      let current = [filtered[filtered.length - 1]];
+      for (let index = filtered.length - 2; index >= 0; index -= 1) {
+        const snapshot = filtered[index];
+        const next = current[0];
+        const gapMs = next.timestamp - snapshot.timestamp;
+        const expectedDirection = chargingValue ? next.level >= snapshot.level : next.level <= snapshot.level;
+
+        if (gapMs > 3 * 60 * 60 * 1000 || !expectedDirection) {
+          break;
+        }
+
+        current.unshift(snapshot);
+      }
+
+      return current;
+    }
+
     function averageRate(sessions) {
       if (!sessions.length) return 0;
       return sessions.reduce((sum, session) => sum + session.rate, 0) / sessions.length;
@@ -818,10 +923,85 @@
       `;
     }
 
+    function formatChartTime(timestamp) {
+      return new Date(timestamp).toLocaleTimeString([], {
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+    }
+
+    function renderCurrentSessionLineChart(container, points, color, emptyMessage, label) {
+      if (!points.length || points.length < 2) {
+        container.innerHTML = `<div class="empty-chart">${emptyMessage}</div>`;
+        return;
+      }
+
+      const width = 640;
+      const height = 260;
+      const padding = { top: 22, right: 18, bottom: 48, left: 48 };
+      const innerWidth = width - padding.left - padding.right;
+      const innerHeight = height - padding.top - padding.bottom;
+      const minTime = points[0].timestamp;
+      const maxTime = points[points.length - 1].timestamp;
+      const timeRange = Math.max(maxTime - minTime, 1);
+      const rawMinLevel = Math.min(...points.map(point => point.level));
+      const rawMaxLevel = Math.max(...points.map(point => point.level));
+      const minLevel = Math.max(0, rawMinLevel - 2);
+      const maxLevel = Math.min(100, rawMaxLevel + 2);
+      const levelRange = Math.max(maxLevel - minLevel, 1);
+
+      const toX = point => padding.left + ((point.timestamp - minTime) / timeRange) * innerWidth;
+      const toY = point => padding.top + innerHeight - ((point.level - minLevel) / levelRange) * innerHeight;
+      const pathData = points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${toX(point)} ${toY(point)}`).join(' ');
+
+      const yTicks = 4;
+      const yGuides = Array.from({ length: yTicks + 1 }, (_, index) => {
+        const value = minLevel + (levelRange / yTicks) * index;
+        const y = padding.top + innerHeight - ((value - minLevel) / levelRange) * innerHeight;
+        return `
+          <line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 6" />
+          <text x="${padding.left - 10}" y="${y + 4}" fill="rgba(236,248,255,0.58)" font-size="11" text-anchor="end">${Math.round(value)}%</text>
+        `;
+      }).join('');
+
+      const tickIndexes = Array.from(new Set([
+        0,
+        Math.floor((points.length - 1) / 2),
+        points.length - 1
+      ]));
+      const xTicks = tickIndexes.map(index => {
+        const point = points[index];
+        const x = toX(point);
+        return `
+          <line x1="${x}" y1="${padding.top + innerHeight}" x2="${x}" y2="${padding.top + innerHeight + 6}" stroke="rgba(255,255,255,0.16)" />
+          <text x="${x}" y="${height - 16}" fill="rgba(236,248,255,0.58)" font-size="11" text-anchor="middle">${formatChartTime(point.timestamp)}</text>
+        `;
+      }).join('');
+
+      const markers = points.map(point => `
+        <g>
+          <title>${escapeHtml(`${formatDateTime(point.timestamp)}: ${point.level}%`)}</title>
+          <circle cx="${toX(point)}" cy="${toY(point)}" r="4" fill="${color}" stroke="rgba(8, 19, 31, 0.95)" stroke-width="2"></circle>
+        </g>
+      `).join('');
+
+      container.innerHTML = `
+        <svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(label)}">
+          ${yGuides}
+          <line x1="${padding.left}" y1="${padding.top + innerHeight}" x2="${width - padding.right}" y2="${padding.top + innerHeight}" stroke="rgba(255,255,255,0.16)" />
+          <path d="${pathData}" fill="none" stroke="${color}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"></path>
+          ${markers}
+          ${xTicks}
+        </svg>
+      `;
+    }
+
     function renderHistory() {
       const snapshots = getStoredSnapshots();
       const drainData = buildSessions(snapshots, false);
       const chargeData = buildSessions(snapshots, true);
+      const currentDrainPoints = buildCurrentSession(snapshots, false);
+      const currentChargePoints = buildCurrentSession(snapshots, true);
 
       drainAverage.textContent = formatRate(averageRate(drainData));
       drainFastest.textContent = formatRate(fastestRate(drainData));
@@ -842,6 +1022,20 @@
         chargeData,
         'url(#chargeGradient)',
         'Charge sessions appear here after the app captures at least two charging readings with a percentage increase.'
+      );
+      renderCurrentSessionLineChart(
+        currentDrainChart,
+        currentDrainPoints,
+        '#fb7185',
+        'Current drain session will appear after at least two unplugged snapshots are collected.',
+        'Current drain session line chart'
+      );
+      renderCurrentSessionLineChart(
+        currentChargeChart,
+        currentChargePoints,
+        '#67e8f9',
+        'Current charge session will appear after at least two charging snapshots are collected.',
+        'Current charge session line chart'
       );
 
       const first = snapshots[0];
