@@ -293,11 +293,142 @@
       display: block;
     }
 
+    .history-section {
+      margin-top: 28px;
+      padding-top: 26px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .history-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .history-title {
+      font-size: 24px;
+      margin-bottom: 6px;
+    }
+
+    .history-subtitle {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+      max-width: 58ch;
+    }
+
+    .history-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .ghost-button {
+      border: 1px solid rgba(103, 232, 249, 0.24);
+      border-radius: 999px;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.04);
+      color: #dff7ff;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .ghost-button:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .trend-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .trend-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 22px;
+      padding: 18px;
+    }
+
+    .trend-card h2 {
+      font-size: 20px;
+      margin-bottom: 6px;
+    }
+
+    .trend-copy {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
+    .trend-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .summary-chip {
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(0, 0, 0, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .summary-chip-label {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 5px;
+    }
+
+    .summary-chip-value {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .chart-frame {
+      background: rgba(3, 10, 20, 0.42);
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .chart-svg {
+      display: block;
+      width: 100%;
+      height: 260px;
+    }
+
+    .empty-chart {
+      padding: 44px 18px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .snapshot-meta {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
     @media (max-width: 760px) {
       body { padding: 16px; }
       .panel { padding: 22px; border-radius: 22px; }
       .hero { grid-template-columns: 1fr; }
       .stats { grid-template-columns: 1fr; }
+      .trend-grid { grid-template-columns: 1fr; }
+      .trend-summary { grid-template-columns: 1fr; }
       .refresh-row {
         flex-direction: column;
         align-items: flex-start;
@@ -363,11 +494,73 @@
         <button class="refresh-button" id="refreshButton" type="button">Refresh Battery Data</button>
       </div>
 
+      <section class="history-section">
+        <div class="history-head">
+          <div>
+            <h2 class="history-title">Battery history</h2>
+            <p class="history-subtitle">The app stores local snapshots in your browser and groups them into charging and draining sessions. As long as this page stays open, it will keep logging in the background on a best-effort basis.</p>
+          </div>
+          <div class="history-actions">
+            <button class="ghost-button" id="forceLogButton" type="button">Log Snapshot Now</button>
+            <button class="ghost-button" id="clearHistoryButton" type="button">Clear Local History</button>
+          </div>
+        </div>
+
+        <div class="trend-grid">
+          <article class="trend-card">
+            <h2>Drain speed</h2>
+            <p class="trend-copy">Sessions where the laptop was unplugged and the battery percentage dropped.</p>
+            <div class="trend-summary">
+              <div class="summary-chip">
+                <div class="summary-chip-label">Average</div>
+                <div class="summary-chip-value" id="drainAverage">--</div>
+              </div>
+              <div class="summary-chip">
+                <div class="summary-chip-label">Fastest</div>
+                <div class="summary-chip-value" id="drainFastest">--</div>
+              </div>
+              <div class="summary-chip">
+                <div class="summary-chip-label">Sessions</div>
+                <div class="summary-chip-value" id="drainSessions">0</div>
+              </div>
+            </div>
+            <div class="chart-frame" id="drainChart"></div>
+          </article>
+
+          <article class="trend-card">
+            <h2>Charge speed</h2>
+            <p class="trend-copy">Sessions where the laptop was plugged in and the battery percentage increased.</p>
+            <div class="trend-summary">
+              <div class="summary-chip">
+                <div class="summary-chip-label">Average</div>
+                <div class="summary-chip-value" id="chargeAverage">--</div>
+              </div>
+              <div class="summary-chip">
+                <div class="summary-chip-label">Fastest</div>
+                <div class="summary-chip-value" id="chargeFastest">--</div>
+              </div>
+              <div class="summary-chip">
+                <div class="summary-chip-label">Sessions</div>
+                <div class="summary-chip-value" id="chargeSessions">0</div>
+              </div>
+            </div>
+            <div class="chart-frame" id="chargeChart"></div>
+          </article>
+        </div>
+
+        <div class="snapshot-meta" id="snapshotMeta">No local history yet.</div>
+      </section>
+
       <p class="note">This app uses the browser Battery Status API when available. Some browsers intentionally disable it for privacy or security reasons, so unsupported environments will show a clear fallback message instead of guessing.</p>
     </section>
   </main>
 
   <script>
+    const STORAGE_KEY = 'batteryLevelHistoryV1';
+    const MAX_SNAPSHOTS = 3000;
+    const SNAPSHOT_INTERVAL_MS = 60 * 1000;
+    const MIN_LOG_GAP_MS = 45 * 1000;
+
     const batteryPercent = document.getElementById('batteryPercent');
     const batteryStatus = document.getElementById('batteryStatus');
     const batteryFill = document.getElementById('batteryFill');
@@ -379,8 +572,43 @@
     const lastUpdated = document.getElementById('lastUpdated');
     const refreshButton = document.getElementById('refreshButton');
     const warningBox = document.getElementById('warningBox');
+    const forceLogButton = document.getElementById('forceLogButton');
+    const clearHistoryButton = document.getElementById('clearHistoryButton');
+    const drainAverage = document.getElementById('drainAverage');
+    const drainFastest = document.getElementById('drainFastest');
+    const drainSessions = document.getElementById('drainSessions');
+    const chargeAverage = document.getElementById('chargeAverage');
+    const chargeFastest = document.getElementById('chargeFastest');
+    const chargeSessions = document.getElementById('chargeSessions');
+    const drainChart = document.getElementById('drainChart');
+    const chargeChart = document.getElementById('chargeChart');
+    const snapshotMeta = document.getElementById('snapshotMeta');
 
     let batteryManager = null;
+    let loggingIntervalId = null;
+    let lastLoggedAt = 0;
+
+    function getStoredSnapshots() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function saveSnapshots(snapshots) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshots.slice(-MAX_SNAPSHOTS)));
+    }
+
+    function formatDateTime(timestamp) {
+      return new Date(timestamp).toLocaleString([], {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+    }
 
     function formatDuration(seconds) {
       if (!Number.isFinite(seconds) || seconds <= 0) {
@@ -402,6 +630,26 @@
       return `${hours}h ${minutes}m`;
     }
 
+    function formatHours(hours) {
+      if (!Number.isFinite(hours) || hours <= 0) {
+        return '--';
+      }
+
+      if (hours >= 10) {
+        return `${hours.toFixed(1)}h`;
+      }
+
+      return `${hours.toFixed(2)}h`;
+    }
+
+    function formatRate(rate) {
+      if (!Number.isFinite(rate) || rate <= 0) {
+        return '--';
+      }
+
+      return `${rate.toFixed(1)}%/hr`;
+    }
+
     function setWarning(message) {
       warningBox.textContent = message;
       warningBox.classList.toggle('show', Boolean(message));
@@ -415,6 +663,233 @@
 
     function updateTimestamp() {
       lastUpdated.textContent = `Last updated: ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' })}`;
+    }
+
+    function createSnapshot(battery) {
+      return {
+        timestamp: Date.now(),
+        level: Math.round((Number.isFinite(battery.level) ? battery.level : 0) * 100),
+        charging: Boolean(battery.charging)
+      };
+    }
+
+    function persistSnapshot(battery, reason = 'interval') {
+      const snapshot = createSnapshot(battery);
+      const snapshots = getStoredSnapshots();
+      const last = snapshots[snapshots.length - 1];
+
+      const tooSoon = last && (snapshot.timestamp - last.timestamp) < MIN_LOG_GAP_MS;
+      const unchanged = last && last.level === snapshot.level && last.charging === snapshot.charging;
+      if (reason !== 'manual' && tooSoon && unchanged) {
+        return;
+      }
+
+      if (reason !== 'manual' && tooSoon && last && last.charging === snapshot.charging && last.level === snapshot.level) {
+        return;
+      }
+
+      snapshots.push(snapshot);
+      saveSnapshots(snapshots);
+      lastLoggedAt = snapshot.timestamp;
+      renderHistory();
+    }
+
+    function buildSessions(snapshots, chargingValue) {
+      const sessions = [];
+      let current = [];
+
+      snapshots.forEach(snapshot => {
+        if (snapshot.charging !== chargingValue) {
+          if (current.length >= 2) {
+            sessions.push(current);
+          }
+          current = [];
+          return;
+        }
+
+        if (current.length === 0) {
+          current.push(snapshot);
+          return;
+        }
+
+        const previous = current[current.length - 1];
+        const gapMs = snapshot.timestamp - previous.timestamp;
+        const stateChanged = snapshot.charging !== previous.charging;
+        const expectedDirection = chargingValue ? snapshot.level >= previous.level : snapshot.level <= previous.level;
+
+        if (gapMs > 3 * 60 * 60 * 1000 || stateChanged || !expectedDirection) {
+          if (current.length >= 2) {
+            sessions.push(current);
+          }
+          current = [snapshot];
+          return;
+        }
+
+        current.push(snapshot);
+      });
+
+      if (current.length >= 2) {
+        sessions.push(current);
+      }
+
+      return sessions
+        .map(points => {
+          const start = points[0];
+          const end = points[points.length - 1];
+          const delta = Math.abs(end.level - start.level);
+          const durationHours = (end.timestamp - start.timestamp) / 3600000;
+          const rate = durationHours > 0 ? delta / durationHours : 0;
+          return {
+            start,
+            end,
+            delta,
+            durationHours,
+            rate,
+            points
+          };
+        })
+        .filter(session => session.delta >= 2 && session.durationHours > 0.05)
+        .slice(-12);
+    }
+
+    function averageRate(sessions) {
+      if (!sessions.length) return 0;
+      return sessions.reduce((sum, session) => sum + session.rate, 0) / sessions.length;
+    }
+
+    function fastestRate(sessions) {
+      if (!sessions.length) return 0;
+      return Math.max(...sessions.map(session => session.rate));
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;');
+    }
+
+    function renderSessionChart(container, sessions, color, emptyMessage) {
+      if (!sessions.length) {
+        container.innerHTML = `<div class="empty-chart">${emptyMessage}</div>`;
+        return;
+      }
+
+      const width = 640;
+      const height = 260;
+      const padding = { top: 22, right: 20, bottom: 48, left: 52 };
+      const innerWidth = width - padding.left - padding.right;
+      const innerHeight = height - padding.top - padding.bottom;
+      const maxRate = Math.max(...sessions.map(session => session.rate), 1);
+      const barWidth = innerWidth / sessions.length * 0.62;
+
+      const yGuides = [0.25, 0.5, 0.75, 1];
+      const guideMarkup = yGuides.map(step => {
+        const value = maxRate * step;
+        const y = padding.top + innerHeight - (value / maxRate) * innerHeight;
+        return `
+          <line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 6" />
+          <text x="${padding.left - 10}" y="${y + 4}" fill="rgba(236,248,255,0.58)" font-size="11" text-anchor="end">${value.toFixed(0)}</text>
+        `;
+      }).join('');
+
+      const bars = sessions.map((session, index) => {
+        const x = padding.left + (index + 0.5) * (innerWidth / sessions.length) - (barWidth / 2);
+        const barHeight = (session.rate / maxRate) * innerHeight;
+        const y = padding.top + innerHeight - barHeight;
+        const label = `${session.delta}% in ${formatHours(session.durationHours)} (${formatRate(session.rate)})`;
+        return `
+          <g>
+            <title>${escapeHtml(`${formatDateTime(session.start.timestamp)} to ${formatDateTime(session.end.timestamp)}: ${label}`)}</title>
+            <rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" rx="10" fill="${color}" />
+            <text x="${x + (barWidth / 2)}" y="${padding.top + innerHeight + 18}" fill="rgba(236,248,255,0.72)" font-size="10" text-anchor="middle">${index + 1}</text>
+          </g>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Battery rate chart">
+          ${guideMarkup}
+          <line x1="${padding.left}" y1="${padding.top + innerHeight}" x2="${width - padding.right}" y2="${padding.top + innerHeight}" stroke="rgba(255,255,255,0.16)" />
+          ${bars}
+          <text x="${width / 2}" y="${height - 12}" fill="rgba(236,248,255,0.58)" font-size="11" text-anchor="middle">Recent sessions, oldest to newest</text>
+        </svg>
+      `;
+    }
+
+    function renderHistory() {
+      const snapshots = getStoredSnapshots();
+      const drainData = buildSessions(snapshots, false);
+      const chargeData = buildSessions(snapshots, true);
+
+      drainAverage.textContent = formatRate(averageRate(drainData));
+      drainFastest.textContent = formatRate(fastestRate(drainData));
+      drainSessions.textContent = String(drainData.length);
+
+      chargeAverage.textContent = formatRate(averageRate(chargeData));
+      chargeFastest.textContent = formatRate(fastestRate(chargeData));
+      chargeSessions.textContent = String(chargeData.length);
+
+      renderSessionChart(
+        drainChart,
+        drainData,
+        'url(#drainGradient)',
+        'Drain sessions appear here after the app captures at least two unplugged readings with a percentage drop.'
+      );
+      renderSessionChart(
+        chargeChart,
+        chargeData,
+        'url(#chargeGradient)',
+        'Charge sessions appear here after the app captures at least two charging readings with a percentage increase.'
+      );
+
+      const first = snapshots[0];
+      const last = snapshots[snapshots.length - 1];
+      if (!first || !last) {
+        snapshotMeta.textContent = 'No local history yet.';
+        return;
+      }
+
+      snapshotMeta.textContent = `Stored ${snapshots.length} local snapshots from ${formatDateTime(first.timestamp)} to ${formatDateTime(last.timestamp)}. Logging cadence is best-effort while this page remains open. Background tabs may be throttled by the browser or operating system.`;
+
+      [drainChart, chargeChart].forEach(container => {
+        const svg = container.querySelector('svg');
+        if (!svg) return;
+        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+
+        const drainGradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+        drainGradient.setAttribute('id', 'drainGradient');
+        drainGradient.setAttribute('x1', '0%');
+        drainGradient.setAttribute('x2', '0%');
+        drainGradient.setAttribute('y1', '0%');
+        drainGradient.setAttribute('y2', '100%');
+        drainGradient.innerHTML = '<stop offset="0%" stop-color="#fb7185"></stop><stop offset="100%" stop-color="#f59e0b"></stop>';
+
+        const chargeGradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+        chargeGradient.setAttribute('id', 'chargeGradient');
+        chargeGradient.setAttribute('x1', '0%');
+        chargeGradient.setAttribute('x2', '0%');
+        chargeGradient.setAttribute('y1', '0%');
+        chargeGradient.setAttribute('y2', '100%');
+        chargeGradient.innerHTML = '<stop offset="0%" stop-color="#67e8f9"></stop><stop offset="100%" stop-color="#34d399"></stop>';
+
+        defs.appendChild(drainGradient);
+        defs.appendChild(chargeGradient);
+        svg.insertBefore(defs, svg.firstChild);
+      });
+    }
+
+    function startLoggingLoop() {
+      if (loggingIntervalId) {
+        clearInterval(loggingIntervalId);
+      }
+
+      loggingIntervalId = window.setInterval(() => {
+        if (batteryManager) {
+          persistSnapshot(batteryManager, 'interval');
+        }
+      }, SNAPSHOT_INTERVAL_MS);
     }
 
     function renderBattery(battery) {
@@ -448,6 +923,7 @@
 
       setWarning(percent <= 15 && !charging ? 'Battery is low. Plugging in soon is a good idea.' : '');
       updateTimestamp();
+      persistSnapshot(battery, 'event');
     }
 
     function attachBatteryListeners(battery) {
@@ -474,6 +950,7 @@
         if (!batteryManager) {
           batteryManager = await navigator.getBattery();
           attachBatteryListeners(batteryManager);
+          startLoggingLoop();
         }
         renderBattery(batteryManager);
       } catch (error) {
@@ -489,7 +966,19 @@
       }
     }
 
+    forceLogButton.addEventListener('click', () => {
+      if (!batteryManager) return;
+      persistSnapshot(batteryManager, 'manual');
+      renderBattery(batteryManager);
+    });
+
+    clearHistoryButton.addEventListener('click', () => {
+      localStorage.removeItem(STORAGE_KEY);
+      renderHistory();
+    });
+
     refreshButton.addEventListener('click', loadBattery);
+    renderHistory();
     loadBattery();
   </script>
 </body>
