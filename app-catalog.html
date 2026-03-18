@@ -209,6 +209,10 @@
     .webapp-save-options input {
       accent-color: #00d9ff;
     }
+    .webapp-fields {
+      display: grid;
+      gap: 10px;
+    }
     .webapp-input {
       width: 100%;
       background: rgba(7, 18, 36, 0.95);
@@ -245,6 +249,26 @@
     }
     .webapp-status.is-error { color: #ff9aa7; }
     .webapp-status.is-success { color: #9effc9; }
+    .webapp-delete-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(9, 20, 38, 0.92);
+      color: #ffc1c7;
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-grid;
+      place-items: center;
+    }
+    .webapp-delete-btn:hover {
+      background: rgba(47, 16, 26, 0.96);
+      border-color: rgba(255, 108, 129, 0.34);
+      color: #ffd5da;
+    }
     .no-results { text-align: center; color: #666; padding: 40px; grid-column: 1 / -1; }
     .changelog-link {
       position: fixed;
@@ -323,7 +347,10 @@
         <div class="webapp-composer-note">Paste a URL once and keep it synced across devices.</div>
       </div>
       <form class="webapp-form" id="webappForm">
-        <input type="url" class="webapp-input" id="webappUrlInput" placeholder="https://example.com" inputmode="url" autocomplete="url" required>
+        <div class="webapp-fields">
+          <input type="text" class="webapp-input" id="webappTitleInput" placeholder="Title for this tile (optional)" autocomplete="off">
+          <input type="url" class="webapp-input" id="webappUrlInput" placeholder="https://example.com" inputmode="url" autocomplete="url" required>
+        </div>
         <button type="submit" class="webapp-submit" id="webappSubmitBtn">Add Webapp</button>
       </form>
       <div class="webapp-save-mode">
@@ -546,6 +573,7 @@
     const searchInput = document.getElementById('searchInput');
     const catalogStats = document.getElementById('catalogStats');
     const webappForm = document.getElementById('webappForm');
+    const webappTitleInput = document.getElementById('webappTitleInput');
     const webappUrlInput = document.getElementById('webappUrlInput');
     const webappSubmitBtn = document.getElementById('webappSubmitBtn');
     const webappStatus = document.getElementById('webappStatus');
@@ -714,6 +742,31 @@
       await window.AppSharedStore.putSharedContent(WEBAPP_SHARED_KEY, serializeWebapps(sharedWebapps), {
         ttlSeconds: 0
       });
+    }
+
+    async function deleteWebapp(app) {
+      const previousLocalWebapps = [...localWebapps];
+      const previousSharedWebapps = [...sharedWebapps];
+
+      try {
+        if (app.scope === 'cloud') {
+          replaceSharedWebapps(sharedWebapps.filter(entry => entry.id !== app.id));
+          await saveSharedWebapps();
+          setWebappStatus(`Removed ${app.name} from cloud-synced Webapps.`, 'success');
+        } else {
+          replaceLocalWebapps(localWebapps.filter(entry => entry.id !== app.id));
+          setWebappStatus(`Removed ${app.name} from local Webapps.`, 'success');
+        }
+
+        renderCatalogStats();
+        applySearchQuery(searchInput.value);
+      } catch (error) {
+        replaceLocalWebapps(previousLocalWebapps);
+        replaceSharedWebapps(previousSharedWebapps);
+        renderCatalogStats();
+        applySearchQuery(searchInput.value);
+        setWebappStatus(error.message || 'Unable to delete that webapp right now.', 'error');
+      }
     }
 
     function normalizeSearchText(value) {
@@ -1082,12 +1135,20 @@
       card.tabIndex = -1;
       card.innerHTML = `
         ${app.kind === 'webapp' ? `<div class="webapp-scope-badge ${app.scope === 'cloud' ? 'is-cloud' : 'is-local'}">${app.scope === 'cloud' ? 'Cloud' : 'Local'}</div>` : ''}
+        ${app.kind === 'webapp' ? '<button type="button" class="webapp-delete-btn" title="Delete webapp tile" aria-label="Delete webapp tile">🗑</button>' : ''}
         ${app.telemetryId ? `<div class="app-usage-badge is-loading" data-telemetry-id="${app.telemetryId}">Loading...</div>` : ''}
         <div class="app-icon">${app.icon}</div>
         <div class="app-name">${app.name}</div>
         <div class="app-desc">${app.desc}</div>
         <div class="app-date">${app.date}</div>
       `;
+      const deleteButton = card.querySelector('.webapp-delete-btn');
+      if (deleteButton) {
+        deleteButton.addEventListener('click', async event => {
+          event.stopPropagation();
+          await deleteWebapp(app);
+        });
+      }
       card.addEventListener('click', () => {
         openApp(app);
       });
@@ -1161,6 +1222,7 @@
       event.preventDefault();
       const originalLabel = webappSubmitBtn.textContent;
       const selectedSaveMode = webappSaveModeInputs.find(input => input.checked)?.value || 'local';
+      const enteredTitle = String(webappTitleInput.value || '').trim();
 
       let normalizedUrl;
       try {
@@ -1179,7 +1241,7 @@
       const parsed = new URL(normalizedUrl);
       const nextWebapp = hydrateWebapp({
         id: `${parsed.hostname}-${Date.now()}`,
-        name: prettifyHostname(parsed.hostname),
+        name: enteredTitle || prettifyHostname(parsed.hostname),
         url: normalizedUrl,
         date: new Date().toISOString().slice(0, 10)
       }, selectedSaveMode === 'cloud' ? 'cloud' : 'local');
@@ -1199,6 +1261,7 @@
         }
         renderCatalogStats();
         applySearchQuery(searchInput.value);
+        webappTitleInput.value = '';
         webappUrlInput.value = '';
         setWebappStatus(
           selectedSaveMode === 'cloud'
