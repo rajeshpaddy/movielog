@@ -6,21 +6,24 @@
   <title>Life Compass</title>
   <style>
     :root {
-      --bg-top: #fff3d9;
-      --bg-bottom: #ffe8d7;
-      --ink: #1d2430;
-      --muted: #5f6877;
-      --panel: rgba(255, 252, 246, 0.88);
-      --line: rgba(36, 45, 59, 0.1);
-      --teal: #0d7a79;
-      --teal-deep: #0f4b57;
+      --bg-top: #18242f;
+      --bg-bottom: #0d141b;
+      --ink: #e7eef2;
+      --muted: #92a4b0;
+      --panel: rgba(19, 28, 36, 0.88);
+      --line: rgba(166, 192, 210, 0.12);
+      --teal: #65d6d0;
+      --teal-deep: #bffaf7;
       --green: #77c276;
       --green-passed: #1f8a56;
       --yellow: #efbf43;
       --red: #ea625d;
       --coral: #ff8c6b;
       --sky: #7fd7ff;
-      --shadow: 0 24px 60px rgba(106, 63, 29, 0.16);
+      --dash: #11181f;
+      --dash-top: #1b2731;
+      --glass: rgba(194, 228, 255, 0.08);
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.34);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -30,13 +33,39 @@
       height: 100vh;
       padding: 12px;
       color: var(--ink);
-      font-family: Georgia, "Times New Roman", serif;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
       background:
-        radial-gradient(circle at 0% 0%, rgba(13, 122, 121, 0.18), transparent 28%),
-        radial-gradient(circle at 100% 10%, rgba(239, 191, 67, 0.28), transparent 24%),
-        radial-gradient(circle at 82% 78%, rgba(255, 140, 107, 0.22), transparent 20%),
-        linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+        radial-gradient(circle at 50% -10%, rgba(127, 215, 255, 0.18), transparent 30%),
+        linear-gradient(180deg, #274253 0%, #172733 28%, var(--bg-top) 58%, var(--bg-bottom) 100%);
       overflow: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.06), transparent 26%),
+        radial-gradient(circle at 50% 120%, rgba(0, 0, 0, 0.46), transparent 34%);
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      left: 50%;
+      bottom: -240px;
+      width: 860px;
+      height: 420px;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 50% 36%, rgba(74, 92, 106, 0.28), transparent 34%),
+        linear-gradient(180deg, var(--dash-top), var(--dash));
+      border: 1px solid rgba(255,255,255,0.05);
+      box-shadow: 0 -30px 80px rgba(0,0,0,0.34);
+      pointer-events: none;
+      z-index: 0;
     }
 
     button, input, select {
@@ -53,12 +82,13 @@
       gap: 6px;
       padding: 8px 12px;
       border-radius: 999px;
-      border: 1px solid rgba(21, 94, 99, 0.2);
-      background: rgba(255, 251, 245, 0.94);
+      border: 1px solid rgba(101, 214, 208, 0.24);
+      background: rgba(15, 24, 31, 0.88);
       color: var(--teal);
       text-decoration: none;
       font: 600 14px/1 "Avenir Next", "Segoe UI", sans-serif;
-      box-shadow: 0 12px 30px rgba(31, 36, 48, 0.08);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.24);
+      backdrop-filter: blur(10px);
     }
 
     .shell {
@@ -72,18 +102,19 @@
 
     .hero,
     .panel {
-      border-radius: 28px;
+      border-radius: 30px;
       border: 1px solid var(--line);
       background: var(--panel);
       box-shadow: var(--shadow);
       overflow: hidden;
+      backdrop-filter: blur(12px);
     }
 
     .hero {
       position: relative;
       padding: 20px;
       background:
-        linear-gradient(135deg, rgba(255, 250, 240, 0.98), rgba(255, 233, 202, 0.88)),
+        linear-gradient(180deg, rgba(26, 38, 49, 0.96), rgba(18, 27, 35, 0.92)),
         var(--panel);
     }
 
@@ -95,7 +126,7 @@
       width: 220px;
       height: 220px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(13, 122, 121, 0.22), rgba(13, 122, 121, 0));
+      background: radial-gradient(circle, rgba(101, 214, 208, 0.18), rgba(101, 214, 208, 0));
       pointer-events: none;
     }
 
@@ -107,7 +138,7 @@
       width: 220px;
       height: 220px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(255, 140, 107, 0.2), rgba(255, 140, 107, 0));
+      background: radial-gradient(circle, rgba(127, 215, 255, 0.14), rgba(127, 215, 255, 0));
       pointer-events: none;
     }
 
@@ -115,10 +146,9 @@
     .metric-label,
     .field label,
     .bar-legend span {
-      font-family: "Avenir Next", "Segoe UI", sans-serif;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-size: 11px;
+      letter-spacing: 0.14em;
+      font-size: 10px;
       color: var(--muted);
     }
 
@@ -133,6 +163,9 @@
       line-height: 0.98;
       letter-spacing: -0.04em;
       max-width: 820px;
+      color: #f5fbff;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      font-weight: 800;
     }
 
     .hero-copy {
@@ -151,18 +184,31 @@
     }
 
     .hero-metric {
-      border-radius: 18px;
+      border-radius: 22px;
       padding: 12px 14px;
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 247, 236, 0.72));
-      border: 1px solid rgba(13, 122, 121, 0.08);
+      background:
+        linear-gradient(180deg, rgba(26, 40, 52, 0.96), rgba(15, 23, 30, 0.96));
+      border: 1px solid rgba(127, 215, 255, 0.1);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+      position: relative;
+    }
+
+    .hero-metric::after {
+      content: "";
+      position: absolute;
+      inset: 10px 14px auto;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.12), transparent);
     }
 
     .metric-value {
-      margin-top: 5px;
+      margin-top: 12px;
       font-size: clamp(22px, 3vw, 32px);
       line-height: 1;
-      color: var(--teal-deep);
+      color: #f7fffd;
       font-weight: 700;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      text-shadow: 0 0 14px rgba(101, 214, 208, 0.12);
     }
 
     .top-grid {
@@ -183,12 +229,14 @@
     .panel-head {
       padding: 14px 16px 8px;
       border-bottom: 1px solid rgba(36, 45, 59, 0.07);
-      background: linear-gradient(180deg, rgba(21, 94, 99, 0.08), rgba(21, 94, 99, 0));
+      background: linear-gradient(180deg, rgba(101, 214, 208, 0.08), rgba(101, 214, 208, 0));
     }
 
     .panel-title {
       font-size: 20px;
       line-height: 1.1;
+      color: #f4fbff;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
     }
 
     .panel-note {
@@ -217,18 +265,18 @@
     .field input,
     .field select {
       width: 100%;
-      border: 1px solid rgba(36, 45, 59, 0.14);
+      border: 1px solid rgba(127, 215, 255, 0.14);
       border-radius: 14px;
       padding: 10px 12px;
-      background: rgba(255, 255, 255, 0.86);
-      color: var(--ink);
+      background: rgba(13, 21, 28, 0.88);
+      color: #f4fbff;
     }
 
     .field input:focus,
     .field select:focus {
       outline: none;
-      border-color: rgba(21, 94, 99, 0.42);
-      box-shadow: 0 0 0 3px rgba(21, 94, 99, 0.12);
+      border-color: rgba(101, 214, 208, 0.42);
+      box-shadow: 0 0 0 3px rgba(101, 214, 208, 0.12);
     }
 
     .form-hint {
@@ -243,10 +291,13 @@
     }
 
     .summary-card {
-      border-radius: 20px;
+      border-radius: 22px;
       padding: 12px;
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 245, 232, 0.68));
-      border: 1px solid rgba(36, 45, 59, 0.08);
+      background:
+        radial-gradient(circle at top, rgba(127, 215, 255, 0.08), transparent 46%),
+        linear-gradient(180deg, rgba(24, 36, 47, 0.98), rgba(14, 21, 28, 0.98));
+      border: 1px solid rgba(127, 215, 255, 0.1);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
     }
 
     .summary-card strong {
@@ -254,7 +305,8 @@
       margin-top: 6px;
       font-size: 22px;
       line-height: 1;
-      color: var(--teal-deep);
+      color: #fbfffd;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
     }
 
     .timeline {
@@ -281,74 +333,113 @@
       max-width: 66ch;
     }
 
-    .timeline-bar-wrap {
-      position: relative;
-      position: relative;
-      padding-top: 30px;
-      padding-bottom: 16px;
-      padding-right: 18px;
+    .timeline-gauge-wrap {
+      display: grid;
+      grid-template-columns: 240px minmax(0, 1fr);
+      gap: 18px;
+      align-items: center;
     }
 
-    .timeline-track {
+    .tank-gauge {
       position: relative;
-      height: 34px;
-      border-radius: 18px;
-      overflow: hidden;
+      width: 220px;
+      height: 220px;
+      margin: 0 auto;
+    }
+
+    .tank-gauge-svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      transform: rotate(-90deg);
+      filter: drop-shadow(0 14px 22px rgba(67, 52, 28, 0.14));
+    }
+
+    .gauge-track,
+    .gauge-segment,
+    .gauge-progress {
+      fill: none;
+      stroke-linecap: round;
+      pathLength: 100;
+    }
+
+    .gauge-track {
+      stroke: rgba(36, 45, 59, 0.12);
+      stroke-width: 13;
+    }
+
+    .gauge-safe { stroke: #69cb82; stroke-width: 13; }
+    .gauge-warning { stroke: #efbf43; stroke-width: 13; }
+    .gauge-critical { stroke: #ea625d; stroke-width: 13; }
+    .gauge-progress {
+      stroke: #136e4f;
+      stroke-width: 15;
+      filter: drop-shadow(0 0 7px rgba(19, 110, 79, 0.18));
+    }
+
+    .gauge-marker {
+      fill: rgba(19, 24, 31, 0.96);
+      stroke: rgba(255, 250, 240, 0.95);
+      stroke-width: 4;
+    }
+
+    .tank-center {
+      position: absolute;
+      inset: 40px;
+      border-radius: 50%;
       background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(230, 223, 209, 0.92));
-      border: 2px solid rgba(36, 45, 59, 0.16);
-      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.24);
+        radial-gradient(circle at top, rgba(48, 70, 87, 0.96), rgba(19, 28, 36, 0.98));
+      border: 1px solid rgba(127, 215, 255, 0.1);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      box-shadow: inset 0 0 0 8px rgba(255, 255, 255, 0.04);
     }
 
-    .timeline-track::after {
-      content: "";
-      position: absolute;
-      right: -14px;
-      top: 8px;
-      width: 10px;
-      height: 18px;
-      border-radius: 0 8px 8px 0;
-      background: rgba(36, 45, 59, 0.7);
+    .tank-center-label {
+      color: var(--muted);
+      font: 700 10px/1 "Avenir Next", "Segoe UI", sans-serif;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
     }
 
-    .segment {
-      position: absolute;
-      top: 0;
-      bottom: 0;
+    .tank-center-value {
+      margin-top: 6px;
+      font-size: 30px;
+      line-height: 1;
+      color: #fbfffd;
+      font-weight: 700;
     }
 
-    .segment-safe { background: linear-gradient(90deg, #8fd86f, #54c58a); }
-    .segment-warning { background: linear-gradient(90deg, #ffd96a, #efbf43); }
-    .segment-critical { background: linear-gradient(90deg, #ff8f72, #ea625d); }
-
-    .timeline-passed {
-      position: absolute;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      width: 0%;
-      background:
-        linear-gradient(90deg, rgba(27, 128, 78, 0.78), rgba(31, 138, 86, 0.96));
-      box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.28);
+    .tank-center-sub {
+      margin-top: 6px;
+      color: var(--muted);
+      font: 600 11px/1.3 "Avenir Next", "Segoe UI", sans-serif;
     }
 
-    .timeline-now {
+    .tank-fuel-label {
       position: absolute;
-      top: 3px;
-      bottom: 3px;
-      width: 3px;
-      border-radius: 999px;
-      background: rgba(12, 17, 24, 0.88);
-      box-shadow: 0 0 0 3px rgba(255, 251, 245, 0.95);
+      bottom: 22px;
+      font: 700 14px/1 "Avenir Next", "Segoe UI", sans-serif;
+      color: var(--muted);
+    }
+
+    .tank-fuel-label.is-empty { left: 6px; }
+    .tank-fuel-label.is-full { right: 6px; }
+
+    .timeline-meta {
+      display: grid;
+      gap: 12px;
     }
 
     .timeline-now-label {
-      position: absolute;
-      top: -4px;
-      transform: translateX(-50%);
-      padding: 5px 9px;
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
       border-radius: 999px;
-      background: rgba(21, 94, 99, 0.94);
+      background: rgba(17, 116, 110, 0.94);
       color: #f6fffe;
       font: 700 11px/1 "Avenir Next", "Segoe UI", sans-serif;
       white-space: nowrap;
@@ -357,10 +448,8 @@
     }
 
     .timeline-markers {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      margin-top: 8px;
+      display: grid;
+      gap: 8px;
       color: var(--muted);
       font: 600 12px/1.35 "Avenir Next", "Segoe UI", sans-serif;
     }
@@ -398,23 +487,25 @@
     }
 
     .insight {
-      border-radius: 18px;
+      border-radius: 22px;
       padding: 12px;
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(255, 244, 228, 0.66));
-      border: 1px solid rgba(36, 45, 59, 0.08);
+      background:
+        linear-gradient(180deg, rgba(24, 36, 47, 0.98), rgba(14, 21, 28, 0.98));
+      border: 1px solid rgba(127, 215, 255, 0.1);
     }
 
     .insight-value {
       margin-top: 6px;
       font-size: 20px;
       line-height: 1;
-      color: var(--teal-deep);
+      color: #fbfffd;
       font-weight: 700;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
     }
 
     .quote-panel {
       position: relative;
-      padding: 18px 20px 20px;
+      padding: 28px 26px 22px;
       background:
         radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.05), transparent 18%),
         radial-gradient(circle at 80% 30%, rgba(255, 255, 255, 0.04), transparent 16%),
@@ -427,6 +518,76 @@
       box-shadow:
         inset 0 0 0 2px rgba(255, 255, 255, 0.04),
         0 24px 50px rgba(27, 24, 19, 0.24);
+      border-radius: 46% 46% 22% 22% / 34% 34% 18% 18%;
+      min-height: 220px;
+      align-content: center;
+      overflow: visible;
+    }
+
+    .wheel-hint {
+      position: fixed;
+      left: 50%;
+      bottom: -118px;
+      width: 360px;
+      height: 360px;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      border: 26px solid rgba(33, 43, 50, 0.92);
+      box-shadow:
+        inset 0 0 0 8px rgba(255,255,255,0.04),
+        0 -20px 48px rgba(0,0,0,0.28);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wheel-hint::before,
+    .wheel-hint::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      background: rgba(40, 52, 61, 0.98);
+      transform: translate(-50%, -50%);
+      border-radius: 999px;
+    }
+
+    .wheel-hint::before {
+      width: 28px;
+      height: 124px;
+    }
+
+    .wheel-hint::after {
+      width: 148px;
+      height: 28px;
+    }
+
+    .quote-panel::before {
+      content: "";
+      position: absolute;
+      top: -34px;
+      left: 50%;
+      width: 18px;
+      height: 44px;
+      transform: translateX(-50%);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(86, 93, 100, 0.95), rgba(41, 47, 53, 0.98));
+      box-shadow: 0 8px 14px rgba(17, 20, 24, 0.2);
+    }
+
+    .quote-panel {
+      margin-top: 34px;
+    }
+
+    .quote-panel .mirror-cap {
+      position: absolute;
+      top: -52px;
+      left: 50%;
+      width: 82px;
+      height: 22px;
+      transform: translateX(-50%);
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(66, 72, 79, 0.98), rgba(28, 34, 39, 1));
+      box-shadow: 0 10px 20px rgba(16, 19, 22, 0.22);
     }
 
     .quote-panel::after {
@@ -498,6 +659,20 @@
       .layout {
         grid-template-columns: 1fr;
       }
+      .wheel-hint {
+        display: none;
+      }
+      .quote-panel {
+        margin-top: 18px;
+        border-radius: 34px;
+      }
+      .quote-panel::before,
+      .quote-panel .mirror-cap {
+        display: none;
+      }
+      .timeline-gauge-wrap {
+        grid-template-columns: 1fr;
+      }
       .hero-metrics,
       .summary-grid,
       .insight-list {
@@ -524,6 +699,7 @@
 </head>
 <body>
   <a class="app-home-link" href="app-catalog.html" title="Back to App Catalog">Home</a>
+  <div class="wheel-hint" aria-hidden="true"></div>
 
   <main class="shell">
     <div class="top-grid">
@@ -548,6 +724,7 @@
       </section>
 
       <section class="hero quote-panel">
+        <div class="mirror-cap" aria-hidden="true"></div>
         <div class="quote-kicker" id="quoteKicker">A Good Life</div>
         <div class="quote-text" id="quoteText">Live with warmth, stay useful to others, protect your health, and spend your days on work, people, and moments you would gladly choose again.</div>
         <p class="quote-note" id="quoteNote">A good life is rarely built from urgency alone. It usually comes from attention: loving people well, keeping your word, staying curious, moving your body, and remembering that ordinary days are most of life.</p>
@@ -612,19 +789,34 @@
               </div>
             </div>
 
-            <div class="timeline-bar-wrap">
-              <div class="timeline-now-label" id="timelineNowLabel">Today</div>
-              <div class="timeline-track">
-                <div class="segment segment-safe" id="segmentSafe"></div>
-                <div class="segment segment-warning" id="segmentWarning"></div>
-                <div class="segment segment-critical" id="segmentCritical"></div>
-                <div class="timeline-passed" id="timelinePassed"></div>
-                <div class="timeline-now" id="timelineNow"></div>
+            <div class="timeline-gauge-wrap">
+              <div class="tank-gauge">
+                <svg class="tank-gauge-svg" viewBox="0 0 220 220" aria-hidden="true">
+                  <circle class="gauge-track" cx="110" cy="110" r="76"></circle>
+                  <circle class="gauge-segment gauge-safe" id="segmentSafe" cx="110" cy="110" r="76"></circle>
+                  <circle class="gauge-segment gauge-warning" id="segmentWarning" cx="110" cy="110" r="76"></circle>
+                  <circle class="gauge-segment gauge-critical" id="segmentCritical" cx="110" cy="110" r="76"></circle>
+                  <circle class="gauge-progress" id="timelinePassed" cx="110" cy="110" r="76"></circle>
+                  <circle class="gauge-marker" id="timelineNow" cx="110" cy="34" r="7"></circle>
+                </svg>
+                <div class="tank-center">
+                  <div>
+                    <div class="tank-center-label">Life Tank</div>
+                    <div class="tank-center-value" id="tankCenterValue">--%</div>
+                    <div class="tank-center-sub" id="tankCenterSub">used so far</div>
+                  </div>
+                </div>
+                <div class="tank-fuel-label is-empty">E</div>
+                <div class="tank-fuel-label is-full">F</div>
               </div>
-              <div class="timeline-markers">
-                <div id="birthMarker">Birth</div>
-                <div id="currentMarker">Today</div>
-                <div id="endMarker">Expected End</div>
+
+              <div class="timeline-meta">
+                <div class="timeline-now-label" id="timelineNowLabel">Today</div>
+                <div class="timeline-markers">
+                  <div id="birthMarker">Birth</div>
+                  <div id="currentMarker">Today</div>
+                  <div id="endMarker">Expected End</div>
+                </div>
               </div>
             </div>
 
@@ -667,6 +859,8 @@
     const lifeRemainingPercent = document.getElementById('lifeRemainingPercent');
     const currentAge = document.getElementById('currentAge');
     const endYearValue = document.getElementById('endYearValue');
+    const tankCenterValue = document.getElementById('tankCenterValue');
+    const tankCenterSub = document.getElementById('tankCenterSub');
     const segmentSafe = document.getElementById('segmentSafe');
     const segmentWarning = document.getElementById('segmentWarning');
     const segmentCritical = document.getElementById('segmentCritical');
@@ -838,17 +1032,27 @@
       yearsUsed.textContent = formatYears(elapsedYears);
       yearsLeft.textContent = formatYears(remainingYearsValue);
       reserveThreshold.textContent = `${reserveYear}`;
+      tankCenterValue.textContent = formatPercent(currentClamped);
+      tankCenterSub.textContent = `${formatPercent(Math.max(0, remaining))} left`;
 
-      segmentSafe.style.left = '0%';
-      segmentSafe.style.width = `${safePercent}%`;
-      segmentWarning.style.left = `${safePercent}%`;
-      segmentWarning.style.width = `${warningPercent}%`;
-      segmentCritical.style.left = `${safePercent + warningPercent}%`;
-      segmentCritical.style.width = `${criticalPercent}%`;
+      segmentSafe.setAttribute('stroke-dasharray', `${safePercent} ${100 - safePercent}`);
+      segmentSafe.setAttribute('stroke-dashoffset', '0');
+      segmentWarning.setAttribute('stroke-dasharray', `${warningPercent} ${100 - warningPercent}`);
+      segmentWarning.setAttribute('stroke-dashoffset', `${-safePercent}`);
+      segmentCritical.setAttribute('stroke-dasharray', `${criticalPercent} ${100 - criticalPercent}`);
+      segmentCritical.setAttribute('stroke-dashoffset', `${-(safePercent + warningPercent)}`);
 
-      timelinePassed.style.width = `${currentClamped}%`;
-      timelineNow.style.left = `calc(${currentClamped}% - 1px)`;
-      timelineNowLabel.style.left = `${currentClamped}%`;
+      timelinePassed.setAttribute('stroke-dasharray', `${currentClamped} ${100 - currentClamped}`);
+      timelinePassed.setAttribute('stroke-dashoffset', '0');
+
+      const radius = 76;
+      const center = 110;
+      const angle = ((currentClamped / 100) * 360) - 90;
+      const radians = angle * (Math.PI / 180);
+      const markerX = center + (radius * Math.cos(radians));
+      const markerY = center + (radius * Math.sin(radians));
+      timelineNow.setAttribute('cx', String(markerX));
+      timelineNow.setAttribute('cy', String(markerY));
       timelineNowLabel.textContent = `${now.getFullYear()} · ${formatPercent(currentClamped)}`;
 
       birthMarker.textContent = `${monthNames[birthMonthValue]} ${birthYearValue}`;
