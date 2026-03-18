@@ -478,43 +478,6 @@
       overflow: hidden;
     }
 
-    .wheel-hint {
-      position: fixed;
-      left: 50%;
-      bottom: -118px;
-      width: 300px;
-      height: 300px;
-      transform: translateX(-50%);
-      border-radius: 50%;
-      border: 20px solid rgba(33, 43, 50, 0.92);
-      box-shadow:
-        inset 0 0 0 8px rgba(255,255,255,0.04),
-        0 -20px 48px rgba(0,0,0,0.28);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .wheel-hint::before,
-    .wheel-hint::after {
-      content: "";
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      background: rgba(40, 52, 61, 0.98);
-      transform: translate(-50%, -50%);
-      border-radius: 999px;
-    }
-
-    .wheel-hint::before {
-      width: 22px;
-      height: 100px;
-    }
-
-    .wheel-hint::after {
-      width: 116px;
-      height: 22px;
-    }
-
     .quote-panel::before {
       content: "";
       position: absolute;
@@ -639,9 +602,6 @@
         grid-column: auto;
         grid-row: auto;
       }
-      .wheel-hint {
-        display: none;
-      }
       .quote-panel {
         margin-top: 18px;
         border-radius: 12px;
@@ -676,7 +636,6 @@
 </head>
 <body>
   <a class="app-home-link" href="app-catalog.html" title="Back to App Catalog">Home</a>
-  <div class="wheel-hint" aria-hidden="true"></div>
 
   <main class="shell">
     <div class="dashboard-grid">
