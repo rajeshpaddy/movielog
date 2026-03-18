@@ -170,7 +170,7 @@
     <div class="app-grid" id="appGrid"></div>
   </div>
   <a class="changelog-link" href="changelog.html" title="View per-app changelog">Changelog</a>
-  <div class="build-badge" title="Catalog build version">build 20260317-2</div>
+  <div class="build-badge" title="Catalog build version">build 20260317-3</div>
 
   <script src="shared-store-config.js?v=20260311-worker3"></script>
   <script src="shared-store.js?v=20260311-worker3"></script>
@@ -719,6 +719,58 @@
       cards[clampedIndex].classList.add('selected');
       cards[clampedIndex].focus();
     }
+
+    function parseAppDate(app) {
+      return new Date(`${app.date}T00:00:00`);
+    }
+
+    function getRecentApps(list) {
+      const now = new Date();
+      const recentCutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6);
+
+      return list
+        .filter(app => {
+          const appDate = parseAppDate(app);
+          return !Number.isNaN(appDate.getTime()) && appDate >= recentCutoff && appDate <= now;
+        })
+        .sort((a, b) => parseAppDate(b) - parseAppDate(a) || a.name.localeCompare(b.name));
+    }
+
+    function createAppCard(app) {
+      const card = document.createElement('div');
+      card.className = 'app-card';
+      card.tabIndex = -1;
+      card.innerHTML = `
+        ${app.telemetryId ? `<div class="app-usage-badge is-loading" data-telemetry-id="${app.telemetryId}">Loading...</div>` : ''}
+        <div class="app-icon">${app.icon}</div>
+        <div class="app-name">${app.name}</div>
+        <div class="app-desc">${app.desc}</div>
+        <div class="app-date">${app.date}</div>
+      `;
+      card.addEventListener('click', () => {
+        openApp(app);
+      });
+      return card;
+    }
+
+    function createAppSection(title, meta, sectionApps) {
+      const section = document.createElement('section');
+      section.className = 'category-section';
+      section.innerHTML = `
+        <div class="category-head">
+          <div class="category-title">${title}</div>
+          <div class="category-meta">${meta}</div>
+        </div>
+        <div class="category-grid"></div>
+      `;
+
+      const categoryGrid = section.querySelector('.category-grid');
+      sectionApps.forEach(app => {
+        categoryGrid.appendChild(createAppCard(app));
+      });
+
+      return section;
+    }
     
     function renderApps(filteredApps) {
       grid.innerHTML = '';
@@ -730,6 +782,8 @@
         return;
       }
 
+      const recentApps = getRecentApps(filteredApps);
+      const renderedAppList = [];
       const categoryMap = new Map();
       filteredApps.forEach(app => {
         const category = getAppCategory(app);
@@ -742,40 +796,19 @@
       const orderedGroups = Array.from(categoryMap.values())
         .sort((a, b) => a.order - b.order || a.label.localeCompare(b.label));
 
-      renderedApps = orderedGroups.flatMap(group => group.apps);
+      if (recentApps.length > 0) {
+        const recentLabel = recentApps.length === 1 ? '1 app added in the last 7 days' : `${recentApps.length} apps added in the last 7 days`;
+        grid.appendChild(createAppSection('New This Week', recentLabel, recentApps));
+        renderedAppList.push(...recentApps);
+      }
 
       orderedGroups.forEach(group => {
-        const section = document.createElement('section');
-        section.className = 'category-section';
-        section.innerHTML = `
-          <div class="category-head">
-            <div class="category-title">${group.label}</div>
-            <div class="category-meta">${group.meta} · ${group.apps.length} app${group.apps.length === 1 ? '' : 's'}</div>
-          </div>
-          <div class="category-grid"></div>
-        `;
-
-        const categoryGrid = section.querySelector('.category-grid');
-        group.apps.forEach(app => {
-          const card = document.createElement('div');
-          card.className = 'app-card';
-          card.tabIndex = -1;
-          card.innerHTML = `
-            ${app.telemetryId ? `<div class="app-usage-badge is-loading" data-telemetry-id="${app.telemetryId}">Loading...</div>` : ''}
-            <div class="app-icon">${app.icon}</div>
-            <div class="app-name">${app.name}</div>
-            <div class="app-desc">${app.desc}</div>
-            <div class="app-date">${app.date}</div>
-          `;
-          card.addEventListener('click', () => {
-            openApp(app);
-          });
-          categoryGrid.appendChild(card);
-        });
-
-        grid.appendChild(section);
+        const sectionMeta = `${group.meta} · ${group.apps.length} app${group.apps.length === 1 ? '' : 's'}`;
+        grid.appendChild(createAppSection(group.label, sectionMeta, group.apps));
+        renderedAppList.push(...group.apps);
       });
 
+      renderedApps = renderedAppList;
       updateUsageBadges();
     }
     
