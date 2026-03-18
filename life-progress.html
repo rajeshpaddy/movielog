@@ -6,24 +6,26 @@
   <title>Life Compass</title>
   <style>
     :root {
-      --bg-top: #18242f;
-      --bg-bottom: #0d141b;
-      --ink: #e7eef2;
-      --muted: #92a4b0;
-      --panel: rgba(19, 28, 36, 0.88);
-      --line: rgba(166, 192, 210, 0.12);
-      --teal: #65d6d0;
-      --teal-deep: #bffaf7;
-      --green: #77c276;
-      --green-passed: #1f8a56;
-      --yellow: #efbf43;
-      --red: #ea625d;
+      --bg-top: #08111c;
+      --bg-bottom: #03070d;
+      --ink: #eef8ff;
+      --muted: #82a2b9;
+      --panel: rgba(8, 16, 28, 0.84);
+      --line: rgba(106, 222, 255, 0.18);
+      --teal: #63ecff;
+      --teal-deep: #d7fbff;
+      --green: #79f08f;
+      --green-passed: #18b06d;
+      --yellow: #ffd05a;
+      --red: #ff6b7d;
       --coral: #ff8c6b;
-      --sky: #7fd7ff;
-      --dash: #11181f;
-      --dash-top: #1b2731;
-      --glass: rgba(194, 228, 255, 0.08);
-      --shadow: 0 24px 60px rgba(0, 0, 0, 0.34);
+      --sky: #67baff;
+      --dash: #060d15;
+      --dash-top: #0d1725;
+      --glass: rgba(113, 218, 255, 0.11);
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.46);
+      --cyan-glow: rgba(99, 236, 255, 0.35);
+      --lime-glow: rgba(121, 240, 143, 0.28);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -31,12 +33,14 @@
     body {
       min-height: 100vh;
       height: 100vh;
-      padding: 8px 10px;
+      padding: 6px 8px;
       color: var(--ink);
       font-family: "Avenir Next", "Segoe UI", sans-serif;
       background:
-        radial-gradient(circle at 50% -10%, rgba(127, 215, 255, 0.18), transparent 30%),
-        linear-gradient(180deg, #274253 0%, #172733 28%, var(--bg-top) 58%, var(--bg-bottom) 100%);
+        radial-gradient(circle at 15% 0%, rgba(99, 236, 255, 0.16), transparent 24%),
+        radial-gradient(circle at 85% 10%, rgba(103, 186, 255, 0.12), transparent 20%),
+        radial-gradient(circle at 50% 120%, rgba(121, 240, 143, 0.08), transparent 28%),
+        linear-gradient(180deg, #12253b 0%, #09111d 24%, var(--bg-top) 56%, var(--bg-bottom) 100%);
       overflow: hidden;
     }
 
@@ -46,8 +50,9 @@
       inset: 0;
       pointer-events: none;
       background:
-        linear-gradient(180deg, rgba(255,255,255,0.06), transparent 26%),
-        radial-gradient(circle at 50% 120%, rgba(0, 0, 0, 0.46), transparent 34%);
+        linear-gradient(180deg, rgba(255,255,255,0.04), transparent 26%),
+        radial-gradient(circle at 50% 120%, rgba(0, 0, 0, 0.52), transparent 34%),
+        linear-gradient(90deg, transparent 0%, rgba(99, 236, 255, 0.03) 50%, transparent 100%);
     }
 
     body::after {
@@ -55,8 +60,8 @@
       position: fixed;
       left: 50%;
       bottom: -240px;
-      width: 860px;
-      height: 390px;
+      width: 760px;
+      height: 320px;
       transform: translateX(-50%);
       border-radius: 50%;
       background:
@@ -74,71 +79,78 @@
 
     .app-home-link {
       position: fixed;
-      top: 12px;
-      left: 12px;
+      top: 10px;
+      left: 10px;
       z-index: 30;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 8px 12px;
+      padding: 7px 11px;
       border-radius: 999px;
-      border: 1px solid rgba(101, 214, 208, 0.24);
-      background: rgba(15, 24, 31, 0.88);
+      border: 1px solid rgba(99, 236, 255, 0.3);
+      background: linear-gradient(180deg, rgba(7, 18, 30, 0.94), rgba(5, 13, 22, 0.9));
       color: var(--teal);
       text-decoration: none;
       font: 600 14px/1 "Avenir Next", "Segoe UI", sans-serif;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.24);
+      box-shadow: 0 0 0 1px rgba(99, 236, 255, 0.08), 0 12px 30px rgba(0, 0, 0, 0.34);
       backdrop-filter: blur(10px);
     }
 
     .shell {
-      max-width: 1460px;
+      max-width: 1320px;
       margin: 0 auto;
-      padding-top: 44px;
+      padding-top: 30px;
       display: grid;
-      gap: 12px;
-      height: calc(100vh - 16px);
+      gap: 8px;
+      height: calc(100vh - 12px);
     }
 
     .hero,
     .panel {
-      border-radius: 28px;
+      border-radius: 24px;
       border: 1px solid var(--line);
-      background: var(--panel);
+      background:
+        linear-gradient(180deg, rgba(13, 24, 40, 0.94), rgba(6, 12, 22, 0.88)),
+        var(--panel);
       box-shadow: var(--shadow);
       overflow: hidden;
       backdrop-filter: blur(12px);
+      position: relative;
+    }
+
+    .hero::after,
+    .panel::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(135deg, rgba(99, 236, 255, 0.08), transparent 22%, transparent 78%, rgba(99, 236, 255, 0.05)),
+        repeating-linear-gradient(
+          90deg,
+          transparent 0,
+          transparent 28px,
+          rgba(99, 236, 255, 0.025) 29px,
+          transparent 30px
+        );
+      mix-blend-mode: screen;
     }
 
     .hero {
-      position: relative;
-      padding: 18px 22px;
+      padding: 12px 16px;
       background:
-        linear-gradient(180deg, rgba(26, 38, 49, 0.96), rgba(18, 27, 35, 0.92)),
+        linear-gradient(180deg, rgba(16, 31, 51, 0.98), rgba(6, 12, 22, 0.92)),
         var(--panel);
-    }
-
-    .hero::after {
-      content: "";
-      position: absolute;
-      right: -60px;
-      top: -60px;
-      width: 220px;
-      height: 220px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(101, 214, 208, 0.18), rgba(101, 214, 208, 0));
-      pointer-events: none;
     }
 
     .hero::before {
       content: "";
       position: absolute;
-      left: -40px;
-      bottom: -50px;
+      inset: auto -40px -50px auto;
       width: 220px;
       height: 220px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(127, 215, 255, 0.14), rgba(127, 215, 255, 0));
+      background: radial-gradient(circle, rgba(99, 236, 255, 0.18), rgba(99, 236, 255, 0));
       pointer-events: none;
     }
 
@@ -156,40 +168,43 @@
       color: var(--teal);
       font-weight: 700;
       margin-bottom: 6px;
+      text-shadow: 0 0 16px rgba(99, 236, 255, 0.28);
     }
 
     h1 {
-      font-size: clamp(30px, 3vw, 42px);
+      font-size: clamp(26px, 2.4vw, 34px);
       line-height: 0.98;
       letter-spacing: -0.04em;
       max-width: 820px;
       color: #f5fbff;
       font-family: "Avenir Next", "Segoe UI", sans-serif;
       font-weight: 800;
+      text-shadow: 0 0 22px rgba(99, 236, 255, 0.12);
     }
 
     .hero-copy {
-      margin-top: 8px;
+      margin-top: 4px;
       max-width: 980px;
       color: var(--muted);
-      font-size: 15px;
-      line-height: 1.45;
+      font-size: 12px;
+      line-height: 1.28;
     }
 
     .hero-metrics {
-      margin-top: 14px;
+      margin-top: 8px;
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
+      gap: 7px;
     }
 
     .hero-metric {
-      border-radius: 20px;
-      padding: 12px 14px;
+      border-radius: 14px;
+      padding: 8px 10px;
       background:
-        linear-gradient(180deg, rgba(26, 40, 52, 0.96), rgba(15, 23, 30, 0.96));
-      border: 1px solid rgba(127, 215, 255, 0.1);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+        radial-gradient(circle at top, rgba(99, 236, 255, 0.12), transparent 46%),
+        linear-gradient(180deg, rgba(12, 24, 39, 0.98), rgba(5, 12, 22, 0.98));
+      border: 1px solid rgba(99, 236, 255, 0.12);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03), 0 0 24px rgba(99, 236, 255, 0.05);
       position: relative;
     }
 
@@ -202,250 +217,159 @@
     }
 
     .metric-value {
-      margin-top: 11px;
-      font-size: clamp(24px, 2.5vw, 34px);
+      margin-top: 7px;
+      font-size: clamp(20px, 1.9vw, 26px);
       line-height: 1;
       color: #f7fffd;
       font-weight: 700;
       font-family: "Avenir Next", "Segoe UI", sans-serif;
-      text-shadow: 0 0 14px rgba(101, 214, 208, 0.12);
+      text-shadow: 0 0 18px rgba(99, 236, 255, 0.24);
     }
 
-    .top-grid {
+    .dashboard-grid {
       display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 12px;
-      align-items: stretch;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 340px minmax(0, 1fr);
-      gap: 12px;
-      align-items: start;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 8px;
       min-height: 0;
     }
 
+    .dashboard-side {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+      display: flex;
+      min-height: 0;
+    }
+
+    .dashboard-side > .panel {
+      flex: 1 1 auto;
+    }
+
     .panel-head {
-      padding: 14px 16px 8px;
-      border-bottom: 1px solid rgba(36, 45, 59, 0.07);
-      background: linear-gradient(180deg, rgba(101, 214, 208, 0.08), rgba(101, 214, 208, 0));
+      padding: 10px 12px 6px;
+      border-bottom: 1px solid rgba(99, 236, 255, 0.1);
+      background: linear-gradient(180deg, rgba(99, 236, 255, 0.1), rgba(99, 236, 255, 0));
     }
 
     .panel-title {
-      font-size: 21px;
+      font-size: 17px;
       line-height: 1.1;
       color: #f4fbff;
       font-family: "Avenir Next", "Segoe UI", sans-serif;
     }
 
     .panel-note {
-      margin-top: 6px;
+      margin-top: 4px;
       color: var(--muted);
-      font: 500 12px/1.45 "Avenir Next", "Segoe UI", sans-serif;
+      font: 500 11px/1.3 "Avenir Next", "Segoe UI", sans-serif;
     }
 
     .panel-body {
-      padding: 14px 16px 16px;
-      display: grid;
-      gap: 14px;
-    }
-
-    .field-grid {
+      padding: 10px 12px 12px;
       display: grid;
       gap: 10px;
     }
 
+    .dashboard-side .panel-body {
+      height: calc(100% - 52px);
+      align-content: start;
+    }
+
+    .side-quote {
+      margin-top: 44px;
+      min-height: 0;
+      padding: 12px 10px 10px;
+    }
+
+    .field-grid {
+      display: grid;
+      gap: 8px;
+    }
+
     .field label {
       display: inline-block;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       font-weight: 700;
     }
 
     .field input,
     .field select {
       width: 100%;
-      border: 1px solid rgba(127, 215, 255, 0.14);
+      border: 1px solid rgba(99, 236, 255, 0.18);
       border-radius: 14px;
-      padding: 11px 13px;
-      background: rgba(13, 21, 28, 0.88);
+      padding: 9px 11px;
+      background:
+        linear-gradient(180deg, rgba(7, 16, 28, 0.96), rgba(6, 12, 22, 0.94));
       color: #f4fbff;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
     }
 
     .field input:focus,
     .field select:focus {
       outline: none;
-      border-color: rgba(101, 214, 208, 0.42);
-      box-shadow: 0 0 0 3px rgba(101, 214, 208, 0.12);
+      border-color: rgba(99, 236, 255, 0.46);
+      box-shadow: 0 0 0 3px rgba(99, 236, 255, 0.12), 0 0 20px rgba(99, 236, 255, 0.08);
     }
 
     .form-hint {
       color: var(--muted);
-      font: 500 12px/1.45 "Avenir Next", "Segoe UI", sans-serif;
-    }
-
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    .summary-card {
-      border-radius: 20px;
-      padding: 12px;
-      background:
-        radial-gradient(circle at top, rgba(127, 215, 255, 0.08), transparent 46%),
-        linear-gradient(180deg, rgba(24, 36, 47, 0.98), rgba(14, 21, 28, 0.98));
-      border: 1px solid rgba(127, 215, 255, 0.1);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
-    }
-
-    .summary-card strong {
-      display: block;
-      margin-top: 6px;
-      font-size: 24px;
-      line-height: 1;
-      color: #fbfffd;
-      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      font: 500 11px/1.35 "Avenir Next", "Segoe UI", sans-serif;
     }
 
     .timeline {
       display: grid;
-      gap: 12px;
-    }
-
-    .timeline-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: end;
-      flex-wrap: wrap;
-    }
-
-    .timeline-title {
-      font-size: 24px;
-      line-height: 1;
-    }
-
-    .timeline-copy {
-      color: var(--muted);
-      font: 500 12px/1.45 "Avenir Next", "Segoe UI", sans-serif;
-      max-width: 66ch;
+      gap: 10px;
     }
 
     .timeline-gauge-wrap {
       display: grid;
-      grid-template-columns: 260px minmax(0, 1fr) 280px;
-      gap: 18px;
+      grid-template-columns: minmax(0, 1fr) 200px;
+      gap: 10px;
       align-items: center;
     }
 
-    .tank-gauge {
-      position: relative;
-      width: 230px;
-      height: 230px;
-      margin: 0 auto;
-    }
-
-    .tank-gauge-svg {
-      width: 100%;
-      height: 100%;
-      overflow: visible;
-      transform: rotate(-90deg);
-      filter: drop-shadow(0 14px 22px rgba(67, 52, 28, 0.14));
-    }
-
-    .gauge-track,
-    .gauge-segment,
-    .gauge-progress {
-      fill: none;
-      stroke-linecap: round;
-      pathLength: 100;
-    }
-
-    .gauge-track {
-      stroke: rgba(36, 45, 59, 0.12);
-      stroke-width: 13;
-    }
-
-    .gauge-safe { stroke: #69cb82; stroke-width: 13; }
-    .gauge-warning { stroke: #efbf43; stroke-width: 13; }
-    .gauge-critical { stroke: #ea625d; stroke-width: 13; }
-    .gauge-progress {
-      stroke: #136e4f;
-      stroke-width: 15;
-      filter: drop-shadow(0 0 7px rgba(19, 110, 79, 0.18));
-    }
-
-    .gauge-marker {
-      fill: rgba(19, 24, 31, 0.96);
-      stroke: rgba(255, 250, 240, 0.95);
-      stroke-width: 4;
-    }
-
-    .tank-center {
-      position: absolute;
-      inset: 42px;
-      border-radius: 50%;
-      background:
-        radial-gradient(circle at top, rgba(48, 70, 87, 0.96), rgba(19, 28, 36, 0.98));
-      border: 1px solid rgba(127, 215, 255, 0.1);
-      display: grid;
-      place-items: center;
-      text-align: center;
-      box-shadow: inset 0 0 0 8px rgba(255, 255, 255, 0.04);
-    }
-
-    .tank-center-label {
-      color: var(--muted);
-      font: 700 11px/1 "Avenir Next", "Segoe UI", sans-serif;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-    }
-
-    .tank-center-value {
-      margin-top: 6px;
-      font-size: 31px;
-      line-height: 1;
-      color: #fbfffd;
-      font-weight: 700;
-    }
-
-    .tank-center-sub {
-      margin-top: 6px;
-      color: var(--muted);
-      font: 600 12px/1.35 "Avenir Next", "Segoe UI", sans-serif;
-    }
-
-    .tank-fuel-label {
-      position: absolute;
-      bottom: 22px;
-      font: 700 14px/1 "Avenir Next", "Segoe UI", sans-serif;
-      color: var(--muted);
-    }
-
-    .tank-fuel-label.is-empty { left: 6px; }
-    .tank-fuel-label.is-full { right: 6px; }
-
     .timeline-meta {
       display: grid;
-      gap: 12px;
+      gap: 8px;
+      justify-items: center;
+      text-align: center;
+    }
+
+    .life-image {
+      width: 100%;
+      height: 100%;
+      min-height: 172px;
+      overflow: hidden;
+      border-radius: 26px;
+      border: 1px solid rgba(99, 236, 255, 0.14);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03), 0 0 26px rgba(99, 236, 255, 0.06);
+      background:
+        radial-gradient(circle at top, rgba(99, 236, 255, 0.12), transparent 48%),
+        linear-gradient(180deg, rgba(11, 22, 35, 0.98), rgba(6, 12, 22, 0.98));
+    }
+
+    .life-image svg {
+      display: block;
+      width: 100%;
+      height: 100%;
     }
 
     .remaining-gauge {
       position: relative;
-      min-height: 230px;
-      padding: 18px 16px 14px;
+      width: 172px;
+      min-height: 172px;
+      margin: 0 auto;
+      padding: 18px;
       border-radius: 24px;
       background:
-        radial-gradient(circle at top, rgba(127, 215, 255, 0.1), transparent 40%),
-        linear-gradient(180deg, rgba(24, 36, 47, 0.98), rgba(14, 21, 28, 0.98));
-      border: 1px solid rgba(127, 215, 255, 0.1);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+        radial-gradient(circle at top, rgba(99, 236, 255, 0.12), transparent 48%),
+        linear-gradient(180deg, rgba(11, 22, 35, 0.98), rgba(6, 12, 22, 0.98));
+      border: 1px solid rgba(99, 236, 255, 0.14);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03), 0 0 26px rgba(99, 236, 255, 0.06);
       display: grid;
-      align-content: start;
+      align-content: center;
       justify-items: center;
-      gap: 10px;
+      gap: 6px;
     }
 
     .remaining-gauge-label {
@@ -456,13 +380,12 @@
     }
 
     .remaining-gauge-title {
-      font: 700 20px/1 "Avenir Next", "Segoe UI", sans-serif;
-      color: #f4fbff;
+      display: none;
     }
 
     .remaining-gauge-svg {
       width: 100%;
-      max-width: 230px;
+      max-width: 136px;
       height: auto;
       overflow: visible;
       filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.22));
@@ -475,7 +398,7 @@
     }
 
     .fuel-arc {
-      stroke-width: 14;
+      stroke-width: 12;
     }
 
     .fuel-arc.safe { stroke: #69cb82; }
@@ -483,16 +406,14 @@
     .fuel-arc.critical { stroke: #ea625d; }
     .fuel-needle-guide {
       stroke: rgba(127, 215, 255, 0.14);
-      stroke-width: 8;
+      stroke-width: 7;
     }
 
     .fuel-needle {
       stroke: #f7fffd;
-      stroke-width: 4;
+      stroke-width: 3;
       stroke-linecap: round;
-      filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.16));
-      transform-origin: 110px 124px;
-      transition: transform 0.45s ease;
+      filter: drop-shadow(0 0 10px rgba(99, 236, 255, 0.35));
     }
 
     .fuel-needle-hub {
@@ -506,14 +427,15 @@
     }
 
     .fuel-gauge-value {
-      font: 800 30px/1 "Avenir Next", "Segoe UI", sans-serif;
+      font: 800 34px/1 "Avenir Next", "Segoe UI", sans-serif;
       color: #fbfffd;
+      text-shadow: 0 0 18px rgba(99, 236, 255, 0.3);
     }
 
     .fuel-gauge-note {
-      margin-top: 3px;
+      margin-top: 8px;
       color: var(--muted);
-      font: 600 12px/1.35 "Avenir Next", "Segoe UI", sans-serif;
+      font: 600 10px/1.25 "Avenir Next", "Segoe UI", sans-serif;
     }
 
     .fuel-gauge-scale {
@@ -521,112 +443,49 @@
       display: flex;
       justify-content: space-between;
       color: var(--muted);
-      font: 700 11px/1 "Avenir Next", "Segoe UI", sans-serif;
+      font: 700 10px/1 "Avenir Next", "Segoe UI", sans-serif;
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
 
-    .timeline-now-label {
-      display: inline-flex;
-      width: fit-content;
-      align-items: center;
-      gap: 8px;
-      padding: 7px 11px;
-      border-radius: 999px;
-      background: rgba(17, 116, 110, 0.94);
-      color: #f6fffe;
-      font: 700 11px/1 "Avenir Next", "Segoe UI", sans-serif;
-      white-space: nowrap;
-      box-shadow: 0 12px 24px rgba(21, 94, 99, 0.18);
-      animation: floatTag 4.8s ease-in-out infinite;
-    }
-
     .timeline-markers {
       display: grid;
-      gap: 8px;
+      gap: 6px;
       color: var(--muted);
-      font: 600 13px/1.35 "Avenir Next", "Segoe UI", sans-serif;
-    }
-
-    .bar-legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 0;
-    }
-
-    .bar-legend span {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--muted);
-    }
-
-    .bar-legend i {
-      width: 14px;
-      height: 14px;
-      border-radius: 4px;
-      display: inline-block;
-    }
-
-    .legend-safe { background: var(--green); }
-    .legend-passed { background: var(--green-passed); }
-    .legend-warning { background: var(--yellow); }
-    .legend-critical { background: var(--red); }
-
-    .insight-list {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
-    }
-
-    .insight {
-      border-radius: 20px;
-      padding: 12px;
-      background:
-        linear-gradient(180deg, rgba(24, 36, 47, 0.98), rgba(14, 21, 28, 0.98));
-      border: 1px solid rgba(127, 215, 255, 0.1);
-    }
-
-    .insight-value {
-      margin-top: 6px;
-      font-size: 22px;
-      line-height: 1;
-      color: #fbfffd;
-      font-weight: 700;
-      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      font: 600 11px/1.25 "Avenir Next", "Segoe UI", sans-serif;
     }
 
     .quote-panel {
       position: relative;
-      padding: 24px 24px 20px;
+      padding: 24px 22px 20px;
       background:
-        radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.05), transparent 18%),
-        radial-gradient(circle at 80% 30%, rgba(255, 255, 255, 0.04), transparent 16%),
-        linear-gradient(135deg, rgba(22, 30, 33, 0.98), rgba(30, 39, 42, 0.98));
+        radial-gradient(circle at 20% 18%, rgba(255, 255, 255, 0.05), transparent 18%),
+        radial-gradient(circle at 78% 26%, rgba(255, 255, 255, 0.04), transparent 16%),
+        linear-gradient(180deg, rgba(22, 33, 29, 0.98), rgba(10, 18, 15, 0.98));
       color: #fbfbf8;
       text-align: center;
       display: grid;
       justify-items: center;
-      border: 3px solid rgba(255, 248, 230, 0.18);
+      border: 1px solid rgba(183, 231, 211, 0.12);
       box-shadow:
-        inset 0 0 0 2px rgba(255, 255, 255, 0.04),
-        0 24px 50px rgba(27, 24, 19, 0.24);
-      border-radius: 42% 42% 20% 20% / 30% 30% 18% 18%;
-      min-height: 220px;
+        inset 0 0 0 1px rgba(183, 231, 211, 0.06),
+        inset 0 0 36px rgba(0, 0, 0, 0.22),
+        0 18px 34px rgba(0, 0, 0, 0.28);
+      border-radius: 12px;
+      min-height: 148px;
       align-content: center;
-      overflow: visible;
+      overflow: hidden;
     }
 
     .wheel-hint {
       position: fixed;
       left: 50%;
       bottom: -118px;
-      width: 360px;
-      height: 360px;
+      width: 300px;
+      height: 300px;
       transform: translateX(-50%);
       border-radius: 50%;
-      border: 24px solid rgba(33, 43, 50, 0.92);
+      border: 20px solid rgba(33, 43, 50, 0.92);
       box-shadow:
         inset 0 0 0 8px rgba(255,255,255,0.04),
         0 -20px 48px rgba(0,0,0,0.28);
@@ -646,42 +505,50 @@
     }
 
     .wheel-hint::before {
-      width: 26px;
-      height: 122px;
+      width: 22px;
+      height: 100px;
     }
 
     .wheel-hint::after {
-      width: 144px;
-      height: 26px;
+      width: 116px;
+      height: 22px;
     }
 
     .quote-panel::before {
       content: "";
       position: absolute;
-      top: -32px;
-      left: 50%;
-      width: 18px;
-      height: 40px;
-      transform: translateX(-50%);
-      border-radius: 12px;
-      background: linear-gradient(180deg, rgba(86, 93, 100, 0.95), rgba(41, 47, 53, 0.98));
-      box-shadow: 0 8px 14px rgba(17, 20, 24, 0.2);
+      inset: 0;
+      border-radius: 6px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255,255,255,0));
+      opacity: 0.45;
     }
 
     .quote-panel {
-      margin-top: 32px;
+      margin-top: 0;
     }
 
-    .quote-panel .mirror-cap {
-      position: absolute;
-      top: -48px;
-      left: 50%;
-      width: 82px;
-      height: 20px;
-      transform: translateX(-50%);
-      border-radius: 999px;
-      background: linear-gradient(180deg, rgba(66, 72, 79, 0.98), rgba(28, 34, 39, 1));
-      box-shadow: 0 10px 20px rgba(16, 19, 22, 0.22);
+    .timeline-quote {
+      min-height: 172px;
+      align-self: stretch;
+      grid-template-rows: auto auto auto 1fr;
+    }
+
+    .timeline-visual {
+      min-height: 172px;
+      align-self: stretch;
+      display: grid;
+      place-items: center;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .timeline-visual::before,
+    .timeline-visual::after {
+      display: none;
     }
 
     .quote-panel::after {
@@ -689,50 +556,64 @@
       position: absolute;
       inset: 0;
       background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0)),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0)),
         repeating-linear-gradient(
           0deg,
-          rgba(255, 255, 255, 0.015) 0px,
-          rgba(255, 255, 255, 0.015) 1px,
+          rgba(255, 255, 255, 0.012) 0px,
+          rgba(255, 255, 255, 0.012) 1px,
           transparent 1px,
           transparent 7px
         );
       pointer-events: none;
-      mix-blend-mode: screen;
+      opacity: 0.72;
     }
 
     .quote-kicker {
       position: relative;
       z-index: 1;
-      color: rgba(255, 255, 249, 0.84);
-      font: 700 12px/1 "Avenir Next", "Segoe UI", sans-serif;
+      color: rgba(230, 241, 236, 0.82);
+      font: 700 10px/1 "Avenir Next", "Segoe UI", sans-serif;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
     }
 
     .quote-text {
       position: relative;
       z-index: 1;
-      margin-top: 10px;
-      max-width: 860px;
-      font-size: clamp(26px, 2.35vw, 36px);
-      line-height: 1.18;
+      margin-top: 6px;
+      max-width: 100%;
+      font-size: clamp(18px, 1.55vw, 23px);
+      line-height: 1.16;
       letter-spacing: -0.02em;
-      color: rgba(255, 255, 251, 0.98);
-      text-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.14),
-        0 0 8px rgba(255, 255, 255, 0.08);
+      color: rgba(247, 250, 247, 0.97);
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
     }
 
     .quote-note {
       position: relative;
       z-index: 1;
-      margin-top: 10px;
-      max-width: 760px;
-      color: rgba(255, 255, 250, 0.9);
-      font: 500 13px/1.5 "Avenir Next", "Segoe UI", sans-serif;
-      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
+      margin-top: 6px;
+      max-width: 100%;
+      color: rgba(224, 235, 229, 0.88);
+      font: 500 10px/1.22 "Avenir Next", "Segoe UI", sans-serif;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .side-quote .quote-text {
+      font-size: clamp(15px, 1.2vw, 18px);
+      line-height: 1.16;
+      max-width: 100%;
+    }
+
+    .side-quote .quote-note {
+      font-size: 9px;
+      line-height: 1.2;
+      max-width: 100%;
+    }
+
+    .side-quote .quote-kicker {
+      font-size: 9px;
     }
 
     @keyframes floatTag {
@@ -749,19 +630,22 @@
       .shell {
         height: auto;
       }
-      .top-grid,
-      .layout {
+      .dashboard-grid {
         grid-template-columns: 1fr;
+        grid-template-rows: auto;
+      }
+      .dashboard-side {
+        grid-column: auto;
+        grid-row: auto;
       }
       .wheel-hint {
         display: none;
       }
       .quote-panel {
         margin-top: 18px;
-        border-radius: 34px;
+        border-radius: 12px;
       }
-      .quote-panel::before,
-      .quote-panel .mirror-cap {
+      .quote-panel::before {
         display: none;
       }
       .timeline-gauge-wrap {
@@ -783,9 +667,7 @@
       .insight-list {
         grid-template-columns: 1fr;
       }
-      .timeline-head,
-      .timeline-markers,
-      .bar-legend {
+      .timeline-markers {
         display: grid;
       }
     }
@@ -796,7 +678,7 @@
   <div class="wheel-hint" aria-hidden="true"></div>
 
   <main class="shell">
-    <div class="top-grid">
+    <div class="dashboard-grid">
       <section class="hero">
         <div class="eyebrow">Time perspective</div>
         <h1>Life Compass</h1>
@@ -814,107 +696,61 @@
             <div class="metric-label">Current Century</div>
             <div class="metric-value" id="centuryProgress">--%</div>
           </div>
-        </div>
-      </section>
-
-      <section class="hero quote-panel">
-        <div class="mirror-cap" aria-hidden="true"></div>
-        <div class="quote-kicker" id="quoteKicker">A Good Life</div>
-        <div class="quote-text" id="quoteText">Live with warmth, stay useful to others, protect your health, and spend your days on work, people, and moments you would gladly choose again.</div>
-        <p class="quote-note" id="quoteNote">A good life is rarely built from urgency alone. It usually comes from attention: loving people well, keeping your word, staying curious, moving your body, and remembering that ordinary days are most of life.</p>
-      </section>
-    </div>
-
-    <div class="layout">
-      <section class="panel">
-        <div class="panel-head">
-          <h2 class="panel-title">Your Inputs</h2>
-          <p class="panel-note">Enter your birth month and year plus the life expectancy you want to plan around.</p>
-        </div>
-        <div class="panel-body">
-          <div class="field-grid">
-            <div class="field">
-              <label for="birthMonth">Birth Month</label>
-              <select id="birthMonth"></select>
-            </div>
-            <div class="field">
-              <label for="birthYear">Birth Year</label>
-              <input id="birthYear" type="number" min="1900" max="2200" step="1" value="1990">
-            </div>
-            <div class="field">
-              <label for="lifeExpectancy">Expected Life in Years</label>
-              <input id="lifeExpectancy" type="number" min="1" max="130" step="1" value="85">
-            </div>
+          <div class="hero-metric">
+            <div class="metric-label">Years Used</div>
+            <div class="metric-value" id="yearsUsed">--</div>
           </div>
-          <p class="form-hint">The bar starts at the first day of your birth month and ends on the same month after your selected life expectancy.</p>
+          <div class="hero-metric">
+            <div class="metric-label">Years Left</div>
+            <div class="metric-value" id="yearsLeft">--</div>
+          </div>
+          <div class="hero-metric">
+            <div class="metric-label">Expected End Year</div>
+            <div class="metric-value" id="topEndYearValue">--</div>
+          </div>
         </div>
       </section>
 
-      <section class="panel">
-        <div class="panel-head">
-          <h2 class="panel-title">Life Timeline</h2>
-          <p class="panel-note">Green marks the earlier runway, yellow and red mark the reserve band near the end, and dark green shows the portion already used.</p>
-        </div>
-        <div class="panel-body">
-          <div class="summary-grid">
-            <div class="summary-card">
-              <div class="metric-label">Completed</div>
-              <strong id="lifeCompletedPercent">--%</strong>
-            </div>
-            <div class="summary-card">
-              <div class="metric-label">Remaining</div>
-              <strong id="lifeRemainingPercent">--%</strong>
-            </div>
-            <div class="summary-card">
-              <div class="metric-label">Current Age</div>
-              <strong id="currentAge">--</strong>
-            </div>
-            <div class="summary-card">
-              <div class="metric-label">Expected End Year</div>
-              <strong id="endYearValue">--</strong>
-            </div>
+      <section class="dashboard-side">
+        <div class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">Your Inputs</h2>
+            <p class="panel-note">Enter your birth month and year plus the life expectancy you want to plan around.</p>
           </div>
+          <div class="panel-body">
+            <div class="field-grid">
+              <div class="field">
+                <label for="birthMonth">Birth Month</label>
+                <select id="birthMonth"></select>
+              </div>
+              <div class="field">
+                <label for="birthYear">Birth Year</label>
+                <input id="birthYear" type="number" min="1900" max="2200" step="1" value="1990">
+              </div>
+              <div class="field">
+                <label for="lifeExpectancy">Expected Life in Years</label>
+                <input id="lifeExpectancy" type="number" min="1" max="130" step="1" value="85">
+              </div>
+            </div>
+            <p class="form-hint">The bar starts at the first day of your birth month and ends on the same month after your selected life expectancy.</p>
+            <section class="hero quote-panel side-quote">
+              <div class="quote-kicker" id="quoteKicker">A Good Life</div>
+              <div class="quote-text" id="quoteText">Live with warmth, stay useful to others, protect your health, and spend your days on work, people, and moments you would gladly choose again.</div>
+              <p class="quote-note" id="quoteNote">A good life is rarely built from urgency alone. It usually comes from attention: loving people well, keeping your word, staying curious, moving your body, and remembering that ordinary days are most of life.</p>
+            </section>
+          </div>
+        </div>
+      </section>
 
+      <section class="panel dashboard-main">
+        <div class="panel-body">
           <div class="timeline">
-            <div class="timeline-head">
-              <div>
-                <h3 class="timeline-title">Life Tank</h3>
-                <p class="timeline-copy">A fuel-gauge view of your life runway: green is open tank, yellow is the final 15%, red is the final 3%, and dark green shows the portion already used.</p>
-              </div>
-            </div>
-
             <div class="timeline-gauge-wrap">
-              <div class="tank-gauge">
-                <svg class="tank-gauge-svg" viewBox="0 0 220 220" aria-hidden="true">
-                  <circle class="gauge-track" cx="110" cy="110" r="76"></circle>
-                  <circle class="gauge-segment gauge-safe" id="segmentSafe" cx="110" cy="110" r="76"></circle>
-                  <circle class="gauge-segment gauge-warning" id="segmentWarning" cx="110" cy="110" r="76"></circle>
-                  <circle class="gauge-segment gauge-critical" id="segmentCritical" cx="110" cy="110" r="76"></circle>
-                  <circle class="gauge-progress" id="timelinePassed" cx="110" cy="110" r="76"></circle>
-                  <circle class="gauge-marker" id="timelineNow" cx="110" cy="34" r="7"></circle>
-                </svg>
-                <div class="tank-center">
-                  <div>
-                    <div class="tank-center-label">Life Tank</div>
-                    <div class="tank-center-value" id="tankCenterValue">--%</div>
-                    <div class="tank-center-sub" id="tankCenterSub">used so far</div>
-                  </div>
-                </div>
-                <div class="tank-fuel-label is-empty">E</div>
-                <div class="tank-fuel-label is-full">F</div>
-              </div>
-
-              <div class="timeline-meta">
-                <div class="timeline-now-label" id="timelineNowLabel">Today</div>
-                <div class="timeline-markers">
-                  <div id="birthMarker">Birth</div>
-                  <div id="currentMarker">Today</div>
-                  <div id="endMarker">Expected End</div>
-                </div>
-              </div>
+              <section class="timeline-visual" aria-hidden="true">
+                <div class="life-image" id="lifeImage" aria-hidden="true"></div>
+              </section>
 
               <div class="remaining-gauge">
-                <div class="remaining-gauge-label">Right Dash</div>
                 <div class="remaining-gauge-title">Life Fuel Gauge</div>
                 <svg class="remaining-gauge-svg" viewBox="0 0 220 150" aria-hidden="true">
                   <path class="fuel-needle-guide" d="M 34 124 A 76 76 0 0 1 186 124"></path>
@@ -930,33 +766,12 @@
                 </div>
                 <div class="fuel-gauge-scale">
                   <span>E</span>
-                  <span>Reserve</span>
+                  <span id="remainingReserveLabel" hidden>Reserve</span>
                   <span>F</span>
                 </div>
               </div>
             </div>
 
-            <div class="bar-legend">
-              <span><i class="legend-safe"></i> Tank ahead</span>
-              <span><i class="legend-passed"></i> Fuel already used</span>
-              <span><i class="legend-warning"></i> Reserve zone 15%</span>
-              <span><i class="legend-critical"></i> Critical reserve 3%</span>
-            </div>
-
-            <div class="insight-list">
-              <div class="insight">
-                <div class="metric-label">Years Used</div>
-                <div class="insight-value" id="yearsUsed">--</div>
-              </div>
-              <div class="insight">
-                <div class="metric-label">Years Left</div>
-                <div class="insight-value" id="yearsLeft">--</div>
-              </div>
-              <div class="insight">
-                <div class="metric-label">Reserve Threshold</div>
-                <div class="insight-value" id="reserveThreshold">--</div>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -965,33 +780,21 @@
 
   <script>
     const QUOTE_STORAGE_KEY = 'lifeProgressLastQuoteIndex';
+    const INPUT_STORAGE_KEY = 'lifeCompassInputs';
     const yearProgress = document.getElementById('yearProgress');
     const decadeProgress = document.getElementById('decadeProgress');
     const centuryProgress = document.getElementById('centuryProgress');
     const birthMonth = document.getElementById('birthMonth');
     const birthYear = document.getElementById('birthYear');
     const lifeExpectancy = document.getElementById('lifeExpectancy');
-    const lifeCompletedPercent = document.getElementById('lifeCompletedPercent');
-    const lifeRemainingPercent = document.getElementById('lifeRemainingPercent');
-    const currentAge = document.getElementById('currentAge');
-    const endYearValue = document.getElementById('endYearValue');
-    const tankCenterValue = document.getElementById('tankCenterValue');
-    const tankCenterSub = document.getElementById('tankCenterSub');
-    const segmentSafe = document.getElementById('segmentSafe');
-    const segmentWarning = document.getElementById('segmentWarning');
-    const segmentCritical = document.getElementById('segmentCritical');
-    const timelinePassed = document.getElementById('timelinePassed');
-    const timelineNow = document.getElementById('timelineNow');
-    const timelineNowLabel = document.getElementById('timelineNowLabel');
-    const birthMarker = document.getElementById('birthMarker');
-    const currentMarker = document.getElementById('currentMarker');
-    const endMarker = document.getElementById('endMarker');
+    const topEndYearValue = document.getElementById('topEndYearValue');
     const yearsUsed = document.getElementById('yearsUsed');
     const yearsLeft = document.getElementById('yearsLeft');
-    const reserveThreshold = document.getElementById('reserveThreshold');
     const remainingNeedle = document.getElementById('remainingNeedle');
     const remainingFuelValue = document.getElementById('remainingFuelValue');
     const remainingFuelNote = document.getElementById('remainingFuelNote');
+    const remainingReserveLabel = document.getElementById('remainingReserveLabel');
+    const lifeImage = document.getElementById('lifeImage');
     const quoteKicker = document.getElementById('quoteKicker');
     const quoteText = document.getElementById('quoteText');
     const quoteNote = document.getElementById('quoteNote');
@@ -1027,6 +830,95 @@
         text: 'The goal is not only to add years to life, but to fill the years with character, health, friendship, wonder, and the freedom to be generous.',
         note: 'When you zoom out, a good life looks less like constant acceleration and more like balanced energy: effort, rest, purpose, play, and real human connection.'
       }
+    ];
+
+    const lifeScenes = [
+      `
+        <svg viewBox="0 0 420 240" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <linearGradient id="sceneSkyA" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#5ec9ff"/>
+              <stop offset="54%" stop-color="#8cf4ff"/>
+              <stop offset="100%" stop-color="#ffe2a1"/>
+            </linearGradient>
+            <linearGradient id="sceneSeaA" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#6cecff"/>
+              <stop offset="100%" stop-color="#12728c"/>
+            </linearGradient>
+            <linearGradient id="sceneIslandA" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#329c5a"/>
+              <stop offset="100%" stop-color="#0c2d1a"/>
+            </linearGradient>
+          </defs>
+          <rect width="420" height="240" fill="url(#sceneSkyA)"/>
+          <circle cx="326" cy="52" r="30" fill="#fff4bc" opacity="0.96"/>
+          <path d="M0 124 C72 116 126 132 210 128 C286 124 352 108 420 116 L420 240 L0 240 Z" fill="url(#sceneSeaA)"/>
+          <path d="M0 164 C88 152 150 176 228 166 C310 156 356 176 420 166 L420 240 L0 240 Z" fill="#29b8c9" opacity="0.56"/>
+          <path d="M0 194 C126 188 256 202 420 188 L420 240 L0 240 Z" fill="#f4dcab"/>
+          <path d="M224 172 C248 130 286 104 340 98 C354 116 364 142 372 172" fill="url(#sceneIslandA)"/>
+          <path d="M250 168 C246 142 238 124 226 108" stroke="#2a6a37" stroke-width="7" stroke-linecap="round"/>
+          <path d="M226 108 C204 98 188 84 174 64" stroke="#5cf2aa" stroke-width="6" stroke-linecap="round"/>
+          <path d="M226 108 C246 94 266 86 288 82" stroke="#5cf2aa" stroke-width="6" stroke-linecap="round"/>
+          <path d="M226 108 C214 124 206 140 202 156" stroke="#5cf2aa" stroke-width="6" stroke-linecap="round"/>
+          <path d="M36 176 C106 166 154 184 214 176" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity="0.64"/>
+        </svg>
+      `,
+      `
+        <svg viewBox="0 0 420 240" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <linearGradient id="sceneSkyB" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="#75d4ff"/>
+              <stop offset="48%" stop-color="#97f7ff"/>
+              <stop offset="100%" stop-color="#ffd698"/>
+            </linearGradient>
+            <linearGradient id="sceneSeaB" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#6be3ff"/>
+              <stop offset="100%" stop-color="#167590"/>
+            </linearGradient>
+            <linearGradient id="sceneCliffB" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#4e8f55"/>
+              <stop offset="100%" stop-color="#17311d"/>
+            </linearGradient>
+          </defs>
+          <rect width="420" height="240" fill="url(#sceneSkyB)"/>
+          <circle cx="92" cy="50" r="28" fill="#fff3b6" opacity="0.96"/>
+          <path d="M0 126 C76 118 128 138 206 132 C290 126 352 110 420 116 L420 240 L0 240 Z" fill="url(#sceneSeaB)"/>
+          <path d="M0 170 C84 160 138 182 214 176 C290 170 350 182 420 172 L420 240 L0 240 Z" fill="#27b7cf" opacity="0.56"/>
+          <path d="M0 196 C102 190 186 204 286 198 C352 194 384 196 420 194 L420 240 L0 240 Z" fill="#efd8aa"/>
+          <path d="M276 184 C300 140 340 112 392 94 L420 94 L420 240 L294 240 Z" fill="url(#sceneCliffB)"/>
+          <path d="M316 178 C322 154 330 136 342 116" stroke="#29582f" stroke-width="7" stroke-linecap="round"/>
+          <path d="M342 116 C330 98 318 82 306 66" stroke="#61f2ae" stroke-width="6" stroke-linecap="round"/>
+          <path d="M342 116 C360 102 376 96 394 92" stroke="#61f2ae" stroke-width="6" stroke-linecap="round"/>
+          <path d="M342 116 C352 136 360 150 372 164" stroke="#61f2ae" stroke-width="6" stroke-linecap="round"/>
+          <path d="M44 176 C100 168 152 182 198 176" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity="0.58"/>
+        </svg>
+      `,
+      `
+        <svg viewBox="0 0 420 240" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <linearGradient id="sceneSkyC" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#61ceff"/>
+              <stop offset="48%" stop-color="#8ff7ff"/>
+              <stop offset="100%" stop-color="#ffdf9f"/>
+            </linearGradient>
+            <linearGradient id="sceneOceanC" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#6ce6ff"/>
+              <stop offset="100%" stop-color="#15768f"/>
+            </linearGradient>
+          </defs>
+          <rect width="420" height="240" fill="url(#sceneSkyC)"/>
+          <circle cx="334" cy="54" r="28" fill="#fff6c0" opacity="0.96"/>
+          <path d="M0 120 C84 110 140 126 214 122 C294 118 356 108 420 118 L420 240 L0 240 Z" fill="url(#sceneOceanC)"/>
+          <path d="M0 166 C78 156 140 178 216 170 C302 162 350 174 420 166 L420 240 L0 240 Z" fill="#24bfd0" opacity="0.54"/>
+          <path d="M0 196 C126 188 246 204 420 190 L420 240 L0 240 Z" fill="#f2dbac"/>
+          <path d="M116 186 C138 154 164 132 198 120 C216 134 228 156 236 186" fill="#2b8349"/>
+          <path d="M192 182 C194 154 194 132 190 108" stroke="#2a6336" stroke-width="7" stroke-linecap="round"/>
+          <path d="M190 112 C168 98 152 86 136 72" stroke="#64f4b0" stroke-width="6" stroke-linecap="round"/>
+          <path d="M190 112 C208 98 226 92 248 88" stroke="#64f4b0" stroke-width="6" stroke-linecap="round"/>
+          <path d="M190 112 C198 132 206 148 220 164" stroke="#64f4b0" stroke-width="6" stroke-linecap="round"/>
+          <path d="M256 182 C286 144 324 122 374 110" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+        </svg>
+      `
     ];
 
     monthNames.forEach((name, index) => {
@@ -1076,6 +968,11 @@
       }
     }
 
+    function chooseLifeScene() {
+      const sceneIndex = Math.floor(Math.random() * lifeScenes.length);
+      lifeImage.innerHTML = lifeScenes[sceneIndex];
+    }
+
     function getNumericQueryParam(params, keys, min, max) {
       for (const key of keys) {
         const rawValue = params.get(key);
@@ -1087,6 +984,47 @@
         return rounded;
       }
       return null;
+    }
+
+    function loadSavedInputs() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(INPUT_STORAGE_KEY) || 'null');
+        if (!saved || typeof saved !== 'object') return;
+
+        if (Number.isInteger(saved.birthMonth) && saved.birthMonth >= 0 && saved.birthMonth <= 11) {
+          birthMonth.value = String(saved.birthMonth);
+        }
+
+        if (Number.isInteger(saved.birthYear) && saved.birthYear >= 1900 && saved.birthYear <= 2200) {
+          birthYear.value = String(saved.birthYear);
+        }
+
+        if (Number.isInteger(saved.lifeExpectancy) && saved.lifeExpectancy >= 1 && saved.lifeExpectancy <= 130) {
+          lifeExpectancy.value = String(saved.lifeExpectancy);
+        }
+      } catch (error) {
+        /* ignore storage failures */
+      }
+    }
+
+    function saveInputs() {
+      const birthMonthValue = Number(birthMonth.value);
+      const birthYearValue = Number(birthYear.value);
+      const expectancyValue = Number(lifeExpectancy.value);
+
+      if (!Number.isInteger(birthMonthValue) || birthMonthValue < 0 || birthMonthValue > 11) return;
+      if (!Number.isInteger(birthYearValue) || birthYearValue < 1900 || birthYearValue > 2200) return;
+      if (!Number.isFinite(expectancyValue) || expectancyValue < 1 || expectancyValue > 130) return;
+
+      try {
+        localStorage.setItem(INPUT_STORAGE_KEY, JSON.stringify({
+          birthMonth: birthMonthValue,
+          birthYear: Math.round(birthYearValue),
+          lifeExpectancy: Math.round(expectancyValue)
+        }));
+      } catch (error) {
+        /* ignore storage failures */
+      }
     }
 
     function applyQueryParams() {
@@ -1144,45 +1082,23 @@
       const reserveYear = birthYearValue + Math.round(expectancyValue * (safePercent / 100));
       const currentClamped = Math.max(0, Math.min(100, completion));
 
-      lifeCompletedPercent.textContent = formatPercent(currentClamped);
-      lifeRemainingPercent.textContent = formatPercent(Math.max(0, remaining));
-      currentAge.textContent = formatYears(elapsedYears);
-      endYearValue.textContent = String(endDate.getFullYear());
+      topEndYearValue.textContent = String(endDate.getFullYear());
       yearsUsed.textContent = formatYears(elapsedYears);
       yearsLeft.textContent = formatYears(remainingYearsValue);
-      reserveThreshold.textContent = `${reserveYear}`;
-      tankCenterValue.textContent = formatPercent(currentClamped);
-      tankCenterSub.textContent = `${formatPercent(Math.max(0, remaining))} left`;
       remainingFuelValue.textContent = formatPercent(Math.max(0, remaining));
-      remainingFuelNote.textContent = remaining <= 20 ? 'reserve band' : 'life remaining';
-
-      segmentSafe.setAttribute('stroke-dasharray', `${safePercent} ${100 - safePercent}`);
-      segmentSafe.setAttribute('stroke-dashoffset', '0');
-      segmentWarning.setAttribute('stroke-dasharray', `${warningPercent} ${100 - warningPercent}`);
-      segmentWarning.setAttribute('stroke-dashoffset', `${-safePercent}`);
-      segmentCritical.setAttribute('stroke-dasharray', `${criticalPercent} ${100 - criticalPercent}`);
-      segmentCritical.setAttribute('stroke-dashoffset', `${-(safePercent + warningPercent)}`);
-
-      timelinePassed.setAttribute('stroke-dasharray', `${currentClamped} ${100 - currentClamped}`);
-      timelinePassed.setAttribute('stroke-dashoffset', '0');
-
-      const radius = 76;
-      const center = 110;
-      const angle = ((currentClamped / 100) * 360) - 90;
-      const radians = angle * (Math.PI / 180);
-      const markerX = center + (radius * Math.cos(radians));
-      const markerY = center + (radius * Math.sin(radians));
-      timelineNow.setAttribute('cx', String(markerX));
-      timelineNow.setAttribute('cy', String(markerY));
-      timelineNowLabel.textContent = `${now.getFullYear()} · ${formatPercent(currentClamped)}`;
+      remainingFuelNote.textContent = remaining <= warningPercent ? 'reserve band' : 'life remaining';
+      remainingReserveLabel.hidden = remaining > warningPercent;
 
       const remainingClamped = Math.max(0, Math.min(100, remaining));
-      const remainingAngle = -(remainingClamped / 100) * 180;
-      remainingNeedle.style.transform = `rotate(${remainingAngle}deg)`;
-
-      birthMarker.textContent = `${monthNames[birthMonthValue]} ${birthYearValue}`;
-      currentMarker.textContent = `Today · ${now.getFullYear()}`;
-      endMarker.textContent = `${monthNames[birthMonthValue]} ${endDate.getFullYear()}`;
+      const fuelNeedleCenterX = 110;
+      const fuelNeedleCenterY = 124;
+      const fuelNeedleRadius = 61;
+      const fuelNeedleAngle = (remainingClamped / 100) * Math.PI;
+      const fuelNeedleX = fuelNeedleCenterX + (fuelNeedleRadius * Math.cos(fuelNeedleAngle));
+      const fuelNeedleY = fuelNeedleCenterY - (fuelNeedleRadius * Math.sin(fuelNeedleAngle));
+      remainingNeedle.setAttribute('x2', String(fuelNeedleX));
+      remainingNeedle.setAttribute('y2', String(fuelNeedleY));
+      saveInputs();
     }
 
     function initializeDefaults() {
@@ -1193,7 +1109,9 @@
     }
 
     initializeDefaults();
+    loadSavedInputs();
     applyQueryParams();
+    chooseLifeScene();
     chooseQuote();
     renderHeaderProgress();
     updateTimeline();
