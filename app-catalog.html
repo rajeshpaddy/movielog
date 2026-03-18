@@ -120,10 +120,131 @@
       color: #6d829d;
       border-color: rgba(109, 130, 157, 0.28);
     }
+    .webapp-scope-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(9, 20, 38, 0.92);
+    }
+    .webapp-scope-badge.is-local {
+      color: #a7f7c9;
+      border-color: rgba(121, 240, 143, 0.28);
+    }
+    .webapp-scope-badge.is-cloud {
+      color: #9fe8ff;
+      border-color: rgba(0, 217, 255, 0.32);
+    }
     .search-container { margin-bottom: 20px; }
     .search-input { width: 100%; background: #0f3460; border: 1px solid #00d9ff; color: #fff; padding: 12px 20px; border-radius: 30px; font-size: 16px; }
     .search-input::placeholder { color: #666; }
     .search-input:focus { outline: none; box-shadow: 0 0 15px rgba(0, 217, 255, 0.3); }
+    .webapp-composer {
+      margin-bottom: 24px;
+      padding: 16px 18px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(12, 32, 58, 0.94), rgba(22, 33, 62, 0.96));
+      border: 1px solid rgba(0, 217, 255, 0.18);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
+    }
+    .webapp-composer-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .webapp-composer-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #dbf8ff;
+    }
+    .webapp-composer-note {
+      font-size: 12px;
+      color: #8cb2d2;
+    }
+    .webapp-form {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+    }
+    .webapp-save-mode {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .webapp-save-label {
+      font-size: 12px;
+      color: #8cb2d2;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+    .webapp-save-options {
+      display: inline-flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .webapp-save-options label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(7, 18, 36, 0.92);
+      border: 1px solid rgba(0, 217, 255, 0.18);
+      color: #dff8ff;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .webapp-save-options input {
+      accent-color: #00d9ff;
+    }
+    .webapp-input {
+      width: 100%;
+      background: rgba(7, 18, 36, 0.95);
+      border: 1px solid rgba(0, 217, 255, 0.24);
+      color: #fff;
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 15px;
+    }
+    .webapp-input::placeholder { color: #6f88a7; }
+    .webapp-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.16);
+      border-color: rgba(0, 217, 255, 0.45);
+    }
+    .webapp-submit {
+      border: 0;
+      border-radius: 12px;
+      padding: 0 16px;
+      min-height: 48px;
+      background: linear-gradient(135deg, #00d9ff, #43f0c7);
+      color: #07101a;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .webapp-submit:hover { filter: brightness(1.05); }
+    .webapp-submit:disabled { cursor: wait; opacity: 0.7; }
+    .webapp-status {
+      min-height: 18px;
+      margin-top: 10px;
+      font-size: 12px;
+      color: #8cb2d2;
+    }
+    .webapp-status.is-error { color: #ff9aa7; }
+    .webapp-status.is-success { color: #9effc9; }
     .no-results { text-align: center; color: #666; padding: 40px; grid-column: 1 / -1; }
     .changelog-link {
       position: fixed;
@@ -149,6 +270,35 @@
       opacity: 0.85;
       z-index: 100;
     }
+    .webapp-icon-shell {
+      position: relative;
+      width: 58px;
+      height: 58px;
+      margin: 0 auto 15px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.14), rgba(255,255,255,0.02));
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+      overflow: hidden;
+    }
+    .webapp-icon-shell img {
+      width: 34px;
+      height: 34px;
+      object-fit: contain;
+      border-radius: 9px;
+    }
+    .webapp-icon-fallback {
+      position: absolute;
+      inset: 0;
+      display: none;
+      place-items: center;
+      font-size: 30px;
+      line-height: 1;
+    }
+    @media (max-width: 640px) {
+      .webapp-form { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -166,17 +316,38 @@
     <div class="search-container">
       <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search apps...">
     </div>
+
+    <section class="webapp-composer">
+      <div class="webapp-composer-head">
+        <div class="webapp-composer-title">Add a Webapp Tile</div>
+        <div class="webapp-composer-note">Paste a URL once and keep it synced across devices.</div>
+      </div>
+      <form class="webapp-form" id="webappForm">
+        <input type="url" class="webapp-input" id="webappUrlInput" placeholder="https://example.com" inputmode="url" autocomplete="url" required>
+        <button type="submit" class="webapp-submit" id="webappSubmitBtn">Add Webapp</button>
+      </form>
+      <div class="webapp-save-mode">
+        <div class="webapp-save-label">Save To</div>
+        <div class="webapp-save-options">
+          <label><input type="radio" name="webappSaveMode" value="local" checked> Local only</label>
+          <label><input type="radio" name="webappSaveMode" value="cloud"> Cloud sync</label>
+        </div>
+      </div>
+      <div class="webapp-status" id="webappStatus" aria-live="polite"></div>
+    </section>
     
     <div class="app-grid" id="appGrid"></div>
   </div>
   <a class="changelog-link" href="changelog.html" title="View per-app changelog">Changelog</a>
-  <div class="build-badge" title="Catalog build version">build 20260317-3</div>
+  <div class="build-badge" title="Catalog build version">build 20260318-1</div>
 
   <script src="shared-store-config.js?v=20260311-worker3"></script>
   <script src="shared-store.js?v=20260311-worker3"></script>
   <script>
     const CATALOG_LAUNCH_PREFIX = 'ai-app-catalog-telemetry-catalog-launch';
-    const apps = [
+    const WEBAPP_LOCAL_STORAGE_KEY = 'appCatalogWebapps';
+    const WEBAPP_SHARED_KEY = 'app-catalog-webapps-v1';
+    const BASE_APPS = [
       {
         name: 'Catalog Guide Chat',
         icon: '🧭',
@@ -374,10 +545,176 @@
     const grid = document.getElementById('appGrid');
     const searchInput = document.getElementById('searchInput');
     const catalogStats = document.getElementById('catalogStats');
+    const webappForm = document.getElementById('webappForm');
+    const webappUrlInput = document.getElementById('webappUrlInput');
+    const webappSubmitBtn = document.getElementById('webappSubmitBtn');
+    const webappStatus = document.getElementById('webappStatus');
+    const webappSaveModeInputs = Array.from(document.querySelectorAll('input[name="webappSaveMode"]'));
     const telemetryCounts = new Map();
+    let localWebapps = [];
+    let sharedWebapps = [];
+    let webapps = [];
+    let apps = [...BASE_APPS];
     let filteredApps = [...apps];
     let renderedApps = [...apps];
     let selectedIndex = -1;
+
+    function setWebappStatus(message, type = '') {
+      webappStatus.textContent = message || '';
+      webappStatus.classList.remove('is-error', 'is-success');
+      if (type) {
+        webappStatus.classList.add(type === 'error' ? 'is-error' : 'is-success');
+      }
+    }
+
+    function normalizeWebappUrl(value) {
+      const raw = String(value || '').trim();
+      if (!raw) {
+        throw new Error('A website URL is required.');
+      }
+
+      const candidate = /^[a-z]+:\/\//i.test(raw) ? raw : `https://${raw}`;
+      let parsed;
+      try {
+        parsed = new URL(candidate);
+      } catch (error) {
+        throw new Error('Enter a valid website URL.');
+      }
+
+      if (!/^https?:$/i.test(parsed.protocol)) {
+        throw new Error('Only http and https websites are supported.');
+      }
+
+      parsed.hash = '';
+      return parsed.toString();
+    }
+
+    function prettifyHostname(hostname) {
+      return hostname
+        .replace(/^www\./i, '')
+        .replace(/\.(com|org|net|io|app|dev|co|ai|edu|gov|tv|me|ly)$/i, '')
+        .replace(/[-_.]+/g, ' ')
+        .replace(/\b\w/g, char => char.toUpperCase())
+        .trim() || hostname;
+    }
+
+    function guessWebappEmoji(hostname) {
+      const value = String(hostname || '').toLowerCase();
+      if (/(github|gitlab|bitbucket|stackoverflow|vercel|netlify)/.test(value)) return '💻';
+      if (/(youtube|netflix|primevideo|hulu|spotify|music|podcast)/.test(value)) return '🎵';
+      if (/(docs|notion|confluence|wiki|readme)/.test(value)) return '📄';
+      if (/(news|times|post|journal|media|blog)/.test(value)) return '📰';
+      if (/(amazon|shop|store|cart|etsy|ebay)/.test(value)) return '🛍️';
+      if (/(maps|travel|trip|flight|airbnb|booking)/.test(value)) return '🧳';
+      if (/(bank|finance|invest|money|coin|stock)/.test(value)) return '💹';
+      if (/(photo|image|design|figma|dribbble|behance)/.test(value)) return '🎨';
+      return '🌐';
+    }
+
+    function buildWebappIcon(app) {
+      const fallback = guessWebappEmoji(app.host);
+      const faviconUrl = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(app.host)}&sz=128`;
+      return `
+        <span class="webapp-icon-shell">
+          <img src="${faviconUrl}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
+          <span class="webapp-icon-fallback">${fallback}</span>
+        </span>
+      `;
+    }
+
+    function hydrateWebapp(entry, scope = 'local') {
+      const normalizedUrl = normalizeWebappUrl(entry && entry.file ? entry.file : entry && entry.url ? entry.url : '');
+      const parsed = new URL(normalizedUrl);
+      const host = parsed.hostname;
+      const name = String(entry && entry.name || '').trim() || prettifyHostname(host);
+      const date = String(entry && entry.date || new Date().toISOString().slice(0, 10));
+      const normalizedScope = scope === 'cloud' ? 'cloud' : 'local';
+      return {
+        id: String(entry && entry.id || host),
+        kind: 'webapp',
+        scope: normalizedScope,
+        name,
+        icon: buildWebappIcon({ host }),
+        desc: normalizedScope === 'cloud' ? 'Cloud sync' : 'Local only',
+        file: normalizedUrl,
+        date,
+        host
+      };
+    }
+
+    function serializeWebapps(list) {
+      return list.map(app => ({
+        id: app.id,
+        name: app.name,
+        url: app.file,
+        date: app.date
+      }));
+    }
+
+    function persistWebappsLocal() {
+      try {
+        localStorage.setItem(WEBAPP_LOCAL_STORAGE_KEY, JSON.stringify(serializeWebapps(localWebapps)));
+      } catch (error) {
+        /* ignore storage failures */
+      }
+    }
+
+    function loadLocalWebapps() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(WEBAPP_LOCAL_STORAGE_KEY) || '[]');
+        if (!Array.isArray(parsed)) return [];
+        return parsed.map(item => hydrateWebapp(item, 'local'));
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function rebuildWebapps() {
+      const deduped = new Map();
+      [...sharedWebapps, ...localWebapps].forEach(app => {
+        const key = normalizeWebappUrl(app.file);
+        if (!deduped.has(key) || app.scope === 'local') {
+          deduped.set(key, hydrateWebapp(app, app.scope));
+        }
+      });
+      webapps = Array.from(deduped.values())
+        .sort((a, b) => new Date(b.date) - new Date(a.date) || a.name.localeCompare(b.name));
+      apps = [...BASE_APPS, ...webapps];
+    }
+
+    function replaceLocalWebapps(nextWebapps) {
+      localWebapps = nextWebapps.map(app => hydrateWebapp(app, 'local'));
+      persistWebappsLocal();
+      rebuildWebapps();
+    }
+
+    function replaceSharedWebapps(nextWebapps) {
+      sharedWebapps = nextWebapps.map(app => hydrateWebapp(app, 'cloud'));
+      rebuildWebapps();
+    }
+
+    async function loadSharedWebapps() {
+      if (!window.AppSharedStore) {
+        return [];
+      }
+
+      const payload = await window.AppSharedStore.getSharedContent(WEBAPP_SHARED_KEY);
+      if (!Array.isArray(payload)) {
+        return [];
+      }
+
+      return payload.map(item => hydrateWebapp(item, 'cloud'));
+    }
+
+    async function saveSharedWebapps() {
+      if (!window.AppSharedStore) {
+        throw new Error('Shared cloud store is unavailable.');
+      }
+
+      await window.AppSharedStore.putSharedContent(WEBAPP_SHARED_KEY, serializeWebapps(sharedWebapps), {
+        ttlSeconds: 0
+      });
+    }
 
     function normalizeSearchText(value) {
       return String(value || '')
@@ -611,6 +948,9 @@
     function getAppCategory(app) {
       const haystack = `${app.name} ${app.desc}`.toLowerCase();
 
+      if (app.kind === 'webapp') {
+        return { key: 'webapps', label: 'Webapps', meta: 'Saved website shortcuts', order: 1 };
+      }
       if (/(catalog guide|app catalog|catalog chat|discover apps)/.test(haystack)) {
         return { key: 'catalog-guide', label: 'Start Here', meta: 'Learn the catalog first', order: 0 };
       }
@@ -741,6 +1081,7 @@
       card.className = 'app-card';
       card.tabIndex = -1;
       card.innerHTML = `
+        ${app.kind === 'webapp' ? `<div class="webapp-scope-badge ${app.scope === 'cloud' ? 'is-cloud' : 'is-local'}">${app.scope === 'cloud' ? 'Cloud' : 'Local'}</div>` : ''}
         ${app.telemetryId ? `<div class="app-usage-badge is-loading" data-telemetry-id="${app.telemetryId}">Loading...</div>` : ''}
         <div class="app-icon">${app.icon}</div>
         <div class="app-name">${app.name}</div>
@@ -816,6 +1157,67 @@
       applySearchQuery(e.target.value);
     });
 
+    webappForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const originalLabel = webappSubmitBtn.textContent;
+      const selectedSaveMode = webappSaveModeInputs.find(input => input.checked)?.value || 'local';
+
+      let normalizedUrl;
+      try {
+        normalizedUrl = normalizeWebappUrl(webappUrlInput.value);
+      } catch (error) {
+        setWebappStatus(error.message, 'error');
+        webappUrlInput.focus();
+        return;
+      }
+
+      if (webapps.some(app => normalizeWebappUrl(app.file) === normalizedUrl)) {
+        setWebappStatus('That website is already saved in Webapps.', 'error');
+        return;
+      }
+
+      const parsed = new URL(normalizedUrl);
+      const nextWebapp = hydrateWebapp({
+        id: `${parsed.hostname}-${Date.now()}`,
+        name: prettifyHostname(parsed.hostname),
+        url: normalizedUrl,
+        date: new Date().toISOString().slice(0, 10)
+      }, selectedSaveMode === 'cloud' ? 'cloud' : 'local');
+
+      const previousLocalWebapps = [...localWebapps];
+      const previousSharedWebapps = [...sharedWebapps];
+      webappSubmitBtn.disabled = true;
+      webappSubmitBtn.textContent = 'Saving...';
+      setWebappStatus(selectedSaveMode === 'cloud' ? 'Saving your webapp tile to cloud...' : 'Saving your webapp tile locally...', '');
+
+      try {
+        if (selectedSaveMode === 'cloud') {
+          replaceSharedWebapps([...sharedWebapps, nextWebapp]);
+          await saveSharedWebapps();
+        } else {
+          replaceLocalWebapps([...localWebapps, nextWebapp]);
+        }
+        renderCatalogStats();
+        applySearchQuery(searchInput.value);
+        webappUrlInput.value = '';
+        setWebappStatus(
+          selectedSaveMode === 'cloud'
+            ? `Added ${nextWebapp.name} to Webapps with cloud sync.`
+            : `Added ${nextWebapp.name} to Webapps on this device.`,
+          'success'
+        );
+      } catch (error) {
+        replaceLocalWebapps(previousLocalWebapps);
+        replaceSharedWebapps(previousSharedWebapps);
+        renderCatalogStats();
+        applySearchQuery(searchInput.value);
+        setWebappStatus(error.message || 'Unable to save that webapp right now.', 'error');
+      } finally {
+        webappSubmitBtn.disabled = false;
+        webappSubmitBtn.textContent = originalLabel;
+      }
+    });
+
     searchInput.addEventListener('keydown', (e) => {
       if (e.key === 'Tab' && !e.shiftKey) {
         const cards = grid.querySelectorAll('.app-card');
@@ -841,10 +1243,28 @@
       }
     });
 
-    renderCatalogStats();
-    renderApps(filteredApps);
-    handleCatalogQueryParams();
-    refreshTelemetryCounts();
+    async function bootstrapCatalog() {
+      replaceLocalWebapps(loadLocalWebapps());
+      filteredApps = [...apps];
+      renderCatalogStats();
+      renderApps(filteredApps);
+      handleCatalogQueryParams();
+      refreshTelemetryCounts();
+
+      try {
+        const syncedWebapps = await loadSharedWebapps();
+        if (syncedWebapps.length > 0) {
+          replaceSharedWebapps(syncedWebapps);
+          renderCatalogStats();
+          applySearchQuery(searchInput.value);
+          handleCatalogQueryParams();
+        }
+      } catch (error) {
+        setWebappStatus('Webapps loaded from this device. Cloud sync is unavailable right now.', 'error');
+      }
+    }
+
+    bootstrapCatalog();
 
     document.querySelector('.video-tile')?.addEventListener('click', () => {
       rememberCatalogLaunch({
