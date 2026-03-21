@@ -293,8 +293,9 @@
     .result-panel {
       padding: 28px;
       display: none;
-      grid-template-columns: 280px minmax(0, 1fr);
-      gap: 26px;
+      grid-template-columns: minmax(240px, 290px) minmax(0, 1fr);
+      gap: 22px;
+      align-items: start;
       align-self: stretch;
       min-height: calc(100vh - 48px);
       background:
@@ -311,8 +312,8 @@
         linear-gradient(180deg, #1c7d71 0%, #0c4c48 100%);
       color: #fdf4df;
       border-radius: 28px;
-      padding: 20px;
-      min-height: 360px;
+      padding: 18px;
+      min-height: 320px;
       position: relative;
       overflow: hidden;
       display: flex;
@@ -380,7 +381,7 @@
 
     .portrait-name {
       font-family: 'Abril Fatface', serif;
-      font-size: 42px;
+      font-size: 36px;
       line-height: 0.9;
       font-weight: 400;
       text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.24);
@@ -388,12 +389,13 @@
 
     .portrait-desc {
       color: rgba(243, 237, 226, 0.82);
-      line-height: 1.5;
+      font-size: 14px;
+      line-height: 1.45;
     }
 
     .content {
       display: grid;
-      gap: 18px;
+      gap: 16px;
       align-content: start;
       min-height: 0;
     }
@@ -404,7 +406,7 @@
         linear-gradient(180deg, rgba(255, 249, 236, 0.98), rgba(247, 233, 198, 0.96));
       border: 3px solid rgba(32, 21, 17, 0.75);
       border-radius: 26px;
-      padding: 22px;
+      padding: 20px;
       box-shadow: 0 8px 0 rgba(32, 21, 17, 0.58);
     }
 
@@ -419,8 +421,8 @@
     }
 
     .brief-text {
-      font-size: 19px;
-      line-height: 1.82;
+      font-size: 17px;
+      line-height: 1.72;
       color: #33251e;
     }
 
@@ -433,8 +435,8 @@
     }
 
     .fact {
-      min-width: 160px;
-      padding: 14px 16px;
+      min-width: 0;
+      padding: 13px 14px;
       border-radius: 18px;
       background:
         linear-gradient(180deg, rgba(255, 253, 245, 0.98), rgba(248, 238, 212, 0.98));
@@ -456,6 +458,12 @@
       color: var(--ink);
       line-height: 1.45;
       font-weight: 700;
+    }
+
+    .facts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
     }
 
     .source-link {
@@ -742,7 +750,7 @@
       return cleanText(pages[0]?.extract || '');
     }
 
-    async function fetchBirthdayDefaultName() {
+    async function fetchBirthdayDefaultNames() {
       const today = new Date();
       const month = String(today.getMonth() + 1).padStart(2, '0');
       const day = String(today.getDate()).padStart(2, '0');
@@ -771,7 +779,7 @@
         .filter(candidate => candidate.title)
         .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title));
 
-      return scoredCandidates[0]?.title || '';
+      return scoredCandidates.map(candidate => candidate.title);
     }
 
     function buildFacts(entity, labelMap) {
@@ -873,7 +881,7 @@
     }
 
     async function loadPerson(entityId) {
-      if (!entityId) return;
+      if (!entityId) return false;
       setLoadingState(true);
       setStatus('Loading profile...');
 
@@ -912,10 +920,32 @@
         sourceMeta.innerHTML = `Sources: <a class="source-link" href="${summary?.content_urls?.desktop?.page || `https://en.wikipedia.org/wiki/${encodeURIComponent(wikiTitle.replace(/\s+/g, '_'))}`}" target="_blank" rel="noreferrer">Wikipedia</a> and <a class="source-link" href="https://www.wikidata.org/wiki/${encodeURIComponent(entityId)}" target="_blank" rel="noreferrer">Wikidata</a>`;
         resultPanel.classList.add('visible');
         setStatus(`Showing ${name}.`);
+        return true;
       } catch (error) {
+        resultPanel.classList.remove('visible');
         setStatus(error.message || 'Could not load this person.', true);
+        return false;
       } finally {
         setLoadingState(false);
+      }
+    }
+
+    async function tryLoadDefaultQuery(query) {
+      const trimmed = String(query || '').trim();
+      if (!trimmed) return false;
+
+      try {
+        setStatus(`Searching for "${trimmed}"...`);
+        const results = await searchPeople(trimmed);
+        renderSuggestions(results);
+        if (!results.length) {
+          return false;
+        }
+
+        searchInput.value = trimmed;
+        return loadPerson(results[0].id);
+      } catch (error) {
+        return false;
       }
     }
 
@@ -1001,13 +1031,21 @@
     });
 
     (async function initializeDefaultPerson() {
+      const fallbackName = 'Barack Obama';
+
       try {
-        const birthdayName = await fetchBirthdayDefaultName();
-        searchInput.value = birthdayName || 'Barack Obama';
+        const birthdayNames = await fetchBirthdayDefaultNames();
+        for (const candidate of birthdayNames.slice(0, 8)) {
+          if (await tryLoadDefaultQuery(candidate)) {
+            return;
+          }
+        }
       } catch (error) {
-        searchInput.value = 'Barack Obama';
+        /* fall back below */
       }
-      searchForm.requestSubmit();
+
+      searchInput.value = fallbackName;
+      await tryLoadDefaultQuery(fallbackName);
     })();
   </script>
 </body>
