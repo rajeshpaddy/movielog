@@ -147,6 +147,12 @@
       border: 1px solid rgba(255, 255, 255, 0.12);
     }
 
+    .btn-transfer {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--ink);
+      border: 1px solid rgba(255, 209, 102, 0.18);
+    }
+
     .helper-text {
       margin-top: 16px;
       color: var(--muted);
@@ -477,6 +483,11 @@
             <button class="btn btn-secondary" id="newBtn" type="button">New Countdown</button>
           </div>
 
+          <div class="button-row">
+            <button class="btn btn-transfer" id="exportSharedBtn" type="button">Cloud Export</button>
+            <button class="btn btn-transfer" id="importSharedBtn" type="button">Cloud Import</button>
+          </div>
+
           <div id="status" class="status" aria-live="polite"></div>
           <p class="helper-text">Each saved countdown appears below with the event name and day count. Pick one on the left to show it in the big calendar on the right.</p>
         </div>
@@ -514,6 +525,7 @@
 
   <script>
     const STORAGE_KEY = 'daysCountdownState';
+    const APP_ID = 'days-countdown';
     const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
     const eventNameInput = document.getElementById('eventName');
@@ -521,6 +533,8 @@
     const eventMessageInput = document.getElementById('eventMessage');
     const saveBtn = document.getElementById('saveBtn');
     const newBtn = document.getElementById('newBtn');
+    const exportSharedBtn = document.getElementById('exportSharedBtn');
+    const importSharedBtn = document.getElementById('importSharedBtn');
     const editBtn = document.getElementById('editBtn');
     const deleteBtn = document.getElementById('deleteBtn');
     const statusEl = document.getElementById('status');
@@ -556,6 +570,22 @@
 
     function normalizeName(value) {
       return String(value || '').trim().replaceAll(/\s+/g, ' ');
+    }
+
+    function normalizeKeyword(value) {
+      const raw = String(value || '').trim().toLowerCase();
+      if (!raw) return '';
+      return raw.replaceAll(/\s+/g, '-').replaceAll(/[^a-z0-9-_]/g, '');
+    }
+
+    function promptKeyword(actionLabel) {
+      const value = prompt(`${actionLabel}: enter a keyword`, '');
+      if (value == null) return '';
+      const keyword = normalizeKeyword(value);
+      if (!keyword) {
+        setStatus('Keyword is required and must contain letters or numbers.', true);
+      }
+      return keyword;
     }
 
     function parseInputDate(value) {
@@ -624,6 +654,29 @@
       }
     }
 
+    function sanitizeCountdownItems(items) {
+      if (!Array.isArray(items)) {
+        throw new Error('Shared data format is invalid.');
+      }
+
+      const nextItems = items.map(item => {
+        const targetDate = typeof item?.targetDate === 'string' ? item.targetDate : '';
+        if (!parseInputDate(targetDate)) return null;
+        return {
+          id: String(item?.id || `cd-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`),
+          name: normalizeName(item?.name || '') || 'Untitled Event',
+          targetDate,
+          message: normalizeMessage(item?.message || '')
+        };
+      }).filter(Boolean);
+
+      if (!nextItems.length) {
+        throw new Error('No valid countdowns found in shared data.');
+      }
+
+      return nextItems;
+    }
+
     function persistState() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         items: state.items,
@@ -633,6 +686,10 @@
 
     function getSelectedCountdown() {
       return state.items.find(item => item.id === state.selectedId) || null;
+    }
+
+    function getSharedKey(keyword) {
+      return window.AppSharedStore.buildSharedKey(APP_ID, keyword);
     }
 
     function saveCountdown() {
@@ -817,6 +874,54 @@
       renderCountdown();
     }
 
+    async function exportSharedData() {
+      const keyword = promptKeyword('Cloud export');
+      if (!keyword) return;
+
+      const payload = {
+        app: APP_ID,
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        items: state.items,
+        selectedId: state.selectedId
+      };
+
+      try {
+        await window.AppSharedStore.putSharedContent(getSharedKey(keyword), payload);
+        setStatus(`Shared export complete (${keyword}). Saved ${state.items.length} countdown${state.items.length === 1 ? '' : 's'}.`, false);
+      } catch (error) {
+        setStatus(error.message || 'Shared export failed.', true);
+      }
+    }
+
+    async function importSharedData() {
+      const keyword = promptKeyword('Cloud import');
+      if (!keyword) return;
+
+      try {
+        const payload = await window.AppSharedStore.getSharedContent(getSharedKey(keyword));
+        if (!payload || payload.app !== APP_ID) {
+          throw new Error('Shared data format is invalid.');
+        }
+
+        const items = sanitizeCountdownItems(payload.items);
+        const selectedId = items.some(item => item.id === payload.selectedId) ? payload.selectedId : items[0].id;
+
+        state = {
+          items,
+          selectedId,
+          editingId: null
+        };
+        persistState();
+        populateFormFromSelected();
+        renderList();
+        renderCountdown();
+        setStatus(`Shared import complete (${keyword}). Loaded ${items.length} countdown${items.length === 1 ? '' : 's'}.`, false);
+      } catch (error) {
+        setStatus(error.message || 'Shared import failed.', true);
+      }
+    }
+
     saveBtn.addEventListener('click', () => {
       if (saveCountdown()) {
         populateFormFromSelected();
@@ -825,6 +930,8 @@
       }
     });
     newBtn.addEventListener('click', startNewCountdown);
+    exportSharedBtn.addEventListener('click', exportSharedData);
+    importSharedBtn.addEventListener('click', importSharedData);
     editBtn.addEventListener('click', editSelectedCountdown);
     deleteBtn.addEventListener('click', deleteSelectedCountdown);
     eventMessageInput.addEventListener('keydown', (event) => {
@@ -840,6 +947,8 @@
 
     hydrate();
   </script>
+  <script src="shared-store-config.js?v=20260311-worker1"></script>
+  <script src="shared-store.js?v=20260311-worker1"></script>
   <script>window.APP_TELEMETRY_ID = "days-countdown";</script>
   <script src="app-telemetry.js?v=20260311-worker2" defer></script>
 </body>
