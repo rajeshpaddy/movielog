@@ -71,7 +71,7 @@
       max-width: 1380px;
       margin: 0 auto;
       display: grid;
-      grid-template-columns: minmax(340px, 420px) minmax(0, 1fr);
+      grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
       gap: 22px;
       align-items: start;
       min-height: calc(100vh - 48px);
@@ -101,13 +101,13 @@
     }
 
     .hero {
-      padding: 36px;
+      padding: 26px;
       display: grid;
-      gap: 22px;
+      gap: 16px;
       position: sticky;
       top: 24px;
       max-height: calc(100vh - 48px);
-      overflow: auto;
+      overflow: hidden;
       background:
         radial-gradient(circle at top right, rgba(239, 91, 42, 0.12), transparent 22%),
         linear-gradient(180deg, rgba(249, 241, 219, 0.98), rgba(235, 215, 167, 0.98));
@@ -117,33 +117,33 @@
       color: var(--accent-2);
       text-transform: uppercase;
       letter-spacing: 0.18em;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 800;
       font-family: 'IBM Plex Mono', monospace;
     }
 
     h1 {
       font-family: 'Abril Fatface', serif;
-      font-size: clamp(3.2rem, 7vw, 6.2rem);
-      line-height: 0.88;
+      font-size: clamp(2.45rem, 4vw, 4.4rem);
+      line-height: 0.92;
       letter-spacing: 0.01em;
       font-weight: 400;
-      max-width: 8.5ch;
+      max-width: 7ch;
       text-shadow: 2px 2px 0 rgba(255, 211, 77, 0.65);
     }
 
     .hero p {
       max-width: 62ch;
       color: var(--muted);
-      font-size: 18px;
-      line-height: 1.6;
+      font-size: 15px;
+      line-height: 1.5;
     }
 
     .search-wrap {
       display: grid;
-      gap: 14px;
-      padding: 18px;
-      border-radius: 24px;
+      gap: 10px;
+      padding: 14px;
+      border-radius: 20px;
       background:
         linear-gradient(180deg, rgba(255, 247, 230, 0.78), rgba(249, 236, 199, 0.8));
       border: 2px solid rgba(32, 21, 17, 0.12);
@@ -152,16 +152,16 @@
     .search-form {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
-      gap: 12px;
+      gap: 10px;
     }
 
     .search-input {
       width: 100%;
       border: 3px solid rgba(32, 21, 17, 0.78);
       border-radius: 999px;
-      padding: 18px 24px;
+      padding: 14px 18px;
       font: inherit;
-      font-size: 17px;
+      font-size: 15px;
       background:
         linear-gradient(180deg, rgba(255, 253, 246, 0.98), rgba(247, 235, 202, 0.98));
       color: var(--ink);
@@ -183,17 +183,18 @@
     }
 
     .search-btn {
-      padding: 0 24px;
+      padding: 0 18px;
       border-radius: 999px;
       background:
         linear-gradient(180deg, #ff7d49 0%, var(--accent) 100%);
       color: #fff6eb;
       font-weight: 700;
-      min-height: 58px;
+      min-height: 48px;
       border: 3px solid rgba(32, 21, 17, 0.85);
       box-shadow: 0 7px 0 rgba(32, 21, 17, 0.78);
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.06em;
+      font-size: 13px;
       font-family: 'IBM Plex Mono', monospace;
     }
 
@@ -222,30 +223,30 @@
     }
 
     .chip {
-      padding: 11px 15px;
+      padding: 9px 12px;
       border-radius: 999px;
       background:
         linear-gradient(180deg, rgba(255, 218, 113, 0.95), rgba(255, 195, 62, 0.95));
       color: #3c2503;
-      font-size: 13px;
+      font-size: 11px;
       font-weight: 700;
       border: 2px solid rgba(32, 21, 17, 0.75);
       box-shadow: 0 4px 0 rgba(32, 21, 17, 0.72);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.04em;
       font-family: 'IBM Plex Mono', monospace;
     }
 
     .suggestions {
-      min-height: 44px;
+      min-height: 34px;
     }
 
     .suggestion {
       display: inline-flex;
       align-items: center;
-      gap: 10px;
-      padding: 12px 14px;
-      border-radius: 18px;
+      gap: 8px;
+      padding: 9px 11px;
+      border-radius: 16px;
       background:
         linear-gradient(180deg, rgba(255, 250, 236, 0.98), rgba(245, 229, 188, 0.98));
       border: 2px solid rgba(32, 21, 17, 0.7);
@@ -267,19 +268,19 @@
       color: var(--ink);
       font-family: 'IBM Plex Mono', monospace;
       text-transform: uppercase;
-      font-size: 14px;
+      font-size: 12px;
     }
 
     .suggestion-meta {
       color: var(--muted);
-      font-size: 13px;
-      max-width: 34ch;
+      font-size: 12px;
+      max-width: 28ch;
     }
 
     .status {
       min-height: 20px;
       color: var(--accent-2);
-      font-size: 13px;
+      font-size: 11px;
       font-family: 'IBM Plex Mono', monospace;
       text-transform: uppercase;
       letter-spacing: 0.04em;
@@ -575,6 +576,7 @@
     const WIKIDATA_API = 'https://www.wikidata.org/w/api.php';
     const WIKIPEDIA_API = 'https://en.wikipedia.org/w/api.php';
     const WIKIPEDIA_REST = 'https://en.wikipedia.org/api/rest_v1/page/summary/';
+    const WIKIPEDIA_ON_THIS_DAY = 'https://en.wikipedia.org/api/rest_v1/feed/onthisday/births/';
 
     const searchForm = document.getElementById('searchForm');
     const searchInput = document.getElementById('searchInput');
@@ -738,6 +740,38 @@
       const data = await response.json();
       const pages = Object.values(data?.query?.pages || {});
       return cleanText(pages[0]?.extract || '');
+    }
+
+    async function fetchBirthdayDefaultName() {
+      const today = new Date();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const response = await fetch(`${WIKIPEDIA_ON_THIS_DAY}${month}/${day}`);
+      if (!response.ok) {
+        throw new Error('Could not load today\'s birthdays.');
+      }
+
+      const data = await response.json();
+      const births = Array.isArray(data?.births) ? data.births : [];
+      const scoredCandidates = births
+        .map(entry => {
+          const page = Array.isArray(entry?.pages) ? entry.pages[0] : null;
+          const title = page?.titles?.normalized || page?.normalizedtitle || page?.title || '';
+          const description = cleanText(page?.description || entry?.text || '');
+          const score =
+            (page?.thumbnail ? 4 : 0) +
+            (description ? 3 : 0) +
+            (page?.wikibase_item ? 2 : 0) +
+            (/^[A-Za-z].+\s.+/.test(title) ? 1 : 0);
+          return {
+            title: cleanText(title),
+            score
+          };
+        })
+        .filter(candidate => candidate.title)
+        .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title));
+
+      return scoredCandidates[0]?.title || '';
     }
 
     function buildFacts(entity, labelMap) {
@@ -966,8 +1000,15 @@
       });
     });
 
-    searchInput.value = 'Barack Obama';
-    searchForm.requestSubmit();
+    (async function initializeDefaultPerson() {
+      try {
+        const birthdayName = await fetchBirthdayDefaultName();
+        searchInput.value = birthdayName || 'Barack Obama';
+      } catch (error) {
+        searchInput.value = 'Barack Obama';
+      }
+      searchForm.requestSubmit();
+    })();
   </script>
 </body>
 </html>
