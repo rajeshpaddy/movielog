@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Person Briefs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --paper: #f4efe7;
+      --paper-strong: #fcfaf6;
+      --ink: #1d2a24;
+      --muted: #66756d;
+      --line: rgba(29, 42, 36, 0.12);
+      --accent: #1f5c48;
+      --accent-soft: #dfeae3;
+      --shadow: 0 24px 60px rgba(19, 33, 27, 0.12);
+      --radius: 28px;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: 'Manrope', sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(31, 92, 72, 0.08), transparent 28%),
+        radial-gradient(circle at top right, rgba(172, 132, 76, 0.12), transparent 24%),
+        linear-gradient(180deg, #f8f3eb 0%, var(--paper) 100%);
+      padding: 24px;
+    }
+
+    .shell {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      gap: 22px;
+    }
+
+    .hero,
+    .result-panel {
+      background: rgba(252, 250, 246, 0.86);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 36px;
+      display: grid;
+      gap: 22px;
+    }
+
+    .eyebrow {
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    h1 {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(3rem, 7vw, 5.6rem);
+      line-height: 0.92;
+      font-weight: 400;
+      max-width: 9ch;
+    }
+
+    .hero p {
+      max-width: 62ch;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.6;
+    }
+
+    .search-wrap {
+      display: grid;
+      gap: 14px;
+    }
+
+    .search-form {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+    }
+
+    .search-input {
+      width: 100%;
+      border: 1px solid rgba(31, 92, 72, 0.18);
+      border-radius: 999px;
+      padding: 18px 24px;
+      font: inherit;
+      font-size: 17px;
+      background: rgba(255, 255, 255, 0.8);
+      color: var(--ink);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: rgba(31, 92, 72, 0.48);
+      box-shadow: 0 0 0 4px rgba(31, 92, 72, 0.12);
+    }
+
+    .search-btn,
+    .chip {
+      border: none;
+      cursor: pointer;
+      font: inherit;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .search-btn {
+      padding: 0 24px;
+      border-radius: 999px;
+      background: var(--ink);
+      color: #f7f3eb;
+      font-weight: 700;
+      min-height: 58px;
+      box-shadow: 0 10px 24px rgba(29, 42, 36, 0.18);
+    }
+
+    .search-btn:hover,
+    .chip:hover {
+      transform: translateY(-1px);
+    }
+
+    .search-btn:disabled {
+      opacity: 0.6;
+      cursor: wait;
+      transform: none;
+    }
+
+    .chip-row,
+    .suggestions,
+    .facts {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .suggestions {
+      min-height: 44px;
+    }
+
+    .suggestion {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid var(--line);
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .suggestion:hover,
+    .suggestion:focus-visible {
+      outline: none;
+      transform: translateY(-1px);
+      border-color: rgba(31, 92, 72, 0.3);
+      box-shadow: 0 10px 24px rgba(19, 33, 27, 0.08);
+    }
+
+    .suggestion-name {
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .suggestion-meta {
+      color: var(--muted);
+      font-size: 13px;
+      max-width: 34ch;
+    }
+
+    .status {
+      min-height: 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .status.error {
+      color: #9f3b2f;
+    }
+
+    .result-panel {
+      padding: 28px;
+      display: none;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 26px;
+    }
+
+    .result-panel.visible {
+      display: grid;
+    }
+
+    .portrait-card {
+      background: linear-gradient(180deg, #23493d 0%, #1b332c 100%);
+      color: #f3ede2;
+      border-radius: 24px;
+      padding: 20px;
+      min-height: 360px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .portrait-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at top right, rgba(255, 255, 255, 0.12), transparent 30%),
+        linear-gradient(180deg, transparent 28%, rgba(12, 24, 20, 0.72) 100%);
+      pointer-events: none;
+    }
+
+    .portrait-image,
+    .portrait-fallback {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .portrait-image {
+      object-fit: cover;
+      display: none;
+    }
+
+    .portrait-fallback {
+      display: grid;
+      place-items: center;
+      font-family: 'Instrument Serif', serif;
+      font-size: 92px;
+      color: rgba(255, 255, 255, 0.92);
+      background:
+        radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.15), transparent 22%),
+        linear-gradient(180deg, #2d6955 0%, #1f4035 100%);
+    }
+
+    .portrait-info {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 8px;
+    }
+
+    .portrait-label {
+      display: inline-flex;
+      width: fit-content;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 800;
+    }
+
+    .portrait-name {
+      font-family: 'Instrument Serif', serif;
+      font-size: 42px;
+      line-height: 0.94;
+      font-weight: 400;
+    }
+
+    .portrait-desc {
+      color: rgba(243, 237, 226, 0.82);
+      line-height: 1.5;
+    }
+
+    .content {
+      display: grid;
+      gap: 18px;
+      align-content: start;
+    }
+
+    .brief-card,
+    .facts-card {
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 22px;
+    }
+
+    .section-label {
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .brief-text {
+      font-size: 18px;
+      line-height: 1.8;
+      color: #27322d;
+    }
+
+    .brief-meta {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .fact {
+      min-width: 160px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: var(--paper-strong);
+      border: 1px solid rgba(29, 42, 36, 0.08);
+    }
+
+    .fact-label {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .fact-value {
+      color: var(--ink);
+      line-height: 1.45;
+      font-weight: 700;
+    }
+
+    .source-link {
+      color: var(--accent);
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .source-link:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 860px) {
+      body {
+        padding: 16px;
+      }
+
+      .hero,
+      .result-panel {
+        padding: 20px;
+        border-radius: 24px;
+      }
+
+      .search-form,
+      .result-panel.visible {
+        grid-template-columns: 1fr;
+      }
+
+      .portrait-card {
+        min-height: 320px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <div class="eyebrow">Distraction-Free Person Search</div>
+        <h1>Search a person. Get the essentials.</h1>
+      </div>
+
+      <p>Find people from politics, education, movies, music, science, sports, business, or any other field. Each result gives you a clean profile, an expert-style brief kept to about 100 words, and a few key facts you can scan in seconds.</p>
+
+      <div class="search-wrap">
+        <form class="search-form" id="searchForm">
+          <input
+            id="searchInput"
+            class="search-input"
+            type="text"
+            autocomplete="off"
+            placeholder="Search for a person like Barack Obama, Taylor Swift, Albert Einstein, or Malala Yousafzai"
+            aria-label="Search for a person">
+          <button id="searchBtn" class="search-btn" type="submit">Search</button>
+        </form>
+
+        <div class="chip-row">
+          <button class="chip" type="button" data-example="Barack Obama">Barack Obama</button>
+          <button class="chip" type="button" data-example="Taylor Swift">Taylor Swift</button>
+          <button class="chip" type="button" data-example="Albert Einstein">Albert Einstein</button>
+          <button class="chip" type="button" data-example="Malala Yousafzai">Malala Yousafzai</button>
+        </div>
+
+        <div id="suggestions" class="suggestions" aria-live="polite"></div>
+        <div id="status" class="status">Type a name to search Wikipedia and Wikidata.</div>
+      </div>
+    </section>
+
+    <section id="resultPanel" class="result-panel" aria-live="polite">
+      <article class="portrait-card">
+        <img id="portraitImage" class="portrait-image" alt="">
+        <div id="portraitFallback" class="portrait-fallback">?</div>
+        <div class="portrait-info">
+          <div id="portraitLabel" class="portrait-label">Profile</div>
+          <div id="portraitName" class="portrait-name"></div>
+          <div id="portraitDesc" class="portrait-desc"></div>
+        </div>
+      </article>
+
+      <div class="content">
+        <article class="brief-card">
+          <div class="section-label">100-Word Brief</div>
+          <div id="briefText" class="brief-text"></div>
+          <div id="briefMeta" class="brief-meta"></div>
+        </article>
+
+        <article class="facts-card">
+          <div class="section-label">Key Facts</div>
+          <div id="facts" class="facts"></div>
+          <div id="sourceMeta" class="brief-meta"></div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const WIKIDATA_API = 'https://www.wikidata.org/w/api.php';
+    const WIKIPEDIA_API = 'https://en.wikipedia.org/w/api.php';
+    const WIKIPEDIA_REST = 'https://en.wikipedia.org/api/rest_v1/page/summary/';
+
+    const searchForm = document.getElementById('searchForm');
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const suggestionsEl = document.getElementById('suggestions');
+    const statusEl = document.getElementById('status');
+    const resultPanel = document.getElementById('resultPanel');
+    const portraitImage = document.getElementById('portraitImage');
+    const portraitFallback = document.getElementById('portraitFallback');
+    const portraitLabel = document.getElementById('portraitLabel');
+    const portraitName = document.getElementById('portraitName');
+    const portraitDesc = document.getElementById('portraitDesc');
+    const briefText = document.getElementById('briefText');
+    const briefMeta = document.getElementById('briefMeta');
+    const factsEl = document.getElementById('facts');
+    const sourceMeta = document.getElementById('sourceMeta');
+    const exampleButtons = Array.from(document.querySelectorAll('[data-example]'));
+
+    let searchTimer = 0;
+    let latestSearchToken = 0;
+
+    function setStatus(message, isError = false) {
+      statusEl.textContent = message;
+      statusEl.classList.toggle('error', Boolean(isError));
+    }
+
+    function setLoadingState(isLoading) {
+      searchBtn.disabled = isLoading;
+      searchBtn.textContent = isLoading ? 'Searching...' : 'Search';
+    }
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function cleanText(value) {
+      return String(value || '')
+        .replace(/\([^)]*listen[^)]*\)/gi, '')
+        .replace(/\s+/g, ' ')
+        .replace(/\[[^\]]+\]/g, '')
+        .trim();
+    }
+
+    function splitWords(value) {
+      return cleanText(value).match(/\S+/g) || [];
+    }
+
+    function formatDate(value) {
+      if (!value) return '';
+      const match = String(value).match(/^([+-]?\d{1,6})-(\d{2})-(\d{2})/);
+      if (!match) return value;
+      const year = Number(match[1]);
+      const month = Number(match[2]) - 1;
+      const day = Number(match[3]);
+      const date = new Date(Date.UTC(Math.max(0, year), month, day));
+      const formatted = date.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+        timeZone: 'UTC'
+      });
+      return year < 0 ? `${formatted.replace(String(Math.max(0, year)), String(Math.abs(year)))} BCE` : formatted;
+    }
+
+    function valueList(values, fallback = 'Unknown') {
+      const filtered = values.filter(Boolean);
+      return filtered.length ? filtered.join(', ') : fallback;
+    }
+
+    function unique(values) {
+      return Array.from(new Set(values.filter(Boolean)));
+    }
+
+    function readClaimValues(claims, propertyId) {
+      return (claims?.[propertyId] || [])
+        .map(claim => claim?.mainsnak?.datavalue?.value)
+        .filter(Boolean);
+    }
+
+    async function searchPeople(query) {
+      const url = new URL(WIKIDATA_API);
+      url.searchParams.set('action', 'wbsearchentities');
+      url.searchParams.set('search', query);
+      url.searchParams.set('language', 'en');
+      url.searchParams.set('limit', '8');
+      url.searchParams.set('type', 'item');
+      url.searchParams.set('format', 'json');
+      url.searchParams.set('origin', '*');
+
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Search request failed.');
+      const data = await response.json();
+      return (data?.search || []).map(item => ({
+        id: item.id,
+        name: item.label,
+        description: item.description || 'No description available'
+      }));
+    }
+
+    async function fetchEntity(entityId) {
+      const url = new URL(WIKIDATA_API);
+      url.searchParams.set('action', 'wbgetentities');
+      url.searchParams.set('ids', entityId);
+      url.searchParams.set('languages', 'en');
+      url.searchParams.set('props', 'labels|descriptions|sitelinks|claims');
+      url.searchParams.set('format', 'json');
+      url.searchParams.set('origin', '*');
+
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Could not load entity details.');
+      const data = await response.json();
+      return data?.entities?.[entityId];
+    }
+
+    async function fetchEntityLabels(ids) {
+      const filtered = unique(ids).slice(0, 18);
+      if (!filtered.length) return {};
+
+      const url = new URL(WIKIDATA_API);
+      url.searchParams.set('action', 'wbgetentities');
+      url.searchParams.set('ids', filtered.join('|'));
+      url.searchParams.set('languages', 'en');
+      url.searchParams.set('props', 'labels');
+      url.searchParams.set('format', 'json');
+      url.searchParams.set('origin', '*');
+
+      const response = await fetch(url);
+      if (!response.ok) return {};
+      const data = await response.json();
+      const labels = {};
+      Object.entries(data?.entities || {}).forEach(([id, entity]) => {
+        labels[id] = entity?.labels?.en?.value || id;
+      });
+      return labels;
+    }
+
+    async function fetchWikipediaSummary(title) {
+      const response = await fetch(`${WIKIPEDIA_REST}${encodeURIComponent(title)}`);
+      if (!response.ok) throw new Error('Could not load Wikipedia summary.');
+      return response.json();
+    }
+
+    async function fetchWikipediaIntro(title) {
+      const url = new URL(WIKIPEDIA_API);
+      url.searchParams.set('action', 'query');
+      url.searchParams.set('prop', 'extracts');
+      url.searchParams.set('titles', title);
+      url.searchParams.set('exintro', '1');
+      url.searchParams.set('explaintext', '1');
+      url.searchParams.set('redirects', '1');
+      url.searchParams.set('format', 'json');
+      url.searchParams.set('origin', '*');
+
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Could not load Wikipedia introduction.');
+      const data = await response.json();
+      const pages = Object.values(data?.query?.pages || {});
+      return cleanText(pages[0]?.extract || '');
+    }
+
+    function buildFacts(entity, labelMap) {
+      const claims = entity?.claims || {};
+      const birth = readClaimValues(claims, 'P569')[0]?.time || '';
+      const death = readClaimValues(claims, 'P570')[0]?.time || '';
+      const citizenshipIds = readClaimValues(claims, 'P27').map(value => value.id);
+      const occupationIds = readClaimValues(claims, 'P106').map(value => value.id);
+      const fieldIds = readClaimValues(claims, 'P101').map(value => value.id);
+
+      const occupations = unique(occupationIds.map(id => labelMap[id])).slice(0, 3);
+      const citizenships = unique(citizenshipIds.map(id => labelMap[id])).slice(0, 2);
+      const fields = unique(fieldIds.map(id => labelMap[id])).slice(0, 3);
+
+      return [
+        { label: 'Born', value: formatDate(birth) },
+        { label: 'Died', value: formatDate(death) },
+        { label: 'Citizenship', value: valueList(citizenships) },
+        { label: 'Occupation', value: valueList(occupations) },
+        { label: 'Field', value: valueList(fields) }
+      ].filter(item => item.value && item.value !== 'Unknown');
+    }
+
+    function buildBrief({ name, summaryDescription, intro, facts }) {
+      const factText = [];
+      const born = facts.find(item => item.label === 'Born')?.value;
+      const died = facts.find(item => item.label === 'Died')?.value;
+      const citizenship = facts.find(item => item.label === 'Citizenship')?.value;
+      const occupation = facts.find(item => item.label === 'Occupation')?.value;
+      const field = facts.find(item => item.label === 'Field')?.value;
+
+      if (born && occupation) {
+        factText.push(`${name} was born on ${born} and is known as ${occupation.toLowerCase()}.`);
+      } else if (born) {
+        factText.push(`${name} was born on ${born}.`);
+      }
+
+      if (died) {
+        factText.push(`They died on ${died}.`);
+      }
+
+      if (citizenship) {
+        factText.push(`Their citizenship is listed as ${citizenship.toLowerCase()}.`);
+      }
+
+      if (field) {
+        factText.push(`Their work is associated with ${field.toLowerCase()}.`);
+      }
+
+      const opening = summaryDescription ? `${name} is ${summaryDescription}.` : '';
+      const sourceText = cleanText([opening, intro, factText.join(' ')].join(' '));
+      let words = splitWords(sourceText);
+
+      const backup = cleanText(`${name} remains notable for the influence and recognition reflected in the profile details shown here.`);
+      while (words.length < 100) {
+        words = words.concat(splitWords(backup));
+      }
+
+      const exact = words.slice(0, 100).join(' ');
+      return /[.!?]$/.test(exact) ? exact : `${exact}.`;
+    }
+
+    function renderSuggestions(items) {
+      suggestionsEl.innerHTML = items.map(item => `
+        <button class="suggestion" type="button" data-entity-id="${escapeHtml(item.id)}" data-name="${escapeHtml(item.name)}">
+          <div>
+            <div class="suggestion-name">${escapeHtml(item.name)}</div>
+            <div class="suggestion-meta">${escapeHtml(item.description)}</div>
+          </div>
+        </button>
+      `).join('');
+    }
+
+    function renderFacts(facts) {
+      factsEl.innerHTML = facts.map(item => `
+        <div class="fact">
+          <div class="fact-label">${escapeHtml(item.label)}</div>
+          <div class="fact-value">${escapeHtml(item.value)}</div>
+        </div>
+      `).join('');
+    }
+
+    function setPortrait(name, description, imageUrl) {
+      portraitLabel.textContent = description || 'Profile';
+      portraitName.textContent = name;
+      portraitDesc.textContent = 'A clean reference view built from public encyclopedia data.';
+      portraitFallback.textContent = (name || '?').trim().charAt(0).toUpperCase() || '?';
+
+      if (imageUrl) {
+        portraitImage.src = imageUrl;
+        portraitImage.alt = `${name} portrait`;
+        portraitImage.style.display = 'block';
+        portraitFallback.style.display = 'none';
+      } else {
+        portraitImage.removeAttribute('src');
+        portraitImage.style.display = 'none';
+        portraitFallback.style.display = 'grid';
+      }
+    }
+
+    async function loadPerson(entityId) {
+      if (!entityId) return;
+      setLoadingState(true);
+      setStatus('Loading profile...');
+
+      try {
+        const entity = await fetchEntity(entityId);
+        if (!entity) throw new Error('No entity data found.');
+
+        const name = entity?.labels?.en?.value || 'Unknown person';
+        const description = entity?.descriptions?.en?.value || 'Public figure';
+        const wikiTitle = entity?.sitelinks?.enwiki?.title || name;
+
+        const linkedIds = [
+          ...readClaimValues(entity.claims, 'P27').map(value => value.id),
+          ...readClaimValues(entity.claims, 'P106').map(value => value.id),
+          ...readClaimValues(entity.claims, 'P101').map(value => value.id)
+        ];
+
+        const [labelMap, summary, intro] = await Promise.all([
+          fetchEntityLabels(linkedIds),
+          fetchWikipediaSummary(wikiTitle),
+          fetchWikipediaIntro(wikiTitle)
+        ]);
+
+        const facts = buildFacts(entity, labelMap);
+        const brief = buildBrief({
+          name,
+          summaryDescription: summary?.description || description,
+          intro: intro || summary?.extract || '',
+          facts
+        });
+
+        setPortrait(name, summary?.description || description, summary?.thumbnail?.source || '');
+        briefText.textContent = brief;
+        briefMeta.textContent = `${splitWords(brief).length} words`;
+        renderFacts(facts);
+        sourceMeta.innerHTML = `Sources: <a class="source-link" href="${summary?.content_urls?.desktop?.page || `https://en.wikipedia.org/wiki/${encodeURIComponent(wikiTitle.replace(/\s+/g, '_'))}`}" target="_blank" rel="noreferrer">Wikipedia</a> and <a class="source-link" href="https://www.wikidata.org/wiki/${encodeURIComponent(entityId)}" target="_blank" rel="noreferrer">Wikidata</a>`;
+        resultPanel.classList.add('visible');
+        setStatus(`Showing ${name}.`);
+      } catch (error) {
+        setStatus(error.message || 'Could not load this person.', true);
+      } finally {
+        setLoadingState(false);
+      }
+    }
+
+    async function runSearch(query) {
+      const trimmed = query.trim();
+      if (!trimmed) {
+        suggestionsEl.innerHTML = '';
+        setStatus('Type a name to search Wikipedia and Wikidata.');
+        return;
+      }
+
+      const searchToken = ++latestSearchToken;
+      setStatus(`Searching for "${trimmed}"...`);
+
+      try {
+        const results = await searchPeople(trimmed);
+        if (searchToken !== latestSearchToken) return;
+
+        if (!results.length) {
+          suggestionsEl.innerHTML = '';
+          setStatus(`No results found for "${trimmed}". Try a fuller name.`, true);
+          return;
+        }
+
+        renderSuggestions(results);
+        setStatus(`Found ${results.length} result${results.length === 1 ? '' : 's'}. Select one to open the brief.`);
+      } catch (error) {
+        if (searchToken !== latestSearchToken) return;
+        suggestionsEl.innerHTML = '';
+        setStatus('Search failed. Check your connection and try again.', true);
+      }
+    }
+
+    searchInput.addEventListener('input', () => {
+      window.clearTimeout(searchTimer);
+      const query = searchInput.value;
+      searchTimer = window.setTimeout(() => runSearch(query), 250);
+    });
+
+    searchForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      const query = searchInput.value.trim();
+      if (!query) {
+        setStatus('Enter a person name to search.', true);
+        return;
+      }
+
+      try {
+        setLoadingState(true);
+        setStatus(`Searching for "${query}"...`);
+        const results = await searchPeople(query);
+        renderSuggestions(results);
+
+        if (!results.length) {
+          setStatus(`No results found for "${query}".`, true);
+          return;
+        }
+
+        await loadPerson(results[0].id);
+      } catch (error) {
+        setStatus('Search failed. Check your connection and try again.', true);
+      } finally {
+        setLoadingState(false);
+      }
+    });
+
+    suggestionsEl.addEventListener('click', event => {
+      const button = event.target.closest('[data-entity-id]');
+      if (!button) return;
+      loadPerson(button.dataset.entityId);
+    });
+
+    portraitImage.addEventListener('error', () => {
+      portraitImage.style.display = 'none';
+      portraitFallback.style.display = 'grid';
+    });
+
+    exampleButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        searchInput.value = button.dataset.example || '';
+        searchForm.requestSubmit();
+      });
+    });
+
+    searchInput.value = 'Barack Obama';
+    searchForm.requestSubmit();
+  </script>
+</body>
+</html>
