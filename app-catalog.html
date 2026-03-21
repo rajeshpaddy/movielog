@@ -307,6 +307,20 @@
       font-weight: 700;
       cursor: pointer;
     }
+    .button-superscript {
+      position: relative;
+      top: -0.5em;
+      margin-left: 6px;
+      color: #ffd86b;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .button-superscript.is-hidden {
+      display: none;
+    }
     .webapp-secondary-btn:hover { background: rgba(12, 28, 52, 0.98); }
     .webapp-secondary-btn:disabled { cursor: wait; opacity: 0.6; }
     .webapp-status {
@@ -408,6 +422,14 @@
       color: #7fa0c0;
       font-size: 12px;
       line-height: 1.4;
+    }
+    .image-input-or {
+      text-align: center;
+      color: #8cb2d2;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.1px;
+      text-transform: uppercase;
     }
     .image-paste-target {
       display: grid;
@@ -594,6 +616,7 @@
             <input type="url" class="webapp-input" id="webappUrlInput" placeholder="https://example.com" inputmode="url" autocomplete="url" required>
             <div class="image-input-wrap" id="imageInputWrap">
               <input type="file" class="image-file-input" id="imageFileInput" accept="image/*">
+              <div class="image-input-or">OR</div>
               <div class="image-paste-target" id="imagePasteTarget" tabindex="0">
                 <div>
                   <div class="image-paste-title">Paste image from clipboard</div>
@@ -620,7 +643,7 @@
           <div class="webapp-save-label">Save To</div>
           <div class="webapp-save-options">
             <label><input type="radio" name="webappSaveMode" value="local" checked> Local only</label>
-            <label><input type="radio" name="webappSaveMode" value="cloud"> Cloud sync</label>
+            <label><input type="radio" name="webappSaveMode" value="cloud"> Cloud sync<span class="button-superscript is-hidden" id="cloudSyncPremiumNote">Premium coming soon</span></label>
           </div>
         </div>
         <div class="webapp-status" id="webappStatus" aria-live="polite"></div>
@@ -873,6 +896,7 @@
     const webappSubmitBtn = document.getElementById('webappSubmitBtn');
     const webappStatus = document.getElementById('webappStatus');
     const webappSaveModeInputs = Array.from(document.querySelectorAll('input[name="webappSaveMode"]'));
+    const cloudSyncPremiumNote = document.getElementById('cloudSyncPremiumNote');
     const tileTypeInputs = Array.from(document.querySelectorAll('input[name="tileType"]'));
     const imageInputWrap = document.getElementById('imageInputWrap');
     const imageFileInput = document.getElementById('imageFileInput');
@@ -1623,6 +1647,7 @@
     function updateTileComposerUi() {
       const tileType = getSelectedTileType();
       const isImageTile = tileType === 'image';
+      cloudSyncPremiumNote.classList.toggle('is-hidden', !isImageTile);
       webappUrlInput.required = !isImageTile;
       webappUrlInput.disabled = isImageTile;
       imageInputWrap.classList.toggle('active', isImageTile);
