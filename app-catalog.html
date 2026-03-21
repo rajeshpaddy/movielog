@@ -170,6 +170,27 @@
       font-size: 12px;
       color: #8cb2d2;
     }
+    .tile-type-options {
+      display: inline-flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .tile-type-options label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(7, 18, 36, 0.92);
+      border: 1px solid rgba(0, 217, 255, 0.18);
+      color: #dff8ff;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .tile-type-options input {
+      accent-color: #00d9ff;
+    }
     .webapp-form {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
@@ -241,6 +262,25 @@
     }
     .webapp-submit:hover { filter: brightness(1.05); }
     .webapp-submit:disabled { cursor: wait; opacity: 0.7; }
+    .webapp-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .webapp-secondary-btn {
+      border: 1px solid rgba(0, 217, 255, 0.24);
+      border-radius: 12px;
+      padding: 11px 14px;
+      min-height: 46px;
+      background: rgba(7, 18, 36, 0.92);
+      color: #dff8ff;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .webapp-secondary-btn:hover { background: rgba(12, 28, 52, 0.98); }
+    .webapp-secondary-btn:disabled { cursor: wait; opacity: 0.6; }
     .webapp-status {
       min-height: 18px;
       margin-top: 10px;
@@ -320,8 +360,142 @@
       font-size: 30px;
       line-height: 1;
     }
+    .image-input-wrap {
+      display: none;
+      gap: 10px;
+    }
+    .image-input-wrap.active {
+      display: grid;
+    }
+    .image-file-input {
+      width: 100%;
+      background: rgba(7, 18, 36, 0.95);
+      border: 1px dashed rgba(0, 217, 255, 0.32);
+      color: #bfefff;
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 14px;
+    }
+    .image-file-note {
+      color: #7fa0c0;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .image-preview-card {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(7, 18, 36, 0.92);
+      border: 1px solid rgba(0, 217, 255, 0.14);
+    }
+    .image-preview-card.active {
+      display: flex;
+    }
+    .image-preview-thumb {
+      width: 64px;
+      height: 64px;
+      object-fit: cover;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.05);
+      flex: 0 0 auto;
+    }
+    .image-preview-meta {
+      min-width: 0;
+    }
+    .image-preview-name {
+      color: #effcff;
+      font-size: 14px;
+      font-weight: 700;
+      word-break: break-word;
+    }
+    .image-preview-size {
+      color: #8cb2d2;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+    .image-tile-icon {
+      width: 58px;
+      height: 58px;
+      margin: 0 auto 15px;
+      border-radius: 16px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.05);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+    }
+    .image-tile-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .image-viewer {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(3, 8, 18, 0.92);
+      backdrop-filter: blur(6px);
+      z-index: 9999;
+    }
+    .image-viewer.active {
+      display: flex;
+    }
+    .image-viewer-dialog {
+      position: relative;
+      width: min(94vw, 1100px);
+      max-height: 92vh;
+      border-radius: 22px;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(10, 22, 40, 0.98), rgba(15, 28, 48, 0.98));
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+    }
+    .image-viewer-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .image-viewer-title {
+      color: #eafaff;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .image-viewer-close {
+      border: 0;
+      border-radius: 999px;
+      width: 36px;
+      height: 36px;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .image-viewer-body {
+      padding: 18px;
+      display: grid;
+      place-items: center;
+      max-height: calc(92vh - 72px);
+      overflow: auto;
+    }
+    .image-viewer-body img {
+      max-width: 100%;
+      max-height: calc(92vh - 120px);
+      width: auto;
+      height: auto;
+      border-radius: 16px;
+      display: block;
+      background: rgba(255,255,255,0.04);
+    }
     @media (max-width: 640px) {
       .webapp-form { grid-template-columns: 1fr; }
+      .webapp-actions { flex-direction: column; align-items: stretch; }
     }
   </style>
 </head>
@@ -343,15 +517,34 @@
 
     <section class="webapp-composer">
       <div class="webapp-composer-head">
-        <div class="webapp-composer-title">Add a Webapp Tile</div>
-        <div class="webapp-composer-note">Paste a URL once and keep it synced across devices.</div>
+        <div class="webapp-composer-title">Add a Custom Tile</div>
+        <div class="webapp-composer-note">Save website shortcuts or local image tiles from one place.</div>
+      </div>
+      <div class="tile-type-options" id="tileTypeOptions">
+        <label><input type="radio" name="tileType" value="webapp" checked> Website tile</label>
+        <label><input type="radio" name="tileType" value="image"> Image tile</label>
       </div>
       <form class="webapp-form" id="webappForm">
         <div class="webapp-fields">
           <input type="text" class="webapp-input" id="webappTitleInput" placeholder="Title for this tile (optional)" autocomplete="off">
           <input type="url" class="webapp-input" id="webappUrlInput" placeholder="https://example.com" inputmode="url" autocomplete="url" required>
+          <div class="image-input-wrap" id="imageInputWrap">
+            <input type="file" class="image-file-input" id="imageFileInput" accept="image/*">
+            <div class="image-preview-card" id="imagePreviewCard">
+              <img class="image-preview-thumb" id="imagePreviewThumb" alt="">
+              <div class="image-preview-meta">
+                <div class="image-preview-name" id="imagePreviewName"></div>
+                <div class="image-preview-size" id="imagePreviewSize"></div>
+              </div>
+            </div>
+            <div class="image-file-note">Images are stored on this device. Use export/import below when you want to move image tiles through cloud share.</div>
+          </div>
         </div>
-        <button type="submit" class="webapp-submit" id="webappSubmitBtn">Add Webapp</button>
+        <div class="webapp-actions">
+          <button type="submit" class="webapp-submit" id="webappSubmitBtn">Add Tile</button>
+          <button type="button" class="webapp-secondary-btn" id="exportImagesBtn">Export Images</button>
+          <button type="button" class="webapp-secondary-btn" id="importImagesBtn">Import Images</button>
+        </div>
       </form>
       <div class="webapp-save-mode">
         <div class="webapp-save-label">Save To</div>
@@ -365,6 +558,17 @@
     
     <div class="app-grid" id="appGrid"></div>
   </div>
+  <div class="image-viewer" id="imageViewer" aria-hidden="true">
+    <div class="image-viewer-dialog" role="dialog" aria-modal="true" aria-labelledby="imageViewerTitle">
+      <div class="image-viewer-head">
+        <div class="image-viewer-title" id="imageViewerTitle">Saved image</div>
+        <button type="button" class="image-viewer-close" id="imageViewerClose" aria-label="Close image viewer">×</button>
+      </div>
+      <div class="image-viewer-body">
+        <img id="imageViewerImg" alt="">
+      </div>
+    </div>
+  </div>
   <a class="changelog-link" href="changelog.html" title="View per-app changelog">Changelog</a>
   <div class="build-badge" title="Catalog build version">build 20260318-1</div>
 
@@ -374,6 +578,8 @@
     const CATALOG_LAUNCH_PREFIX = 'ai-app-catalog-telemetry-catalog-launch';
     const WEBAPP_LOCAL_STORAGE_KEY = 'appCatalogWebapps';
     const WEBAPP_SHARED_KEY = 'app-catalog-webapps-v1';
+    const IMAGE_TILE_LOCAL_STORAGE_KEY = 'appCatalogImageTiles';
+    const IMAGE_TILE_SHARED_KEY = 'app-catalog-image-tiles-v1';
     const BASE_APPS = [
       {
         name: 'Catalog Guide Chat',
@@ -594,14 +800,29 @@
     const webappSubmitBtn = document.getElementById('webappSubmitBtn');
     const webappStatus = document.getElementById('webappStatus');
     const webappSaveModeInputs = Array.from(document.querySelectorAll('input[name="webappSaveMode"]'));
+    const tileTypeInputs = Array.from(document.querySelectorAll('input[name="tileType"]'));
+    const imageInputWrap = document.getElementById('imageInputWrap');
+    const imageFileInput = document.getElementById('imageFileInput');
+    const imagePreviewCard = document.getElementById('imagePreviewCard');
+    const imagePreviewThumb = document.getElementById('imagePreviewThumb');
+    const imagePreviewName = document.getElementById('imagePreviewName');
+    const imagePreviewSize = document.getElementById('imagePreviewSize');
+    const exportImagesBtn = document.getElementById('exportImagesBtn');
+    const importImagesBtn = document.getElementById('importImagesBtn');
+    const imageViewer = document.getElementById('imageViewer');
+    const imageViewerTitle = document.getElementById('imageViewerTitle');
+    const imageViewerImg = document.getElementById('imageViewerImg');
+    const imageViewerClose = document.getElementById('imageViewerClose');
     const telemetryCounts = new Map();
     let localWebapps = [];
     let sharedWebapps = [];
+    let imageTiles = [];
     let webapps = [];
     let apps = [...BASE_APPS];
     let filteredApps = [...apps];
     let renderedApps = [...apps];
     let selectedIndex = -1;
+    let pendingImageAsset = null;
 
     function setWebappStatus(message, type = '') {
       webappStatus.textContent = message || '';
@@ -631,6 +852,25 @@
 
       parsed.hash = '';
       return parsed.toString();
+    }
+
+    function getSelectedTileType() {
+      return tileTypeInputs.find(input => input.checked)?.value || 'webapp';
+    }
+
+    function formatBytes(bytes) {
+      const value = Number(bytes) || 0;
+      if (value < 1024) return `${value} B`;
+      if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`;
+      return `${(value / (1024 * 1024)).toFixed(1)} MB`;
+    }
+
+    function slugifyTileName(value) {
+      return String(value || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 48) || 'image-tile';
     }
 
     function prettifyHostname(hostname) {
@@ -666,6 +906,15 @@
       `;
     }
 
+    function buildImageTileIcon(dataUrl, name) {
+      const safeName = String(name || 'Saved image').replace(/"/g, '&quot;');
+      return `
+        <span class="image-tile-icon">
+          <img src="${dataUrl}" alt="${safeName}" loading="lazy">
+        </span>
+      `;
+    }
+
     function hydrateWebapp(entry, scope = 'local') {
       const normalizedUrl = normalizeWebappUrl(entry && entry.file ? entry.file : entry && entry.url ? entry.url : '');
       const parsed = new URL(normalizedUrl);
@@ -686,12 +935,46 @@
       };
     }
 
+    function hydrateImageTile(entry) {
+      const name = String(entry && entry.name || '').trim() || 'Saved Image';
+      const dataUrl = String(entry && entry.dataUrl || '').trim();
+      if (!dataUrl.startsWith('data:image/')) {
+        throw new Error('Invalid image tile data.');
+      }
+      const date = String(entry && entry.date || new Date().toISOString().slice(0, 10));
+      const size = Number(entry && entry.size) || 0;
+      const source = String(entry && entry.source || 'local');
+      return {
+        id: String(entry && entry.id || `${slugifyTileName(name)}-${Date.now()}`),
+        kind: 'image-tile',
+        scope: 'local',
+        source,
+        name,
+        icon: buildImageTileIcon(dataUrl, name),
+        desc: source === 'imported' ? 'Imported image tile' : 'Local image tile',
+        file: dataUrl,
+        date,
+        size
+      };
+    }
+
     function serializeWebapps(list) {
       return list.map(app => ({
         id: app.id,
         name: app.name,
         url: app.file,
         date: app.date
+      }));
+    }
+
+    function serializeImageTiles(list) {
+      return list.map(app => ({
+        id: app.id,
+        name: app.name,
+        dataUrl: app.file,
+        date: app.date,
+        size: app.size,
+        source: app.source || 'local'
       }));
     }
 
@@ -713,6 +996,20 @@
       }
     }
 
+    function persistImageTilesLocal() {
+      localStorage.setItem(IMAGE_TILE_LOCAL_STORAGE_KEY, JSON.stringify(serializeImageTiles(imageTiles)));
+    }
+
+    function loadLocalImageTiles() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(IMAGE_TILE_LOCAL_STORAGE_KEY) || '[]');
+        if (!Array.isArray(parsed)) return [];
+        return parsed.map(item => hydrateImageTile(item));
+      } catch (error) {
+        return [];
+      }
+    }
+
     function rebuildWebapps() {
       const deduped = new Map();
       [...sharedWebapps, ...localWebapps].forEach(app => {
@@ -723,7 +1020,9 @@
       });
       webapps = Array.from(deduped.values())
         .sort((a, b) => new Date(b.date) - new Date(a.date) || a.name.localeCompare(b.name));
-      apps = [...BASE_APPS, ...webapps];
+      const sortedImageTiles = [...imageTiles]
+        .sort((a, b) => new Date(b.date) - new Date(a.date) || a.name.localeCompare(b.name));
+      apps = [...BASE_APPS, ...webapps, ...sortedImageTiles];
     }
 
     function replaceLocalWebapps(nextWebapps) {
@@ -734,6 +1033,12 @@
 
     function replaceSharedWebapps(nextWebapps) {
       sharedWebapps = nextWebapps.map(app => hydrateWebapp(app, 'cloud'));
+      rebuildWebapps();
+    }
+
+    function replaceImageTiles(nextTiles) {
+      imageTiles = nextTiles.map(app => hydrateImageTile(app));
+      persistImageTilesLocal();
       rebuildWebapps();
     }
 
@@ -760,12 +1065,39 @@
       });
     }
 
+    async function loadSharedImageTiles() {
+      if (!window.AppSharedStore) {
+        throw new Error('Shared cloud store is unavailable.');
+      }
+
+      const payload = await window.AppSharedStore.getSharedContent(IMAGE_TILE_SHARED_KEY);
+      if (!Array.isArray(payload)) {
+        return [];
+      }
+
+      return payload.map(item => hydrateImageTile({ ...item, source: 'imported' }));
+    }
+
+    async function saveSharedImageTiles(list) {
+      if (!window.AppSharedStore) {
+        throw new Error('Shared cloud store is unavailable.');
+      }
+
+      await window.AppSharedStore.putSharedContent(IMAGE_TILE_SHARED_KEY, serializeImageTiles(list), {
+        ttlSeconds: 0
+      });
+    }
+
     async function deleteWebapp(app) {
       const previousLocalWebapps = [...localWebapps];
       const previousSharedWebapps = [...sharedWebapps];
+      const previousImageTiles = [...imageTiles];
 
       try {
-        if (app.scope === 'cloud') {
+        if (app.kind === 'image-tile') {
+          replaceImageTiles(imageTiles.filter(entry => entry.id !== app.id));
+          setWebappStatus(`Removed ${app.name} from local image tiles.`, 'success');
+        } else if (app.scope === 'cloud') {
           replaceSharedWebapps(sharedWebapps.filter(entry => entry.id !== app.id));
           await saveSharedWebapps();
           setWebappStatus(`Removed ${app.name} from cloud-synced Webapps.`, 'success');
@@ -779,9 +1111,10 @@
       } catch (error) {
         replaceLocalWebapps(previousLocalWebapps);
         replaceSharedWebapps(previousSharedWebapps);
+        replaceImageTiles(previousImageTiles);
         renderCatalogStats();
         applySearchQuery(searchInput.value);
-        setWebappStatus(error.message || 'Unable to delete that webapp right now.', 'error');
+        setWebappStatus(error.message || 'Unable to delete that tile right now.', 'error');
       }
     }
 
@@ -1020,6 +1353,9 @@
       if (app.kind === 'webapp') {
         return { key: 'webapps', label: 'Webapps', meta: 'Saved website shortcuts', order: 1 };
       }
+      if (app.kind === 'image-tile') {
+        return { key: 'image-tiles', label: 'Image Tiles', meta: 'Saved local images', order: 1 };
+      }
       if (/(catalog guide|app catalog|catalog chat|discover apps)/.test(haystack)) {
         return { key: 'catalog-guide', label: 'Start Here', meta: 'Learn the catalog first', order: 0 };
       }
@@ -1102,6 +1438,14 @@
 
     function openApp(app, inNewTab = false) {
       if (!app) return;
+      if (app.kind === 'image-tile') {
+        imageViewerTitle.textContent = app.name;
+        imageViewerImg.src = app.file;
+        imageViewerImg.alt = app.name;
+        imageViewer.classList.add('active');
+        imageViewer.setAttribute('aria-hidden', 'false');
+        return;
+      }
       rememberCatalogLaunch(app);
       if (inNewTab) {
         window.open(app.file, '_blank');
@@ -1151,7 +1495,8 @@
       card.tabIndex = -1;
       card.innerHTML = `
         ${app.kind === 'webapp' ? `<div class="webapp-scope-badge ${app.scope === 'cloud' ? 'is-cloud' : 'is-local'}">${app.scope === 'cloud' ? 'Cloud' : 'Local'}</div>` : ''}
-        ${app.kind === 'webapp' ? '<button type="button" class="webapp-delete-btn" title="Delete webapp tile" aria-label="Delete webapp tile">🗑</button>' : ''}
+        ${app.kind === 'image-tile' ? '<div class="webapp-scope-badge is-local">Image</div>' : ''}
+        ${(app.kind === 'webapp' || app.kind === 'image-tile') ? '<button type="button" class="webapp-delete-btn" title="Delete saved tile" aria-label="Delete saved tile">🗑</button>' : ''}
         ${app.telemetryId ? `<div class="app-usage-badge is-loading" data-telemetry-id="${app.telemetryId}">Loading...</div>` : ''}
         <div class="app-icon">${app.icon}</div>
         <div class="app-name">${app.name}</div>
@@ -1169,6 +1514,44 @@
         openApp(app);
       });
       return card;
+    }
+
+    function updateTileComposerUi() {
+      const tileType = getSelectedTileType();
+      const isImageTile = tileType === 'image';
+      webappUrlInput.required = !isImageTile;
+      webappUrlInput.disabled = isImageTile;
+      imageInputWrap.classList.toggle('active', isImageTile);
+      webappSaveModeInputs.forEach(input => {
+        input.disabled = isImageTile && input.value === 'cloud';
+      });
+      if (isImageTile) {
+        webappSaveModeInputs.forEach(input => {
+          if (input.value === 'local') input.checked = true;
+        });
+        webappUrlInput.value = '';
+        webappUrlInput.placeholder = 'Image tiles are saved locally';
+      } else {
+        webappUrlInput.placeholder = 'https://example.com';
+      }
+    }
+
+    function clearPendingImage() {
+      pendingImageAsset = null;
+      imageFileInput.value = '';
+      imagePreviewCard.classList.remove('active');
+      imagePreviewThumb.removeAttribute('src');
+      imagePreviewName.textContent = '';
+      imagePreviewSize.textContent = '';
+    }
+
+    function readFileAsDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ''));
+        reader.onerror = () => reject(new Error('Unable to read that image file.'));
+        reader.readAsDataURL(file);
+      });
     }
 
     function createAppSection(title, meta, sectionApps) {
@@ -1234,11 +1617,88 @@
       applySearchQuery(e.target.value);
     });
 
+    tileTypeInputs.forEach(input => {
+      input.addEventListener('change', updateTileComposerUi);
+    });
+
+    imageFileInput.addEventListener('change', async () => {
+      const file = imageFileInput.files && imageFileInput.files[0];
+      if (!file) {
+        clearPendingImage();
+        return;
+      }
+
+      if (!String(file.type || '').startsWith('image/')) {
+        clearPendingImage();
+        setWebappStatus('Choose a valid image file.', 'error');
+        return;
+      }
+
+      try {
+        const dataUrl = await readFileAsDataUrl(file);
+        pendingImageAsset = {
+          name: file.name,
+          dataUrl,
+          size: file.size
+        };
+        imagePreviewThumb.src = dataUrl;
+        imagePreviewName.textContent = file.name;
+        imagePreviewSize.textContent = formatBytes(file.size);
+        imagePreviewCard.classList.add('active');
+        setWebappStatus(`Loaded ${file.name}.`, 'success');
+      } catch (error) {
+        clearPendingImage();
+        setWebappStatus(error.message || 'Unable to load that image.', 'error');
+      }
+    });
+
     webappForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       const originalLabel = webappSubmitBtn.textContent;
       const selectedSaveMode = webappSaveModeInputs.find(input => input.checked)?.value || 'local';
       const enteredTitle = String(webappTitleInput.value || '').trim();
+      const tileType = getSelectedTileType();
+
+      if (tileType === 'image') {
+        if (!pendingImageAsset) {
+          setWebappStatus('Choose an image file first.', 'error');
+          imageFileInput.focus();
+          return;
+        }
+
+        const nextImageTile = hydrateImageTile({
+          id: `${slugifyTileName(enteredTitle || pendingImageAsset.name)}-${Date.now()}`,
+          name: enteredTitle || pendingImageAsset.name.replace(/\.[a-z0-9]+$/i, ''),
+          dataUrl: pendingImageAsset.dataUrl,
+          date: new Date().toISOString().slice(0, 10),
+          size: pendingImageAsset.size,
+          source: 'local'
+        });
+
+        const previousImageTiles = [...imageTiles];
+        webappSubmitBtn.disabled = true;
+        webappSubmitBtn.textContent = 'Saving...';
+        setWebappStatus('Saving your image tile locally...', '');
+
+        try {
+          replaceImageTiles([...imageTiles, nextImageTile]);
+          renderCatalogStats();
+          applySearchQuery(searchInput.value);
+          webappTitleInput.value = '';
+          clearPendingImage();
+          setWebappStatus(`Added ${nextImageTile.name} as a local image tile.`, 'success');
+        } catch (error) {
+          imageTiles = previousImageTiles;
+          rebuildWebapps();
+          renderCatalogStats();
+          applySearchQuery(searchInput.value);
+          setWebappStatus(error.message || 'Unable to save that image tile right now.', 'error');
+        } finally {
+          webappSubmitBtn.disabled = false;
+          webappSubmitBtn.textContent = originalLabel;
+        }
+        return;
+      }
 
       let normalizedUrl;
       try {
@@ -1297,6 +1757,63 @@
       }
     });
 
+    exportImagesBtn.addEventListener('click', async () => {
+      const originalLabel = exportImagesBtn.textContent;
+      exportImagesBtn.disabled = true;
+      exportImagesBtn.textContent = 'Exporting...';
+
+      try {
+        await saveSharedImageTiles(imageTiles);
+        setWebappStatus(
+          imageTiles.length > 0
+            ? `Exported ${imageTiles.length} image tile${imageTiles.length === 1 ? '' : 's'} to cloud share.`
+            : 'Cloud share cleared for image tiles.',
+          'success'
+        );
+      } catch (error) {
+        setWebappStatus(error.message || 'Unable to export image tiles right now.', 'error');
+      } finally {
+        exportImagesBtn.disabled = false;
+        exportImagesBtn.textContent = originalLabel;
+      }
+    });
+
+    importImagesBtn.addEventListener('click', async () => {
+      const originalLabel = importImagesBtn.textContent;
+      const previousImageTiles = [...imageTiles];
+      importImagesBtn.disabled = true;
+      importImagesBtn.textContent = 'Importing...';
+
+      try {
+        const importedTiles = await loadSharedImageTiles();
+        const deduped = new Map();
+        [...imageTiles, ...importedTiles].forEach(tile => {
+          const key = `${tile.name}::${tile.file.slice(0, 80)}`;
+          if (!deduped.has(key)) {
+            deduped.set(key, hydrateImageTile({ ...tile, source: 'imported' }));
+          }
+        });
+        replaceImageTiles(Array.from(deduped.values()));
+        renderCatalogStats();
+        applySearchQuery(searchInput.value);
+        setWebappStatus(
+          importedTiles.length > 0
+            ? `Imported ${importedTiles.length} image tile${importedTiles.length === 1 ? '' : 's'} from cloud share.`
+            : 'No shared image tiles were found to import.',
+          importedTiles.length > 0 ? 'success' : ''
+        );
+      } catch (error) {
+        imageTiles = previousImageTiles;
+        rebuildWebapps();
+        renderCatalogStats();
+        applySearchQuery(searchInput.value);
+        setWebappStatus(error.message || 'Unable to import image tiles right now.', 'error');
+      } finally {
+        importImagesBtn.disabled = false;
+        importImagesBtn.textContent = originalLabel;
+      }
+    });
+
     searchInput.addEventListener('keydown', (e) => {
       if (e.key === 'Tab' && !e.shiftKey) {
         const cards = grid.querySelectorAll('.app-card');
@@ -1324,11 +1841,13 @@
 
     async function bootstrapCatalog() {
       replaceLocalWebapps(loadLocalWebapps());
+      replaceImageTiles(loadLocalImageTiles());
       filteredApps = [...apps];
       renderCatalogStats();
       renderApps(filteredApps);
       handleCatalogQueryParams();
       refreshTelemetryCounts();
+      updateTileComposerUi();
 
       try {
         const syncedWebapps = await loadSharedWebapps();
@@ -1349,6 +1868,24 @@
       rememberCatalogLaunch({
         file: 'https://rajeshpaddy.github.io/movielog/catalog-guide-chat.html'
       });
+    });
+
+    imageViewerClose.addEventListener('click', () => {
+      imageViewer.classList.remove('active');
+      imageViewer.setAttribute('aria-hidden', 'true');
+      imageViewerImg.removeAttribute('src');
+    });
+
+    imageViewer.addEventListener('click', event => {
+      if (event.target === imageViewer) {
+        imageViewerClose.click();
+      }
+    });
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && imageViewer.classList.contains('active')) {
+        imageViewerClose.click();
+      }
     });
   </script>
   <script>window.APP_TELEMETRY_ID = "app-catalog";</script>
