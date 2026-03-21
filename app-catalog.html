@@ -971,7 +971,7 @@
 
     function hydrateImageTile(entry) {
       const name = String(entry && entry.name || '').trim() || 'Saved Image';
-      const dataUrl = String(entry && entry.dataUrl || '').trim();
+      const dataUrl = String(entry && (entry.dataUrl || entry.file) || '').trim();
       if (!dataUrl.startsWith('data:image/')) {
         throw new Error('Invalid image tile data.');
       }
