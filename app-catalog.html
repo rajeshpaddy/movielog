@@ -612,7 +612,6 @@
     const WEBAPP_LOCAL_STORAGE_KEY = 'appCatalogWebapps';
     const WEBAPP_SHARED_KEY = 'app-catalog-webapps-v1';
     const IMAGE_TILE_LOCAL_STORAGE_KEY = 'appCatalogImageTiles';
-    const IMAGE_TILE_SHARED_KEY = 'app-catalog-image-tiles-v1';
     const BASE_APPS = [
       {
         name: 'Catalog Guide Chat',
@@ -866,6 +865,16 @@
       }
     }
 
+    function promptSharedKeyword(label) {
+      const raw = prompt(`${label}: enter a keyword`, '');
+      if (raw == null) return '';
+      const normalized = String(raw).trim().toLowerCase().replaceAll(/\s+/g, '-').replaceAll(/[^a-z0-9-_]/g, '');
+      if (!normalized) {
+        setWebappStatus('Keyword is required for shared transfer.', 'error');
+      }
+      return normalized;
+    }
+
     function normalizeWebappUrl(value) {
       const raw = String(value || '').trim();
       if (!raw) {
@@ -1099,12 +1108,13 @@
       });
     }
 
-    async function loadSharedImageTiles() {
+    async function loadSharedImageTiles(keyword) {
       if (!window.AppSharedStore) {
         throw new Error('Shared cloud store is unavailable.');
       }
 
-      const payload = await window.AppSharedStore.getSharedContent(IMAGE_TILE_SHARED_KEY);
+      const key = window.AppSharedStore.buildSharedKey('app-catalog-image-tiles', keyword);
+      const payload = await window.AppSharedStore.getSharedContent(key);
       if (!Array.isArray(payload)) {
         return [];
       }
@@ -1112,12 +1122,13 @@
       return payload.map(item => hydrateImageTile({ ...item, source: 'imported' }));
     }
 
-    async function saveSharedImageTiles(list) {
+    async function saveSharedImageTiles(list, keyword) {
       if (!window.AppSharedStore) {
         throw new Error('Shared cloud store is unavailable.');
       }
 
-      await window.AppSharedStore.putSharedContent(IMAGE_TILE_SHARED_KEY, serializeImageTiles(list), {
+      const key = window.AppSharedStore.buildSharedKey('app-catalog-image-tiles', keyword);
+      await window.AppSharedStore.putSharedContent(key, serializeImageTiles(list), {
         ttlSeconds: 0
       });
     }
@@ -1849,16 +1860,18 @@
     });
 
     exportImagesBtn.addEventListener('click', async () => {
+      const keyword = promptSharedKeyword('Shared export');
+      if (!keyword) return;
       const originalLabel = exportImagesBtn.textContent;
       exportImagesBtn.disabled = true;
       exportImagesBtn.textContent = 'Exporting...';
 
       try {
-        await saveSharedImageTiles(imageTiles);
+        await saveSharedImageTiles(imageTiles, keyword);
         setWebappStatus(
           imageTiles.length > 0
-            ? `Exported ${imageTiles.length} image tile${imageTiles.length === 1 ? '' : 's'} to cloud share.`
-            : 'Cloud share cleared for image tiles.',
+            ? `Shared export complete (${keyword}). Exported ${imageTiles.length} image tile${imageTiles.length === 1 ? '' : 's'}.`
+            : `Shared export complete (${keyword}). No image tiles were saved.`,
           'success'
         );
       } catch (error) {
@@ -1870,13 +1883,15 @@
     });
 
     importImagesBtn.addEventListener('click', async () => {
+      const keyword = promptSharedKeyword('Shared import');
+      if (!keyword) return;
       const originalLabel = importImagesBtn.textContent;
       const previousImageTiles = [...imageTiles];
       importImagesBtn.disabled = true;
       importImagesBtn.textContent = 'Importing...';
 
       try {
-        const importedTiles = await loadSharedImageTiles();
+        const importedTiles = await loadSharedImageTiles(keyword);
         const deduped = new Map();
         [...imageTiles, ...importedTiles].forEach(tile => {
           const key = `${tile.name}::${tile.file.slice(0, 80)}`;
@@ -1889,8 +1904,8 @@
         applySearchQuery(searchInput.value);
         setWebappStatus(
           importedTiles.length > 0
-            ? `Imported ${importedTiles.length} image tile${importedTiles.length === 1 ? '' : 's'} from cloud share.`
-            : 'No shared image tiles were found to import.',
+            ? `Shared import complete (${keyword}). Imported ${importedTiles.length} image tile${importedTiles.length === 1 ? '' : 's'}.`
+            : `No shared image tiles were found for keyword "${keyword}".`,
           importedTiles.length > 0 ? 'success' : ''
         );
       } catch (error) {
