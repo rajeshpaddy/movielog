@@ -1,0 +1,2372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oscar Atlas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800&family=Manrope:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #1a0c10;
+      --bg-2: #2a1418;
+      --panel: rgba(41, 19, 25, 0.88);
+      --panel-strong: rgba(61, 25, 31, 0.92);
+      --panel-soft: rgba(255, 245, 228, 0.08);
+      --ink: #fff4e5;
+      --muted: #d6c0af;
+      --line: rgba(255, 223, 178, 0.16);
+      --gold: #d6a84c;
+      --gold-strong: #f0c96d;
+      --rose: #ff837d;
+      --shadow: 0 26px 70px rgba(0, 0, 0, 0.42);
+      --radius-xl: 34px;
+      --radius-lg: 24px;
+      --radius-md: 18px;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: 'Manrope', sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top, rgba(214, 168, 76, 0.16), transparent 26%),
+        radial-gradient(circle at 20% 25%, rgba(255, 131, 125, 0.12), transparent 20%),
+        linear-gradient(180deg, #2a1015 0%, #17080b 52%, #0f0507 100%);
+      padding: 24px;
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::before {
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+      background-size: 100% 24px, 24px 100%;
+      opacity: 0.3;
+    }
+
+    body::after {
+      background:
+        radial-gradient(circle at top center, rgba(255, 241, 208, 0.14), transparent 30%),
+        linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.3));
+    }
+
+    .shell {
+      max-width: 1440px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 20px;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.75fr) minmax(300px, 0.72fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .main-column,
+    .side-column {
+      display: grid;
+      gap: 20px;
+      align-self: start;
+    }
+
+    .hero,
+    .panel,
+    .modal-card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      background:
+        linear-gradient(180deg, rgba(59, 25, 31, 0.95), rgba(24, 11, 15, 0.96));
+      backdrop-filter: blur(18px);
+    }
+
+    .hero::before,
+    .panel::before,
+    .modal-card::before {
+      content: '';
+      position: absolute;
+      inset: 12px;
+      border: 1px solid rgba(255, 223, 178, 0.08);
+      border-radius: calc(var(--radius-xl) - 12px);
+      pointer-events: none;
+    }
+
+    .hero {
+      padding: 30px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.9fr);
+      gap: 24px;
+      align-items: end;
+      background:
+        radial-gradient(circle at top right, rgba(214, 168, 76, 0.18), transparent 26%),
+        radial-gradient(circle at left center, rgba(255, 131, 125, 0.14), transparent 20%),
+        linear-gradient(145deg, rgba(70, 23, 32, 0.96), rgba(18, 7, 10, 0.98));
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold-strong);
+    }
+
+    .eyebrow::before,
+    .eyebrow::after {
+      content: '';
+      width: 28px;
+      height: 1px;
+      background: currentColor;
+      opacity: 0.55;
+    }
+
+    h1,
+    .modal-title {
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.03em;
+    }
+
+    h1 {
+      font-size: clamp(2.7rem, 6vw, 5.4rem);
+      line-height: 0.96;
+      max-width: 10ch;
+      margin-bottom: 16px;
+    }
+
+    .hero-copy p {
+      max-width: 70ch;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.65;
+    }
+
+    .hero-stats {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .stat-card,
+    .fact-card {
+      border-radius: 22px;
+      padding: 18px;
+      border: 1px solid rgba(255, 223, 178, 0.1);
+      background:
+        linear-gradient(180deg, rgba(255, 244, 224, 0.08), rgba(255, 244, 224, 0.03));
+    }
+
+    .stat-label,
+    .section-kicker {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255, 223, 178, 0.74);
+    }
+
+    .stat-value {
+      margin-top: 8px;
+      font-size: 32px;
+      font-weight: 800;
+      color: #fff8ef;
+    }
+
+    .stat-subtext {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .panel {
+      padding: 24px;
+    }
+
+    .controls {
+      display: grid;
+      gap: 16px;
+    }
+
+    .search-row {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: minmax(0, 1fr) 220px;
+      align-items: end;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field label {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255, 223, 178, 0.75);
+    }
+
+    .search-input,
+    .filter-select {
+      width: 100%;
+      border: 1px solid rgba(255, 223, 178, 0.18);
+      border-radius: 18px;
+      background:
+        linear-gradient(180deg, rgba(255, 245, 228, 0.1), rgba(255, 245, 228, 0.04));
+      color: var(--ink);
+      font: inherit;
+      padding: 16px 18px;
+      min-height: 58px;
+    }
+
+    .filter-select {
+      color-scheme: dark;
+    }
+
+    .filter-select option {
+      background: #241015;
+      color: #fff4e5;
+    }
+
+    .search-input::placeholder {
+      color: rgba(255, 234, 212, 0.48);
+    }
+
+    .search-input:focus,
+    .filter-select:focus {
+      outline: none;
+      border-color: rgba(240, 201, 109, 0.7);
+      box-shadow: 0 0 0 4px rgba(214, 168, 76, 0.14);
+    }
+
+    .summary-row {
+      display: flex;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .results-summary {
+      color: #fff8ef;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .results-summary strong {
+      color: var(--gold-strong);
+    }
+
+    .results-hint {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .quick-picks {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .quick-chip,
+    .detail-chip {
+      border: 1px solid rgba(255, 223, 178, 0.12);
+      border-radius: 999px;
+      background: rgba(255, 245, 228, 0.06);
+      color: var(--ink);
+      font: inherit;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .quick-chip {
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .quick-chip:hover,
+    .detail-chip:hover,
+    .tile:hover,
+    .close-btn:hover,
+    .mini-movie:hover {
+      transform: translateY(-2px);
+      border-color: rgba(240, 201, 109, 0.5);
+      background: rgba(255, 245, 228, 0.11);
+    }
+
+    .tile-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 16px;
+    }
+
+    .tile {
+      border: 1px solid rgba(255, 223, 178, 0.12);
+      border-radius: 24px;
+      background:
+        linear-gradient(180deg, rgba(255, 245, 228, 0.08), rgba(255, 245, 228, 0.04));
+      padding: 18px;
+      cursor: pointer;
+      text-align: left;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+      min-height: 220px;
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .tile.is-clickable {
+      cursor: pointer;
+    }
+
+    .tile-actions,
+    .list-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .status-btn {
+      border: 1px solid rgba(255, 223, 178, 0.16);
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: rgba(255, 245, 228, 0.06);
+      color: var(--ink);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .learn-btn {
+      border: 1px solid rgba(240, 201, 109, 0.34);
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: linear-gradient(180deg, rgba(214, 168, 76, 0.2), rgba(214, 168, 76, 0.1));
+      color: #fff2c6;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .learn-btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(240, 201, 109, 0.68);
+      background: linear-gradient(180deg, rgba(214, 168, 76, 0.26), rgba(214, 168, 76, 0.14));
+    }
+
+    .status-btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(240, 201, 109, 0.46);
+    }
+
+    .status-btn.is-active {
+      background: rgba(214, 168, 76, 0.22);
+      border-color: rgba(240, 201, 109, 0.58);
+      color: #fff2c6;
+    }
+
+    .status-btn.is-clear {
+      color: var(--muted);
+    }
+
+    .tile-kicker {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255, 223, 178, 0.64);
+    }
+
+    .tile-title {
+      font-family: 'Cinzel', serif;
+      font-size: 25px;
+      line-height: 1.08;
+      color: #fff8ef;
+    }
+
+    .tile-subtitle {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .tile-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .meta-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 7px 10px;
+      background: rgba(255, 245, 228, 0.08);
+      color: #ffeac7;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .tile-list {
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .empty-state,
+    .loading-state {
+      padding: 36px;
+      border-radius: 24px;
+      border: 1px dashed rgba(255, 223, 178, 0.18);
+      text-align: center;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .list-panel {
+      display: grid;
+      gap: 16px;
+      position: sticky;
+      top: 24px;
+    }
+
+    .list-grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 1fr;
+    }
+
+    .list-toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .list-toolbar-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .list-card {
+      border: 1px solid rgba(255, 223, 178, 0.12);
+      border-radius: 26px;
+      background: rgba(255, 245, 228, 0.05);
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .list-card-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .list-card-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff7eb;
+    }
+
+    .list-card-meta {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .list-card-body {
+      display: grid;
+      gap: 10px;
+    }
+
+    .list-search {
+      width: 100%;
+      border: 1px solid rgba(255, 223, 178, 0.16);
+      border-radius: 16px;
+      background: rgba(255, 245, 228, 0.05);
+      color: var(--ink);
+      font: inherit;
+      padding: 12px 14px;
+      min-height: 46px;
+    }
+
+    .list-search::placeholder {
+      color: rgba(255, 234, 212, 0.44);
+    }
+
+    .list-search:focus {
+      outline: none;
+      border-color: rgba(240, 201, 109, 0.7);
+      box-shadow: 0 0 0 4px rgba(214, 168, 76, 0.14);
+    }
+
+    .list-empty {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 10px 0 4px;
+    }
+
+    .sync-btn {
+      border: 1px solid rgba(255, 223, 178, 0.16);
+      border-radius: 999px;
+      padding: 10px 14px;
+      background: rgba(255, 245, 228, 0.06);
+      color: var(--ink);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .sync-btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(240, 201, 109, 0.46);
+      background: rgba(255, 245, 228, 0.11);
+    }
+
+    .sync-btn:disabled {
+      opacity: 0.65;
+      cursor: wait;
+      transform: none;
+    }
+
+    .sync-status {
+      min-height: 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .sync-status.is-error {
+      color: #ffb5af;
+    }
+
+    .sync-status.is-success {
+      color: #ffe7a3;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(7, 3, 5, 0.84);
+      backdrop-filter: blur(14px);
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-card {
+      width: min(1180px, 100%);
+      max-height: calc(100vh - 48px);
+      overflow: auto;
+      padding: 28px;
+    }
+
+    .modal-head {
+      display: flex;
+      gap: 18px;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 22px;
+    }
+
+    .modal-title {
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      line-height: 1;
+      margin-top: 8px;
+    }
+
+    .modal-subtitle {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.65;
+      max-width: 72ch;
+    }
+
+    .close-btn {
+      border: 1px solid rgba(255, 223, 178, 0.12);
+      border-radius: 999px;
+      background: rgba(255, 245, 228, 0.08);
+      color: var(--ink);
+      width: 46px;
+      height: 46px;
+      cursor: pointer;
+      font-size: 24px;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+      flex: 0 0 auto;
+    }
+
+    .fact-grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      margin-bottom: 22px;
+    }
+
+    .fact-value {
+      margin-top: 8px;
+      font-size: 26px;
+      font-weight: 800;
+      color: #fff8ef;
+    }
+
+    .section {
+      margin-top: 24px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .section-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff7ec;
+    }
+
+    .detail-chip-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .detail-chip {
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .awards-list,
+    .mini-movie-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .award-entry,
+    .mini-movie {
+      border-radius: 20px;
+      border: 1px solid rgba(255, 223, 178, 0.1);
+      padding: 16px;
+      background: rgba(255, 245, 228, 0.05);
+    }
+
+    .award-entry {
+      display: grid;
+      gap: 8px;
+    }
+
+    .award-topline {
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      color: #fff7e8;
+      font-weight: 700;
+    }
+
+    .award-year {
+      font-family: 'Space Mono', monospace;
+      color: var(--gold-strong);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .award-badge {
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .award-badge.winner {
+      background: rgba(214, 168, 76, 0.22);
+      color: #ffe59e;
+    }
+
+    .award-badge.nominee {
+      background: rgba(255, 245, 228, 0.1);
+      color: #f7dbc0;
+    }
+
+    .award-meta {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .mini-movie {
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .mini-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff7ea;
+    }
+
+    .mini-meta {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .runtime-panel {
+      display: grid;
+      gap: 18px;
+      grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
+      padding: 18px;
+      border-radius: 24px;
+      border: 1px solid rgba(255, 223, 178, 0.12);
+      background: rgba(255, 245, 228, 0.05);
+    }
+
+    .runtime-panel.has-image {
+      position: relative;
+      overflow: hidden;
+      background:
+        linear-gradient(135deg, rgba(28, 12, 16, 0.94), rgba(18, 8, 11, 0.96));
+    }
+
+    .runtime-panel.has-image::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: var(--runtime-backdrop);
+      background-size: cover;
+      background-position: center;
+      opacity: 0.16;
+      transform: scale(1.08);
+      filter: blur(20px);
+      pointer-events: none;
+    }
+
+    .runtime-panel > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .runtime-poster {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 223, 178, 0.16);
+      background: rgba(255, 245, 228, 0.08);
+    }
+
+    .runtime-poster-fallback {
+      display: grid;
+      place-items: center;
+      min-height: 280px;
+      padding: 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+      border-radius: 20px;
+      border: 1px dashed rgba(255, 223, 178, 0.18);
+      background: rgba(255, 245, 228, 0.04);
+    }
+
+    .runtime-copy {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .runtime-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff7ea;
+    }
+
+    .runtime-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .runtime-body {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .runtime-state {
+      padding: 18px;
+      border-radius: 22px;
+      border: 1px dashed rgba(255, 223, 178, 0.18);
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+      background: rgba(255, 245, 228, 0.04);
+    }
+
+    .runtime-link {
+      color: #ffe7a3;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .runtime-link.is-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 223, 178, 0.16);
+      background: rgba(255, 245, 228, 0.07);
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .runtime-link:hover {
+      text-decoration: underline;
+    }
+
+    .runtime-link.is-pill:hover {
+      text-decoration: none;
+      border-color: rgba(240, 201, 109, 0.5);
+      background: rgba(255, 245, 228, 0.12);
+    }
+
+    .research-tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .research-tab {
+      border: 1px solid rgba(255, 223, 178, 0.14);
+      border-radius: 999px;
+      padding: 9px 14px;
+      background: rgba(255, 245, 228, 0.05);
+      color: var(--muted);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+    }
+
+    .research-tab:hover {
+      transform: translateY(-1px);
+      border-color: rgba(240, 201, 109, 0.46);
+      color: var(--ink);
+    }
+
+    .research-tab.is-active {
+      background: rgba(214, 168, 76, 0.18);
+      border-color: rgba(240, 201, 109, 0.62);
+      color: #fff2c6;
+    }
+
+    .research-body {
+      display: grid;
+      gap: 14px;
+    }
+
+    .research-note {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .research-card-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .research-card {
+      border-radius: 20px;
+      border: 1px solid rgba(255, 223, 178, 0.1);
+      padding: 16px;
+      background: rgba(255, 245, 228, 0.05);
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .research-card-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #fff7ea;
+    }
+
+    .research-card-copy {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    @media (max-width: 960px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .list-panel {
+        position: static;
+      }
+
+      .search-row {
+        grid-template-columns: 1fr;
+      }
+
+      .runtime-panel {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 16px;
+      }
+
+      .hero,
+      .panel,
+      .modal-card {
+        border-radius: 26px;
+      }
+
+      .hero,
+      .panel,
+      .modal-card {
+        padding: 20px;
+      }
+
+      .tile-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow">Cinema Research Salon</div>
+        <h1>Oscar Atlas</h1>
+        <p>Explore Oscar-nominated and Oscar-winning movies as a connected research experience. Search by movie, actor, director, genre, or year, then open any tile to trace awards history, cast connections, directors, and related films from nearly a century of Academy Awards history.</p>
+      </div>
+      <div class="hero-stats" id="heroStats"></div>
+    </section>
+
+    <div class="workspace">
+      <div class="main-column">
+        <section class="panel controls">
+          <div class="search-row">
+            <div class="field">
+              <label for="searchInput">Search</label>
+              <input id="searchInput" class="search-input" type="text" placeholder="Try Parasite, Kathryn Bigelow, drama, or 1994" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="filterSelect">Explore By</label>
+              <select id="filterSelect" class="filter-select">
+                <option value="movies">Movies</option>
+                <option value="actors">Actors</option>
+                <option value="directors">Directors</option>
+                <option value="genres">Genres</option>
+                <option value="years">Year</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="summary-row">
+            <div class="results-summary" id="resultsSummary">Loading the Oscar archive...</div>
+            <div class="results-hint" id="resultsHint">Tiles update as you search and switch the filter.</div>
+          </div>
+
+          <div class="quick-picks" id="quickPicks"></div>
+        </section>
+
+        <section class="panel">
+          <div class="tile-grid" id="tileGrid"></div>
+        </section>
+      </div>
+
+      <aside class="side-column">
+        <section class="panel list-panel">
+          <div class="list-toolbar">
+            <div>
+              <div class="results-summary">My Lists</div>
+              <div class="results-hint">Mark movies from the main tiles, then jump back into your saved picks here.</div>
+            </div>
+            <div class="list-toolbar-actions">
+              <button type="button" class="sync-btn" id="exportListsBtn">Export Lists</button>
+              <button type="button" class="sync-btn" id="importListsBtn">Import Lists</button>
+            </div>
+          </div>
+          <div class="sync-status" id="syncStatus" aria-live="polite"></div>
+          <div class="list-grid">
+            <section class="list-card">
+              <div class="list-card-head">
+                <div>
+                  <div class="section-kicker">Personal Queue</div>
+                  <div class="list-card-title">Watched</div>
+                </div>
+                <div class="list-card-meta" id="watchedCount">0 movies</div>
+              </div>
+              <input id="watchedSearchInput" class="list-search" type="text" placeholder="Search watched movies" autocomplete="off">
+              <div class="list-card-body" id="watchedList"></div>
+            </section>
+            <section class="list-card">
+              <div class="list-card-head">
+                <div>
+                  <div class="section-kicker">Personal Queue</div>
+                  <div class="list-card-title">To Watch</div>
+                </div>
+                <div class="list-card-meta" id="toWatchCount">0 movies</div>
+              </div>
+              <input id="toWatchSearchInput" class="list-search" type="text" placeholder="Search to-watch movies" autocomplete="off">
+              <div class="list-card-body" id="toWatchList"></div>
+            </section>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <div class="modal" id="detailModal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div id="modalIntro"></div>
+        <button class="close-btn" id="closeModalBtn" type="button" aria-label="Close details">×</button>
+      </div>
+      <div class="fact-grid" id="modalFacts"></div>
+      <div id="modalSections"></div>
+    </div>
+  </div>
+
+  <script src="shared-store-config.js?v=20260311-worker3"></script>
+  <script src="shared-store.js?v=20260311-worker3"></script>
+  <script src="oscar-atlas-data.js"></script>
+  <script>
+    const FILTER_META = {
+      movies: {
+        label: 'movies',
+        defaultQuery: '',
+        examples: ['Best Picture winners', 'Parasite', '1994', 'animated'],
+        emptyMessage: 'Search for a movie title, award category, actor, director, genre, or Oscar year.'
+      },
+      actors: {
+        label: 'actors',
+        defaultQuery: '',
+        examples: ['Meryl', 'Denzel', 'Viola', 'Song Kang-ho'],
+        emptyMessage: 'Search actors connected to Oscar-nominated and winning films.'
+      },
+      directors: {
+        label: 'directors',
+        defaultQuery: '',
+        examples: ['Spielberg', 'Kathryn', 'Bong', 'Scorsese'],
+        emptyMessage: 'Search directors whose films appear across Oscar history.'
+      },
+      genres: {
+        label: 'genres',
+        defaultQuery: '',
+        examples: ['drama', 'thriller', 'animated', 'war'],
+        emptyMessage: 'Search genre families pulled from the curated movie metadata.'
+      },
+      years: {
+        label: 'years',
+        defaultQuery: '',
+        examples: ['2024', '1994', '1972', '1939'],
+        emptyMessage: 'Search an Oscar year to study that ceremony across all nominated films.'
+      }
+    };
+
+    const MOVIE_STATUS_STORAGE_KEY = 'oscarAtlasMovieStatuses';
+    const MOVIE_STATUS_SHARED_APP_ID = 'oscar-atlas-lists-v1';
+    const WIKIPEDIA_SEARCH_ENDPOINT = 'https://en.wikipedia.org/w/api.php';
+    const WIKIPEDIA_SUMMARY_ENDPOINT = 'https://en.wikipedia.org/api/rest_v1/page/summary/';
+
+    const state = {
+      filter: 'movies',
+      query: '',
+      data: null,
+      moviesById: new Map(),
+      modalStack: [],
+      movieStatuses: {},
+      activeModal: null,
+      movieResearch: new Map(),
+      movieResearchTabs: {},
+      watchedQuery: '',
+      toWatchQuery: ''
+    };
+
+    const heroStats = document.getElementById('heroStats');
+    const searchInput = document.getElementById('searchInput');
+    const filterSelect = document.getElementById('filterSelect');
+    const resultsSummary = document.getElementById('resultsSummary');
+    const resultsHint = document.getElementById('resultsHint');
+    const quickPicks = document.getElementById('quickPicks');
+    const tileGrid = document.getElementById('tileGrid');
+    const watchedList = document.getElementById('watchedList');
+    const toWatchList = document.getElementById('toWatchList');
+    const watchedCount = document.getElementById('watchedCount');
+    const toWatchCount = document.getElementById('toWatchCount');
+    const watchedSearchInput = document.getElementById('watchedSearchInput');
+    const toWatchSearchInput = document.getElementById('toWatchSearchInput');
+    const exportListsBtn = document.getElementById('exportListsBtn');
+    const importListsBtn = document.getElementById('importListsBtn');
+    const syncStatus = document.getElementById('syncStatus');
+    const detailModal = document.getElementById('detailModal');
+    const modalIntro = document.getElementById('modalIntro');
+    const modalFacts = document.getElementById('modalFacts');
+    const modalSections = document.getElementById('modalSections');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
+    function normalizeText(value) {
+      return String(value || '').toLowerCase().trim();
+    }
+
+    function titleCase(value) {
+      return String(value || '')
+        .split(/\s+/)
+        .filter(Boolean)
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' ');
+    }
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function formatNumber(value) {
+      return new Intl.NumberFormat('en-US').format(value || 0);
+    }
+
+    function formatRuntime(minutes) {
+      if (!minutes) return 'Unknown runtime';
+      const hours = Math.floor(minutes / 60);
+      const remainder = minutes % 60;
+      if (!hours) return `${remainder} min`;
+      return `${hours}h ${remainder}m`;
+    }
+
+    function getMovieReleaseYear(movie) {
+      const fromReleaseDate = Number(String(movie.releaseDate || '').slice(0, 4));
+      if (Number.isFinite(fromReleaseDate) && fromReleaseDate > 1800) return fromReleaseDate;
+      const firstOscarYear = Number(movie.oscarYears?.[0]);
+      return Number.isFinite(firstOscarYear) && firstOscarYear ? firstOscarYear - 1 : '';
+    }
+
+    function renderLearnMoreButton(movieId) {
+      return `<button type="button" class="learn-btn" data-action="learn-more" data-movie-id="${movieId}">Learn More</button>`;
+    }
+
+    function getResearchTab(movieId) {
+      return state.movieResearchTabs[movieId] || 'overview';
+    }
+
+    function setResearchTab(movieId, tab) {
+      if (!movieId) return;
+      state.movieResearchTabs[movieId] = tab;
+      rerenderActiveModal();
+    }
+
+    function buildResearchLinks(movie, details = {}) {
+      const releaseYear = getMovieReleaseYear(movie);
+      const baseQuery = `${movie.title}${releaseYear ? ` ${releaseYear}` : ''}`;
+      return {
+        trailerUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(`${baseQuery} official trailer`)}`,
+        webUrl: `https://www.google.com/search?q=${encodeURIComponent(`${baseQuery} movie`)}`,
+        castUrl: `https://www.google.com/search?q=${encodeURIComponent(`${baseQuery} cast`)}`,
+        pageUrl: details.pageUrl || ''
+      };
+    }
+
+    function getSimilarMovies(movie, limit = 6) {
+      if (!state.data) return [];
+      return state.data.movies
+        .filter(candidate => candidate.id !== movie.id)
+        .map(candidate => {
+          let score = 0;
+          const sharedGenres = candidate.genres.filter(genre => movie.genres.includes(genre)).length;
+          const sharedDirectors = candidate.directors.filter(name => movie.directors.includes(name)).length;
+          const sharedCast = candidate.cast.filter(name => movie.cast.includes(name)).length;
+          const sameEra = Math.abs((getMovieReleaseYear(candidate) || 0) - (getMovieReleaseYear(movie) || 0)) <= 3 ? 1 : 0;
+          score += sharedGenres * 6;
+          score += sharedDirectors * 10;
+          score += Math.min(sharedCast, 3) * 3;
+          score += sameEra * 2;
+          score += Math.min(candidate.winCount, 5);
+          return { candidate, score };
+        })
+        .filter(entry => entry.score > 0)
+        .sort((a, b) => b.score - a.score || b.candidate.winCount - a.candidate.winCount || a.candidate.title.localeCompare(b.candidate.title))
+        .slice(0, limit)
+        .map(entry => entry.candidate);
+    }
+
+    function renderResearchTabs(movieId, activeTab) {
+      const tabs = [
+        ['overview', 'Overview'],
+        ['reviews', 'Reviews'],
+        ['trivia', 'Trivia'],
+        ['similar', 'Similar Movies']
+      ];
+
+      return `
+        <div class="research-tabs" role="tablist" aria-label="Movie research views">
+          ${tabs.map(([value, label]) => `
+            <button
+              type="button"
+              class="research-tab ${activeTab === value ? 'is-active' : ''}"
+              role="tab"
+              aria-selected="${activeTab === value ? 'true' : 'false'}"
+              data-action="research-tab"
+              data-movie-id="${movieId}"
+              data-tab="${value}"
+            >${label}</button>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderOverviewResearchBody(movie, details, links) {
+      const panelClass = details.imageUrl ? 'runtime-panel has-image' : 'runtime-panel';
+      const panelStyle = details.imageUrl
+        ? ` style="--runtime-backdrop: url('${escapeHtml(details.imageUrl)}');"`
+        : '';
+      const posterMarkup = details.imageUrl
+        ? `<img class="runtime-poster" src="${escapeHtml(details.imageUrl)}" alt="Poster or lead image for ${escapeHtml(movie.title)}">`
+        : `<div class="runtime-poster-fallback">No poster image was returned for this title, but the live movie summary is available.</div>`;
+
+      return `
+        <div class="${panelClass}"${panelStyle}>
+          <div>${posterMarkup}</div>
+          <div class="runtime-copy">
+            <div class="runtime-title">${escapeHtml(details.pageTitle || movie.title)}</div>
+            <div class="runtime-meta">
+              ${details.description ? `<span class="meta-pill">${escapeHtml(details.description)}</span>` : ''}
+              ${movie.releaseDate ? `<span class="meta-pill">${escapeHtml(movie.releaseDate)}</span>` : ''}
+              ${movie.directors[0] ? `<span class="meta-pill">Director: ${escapeHtml(movie.directors[0])}</span>` : ''}
+            </div>
+            <div class="runtime-body">${escapeHtml(details.extract || 'Live story details were returned without a summary.')}</div>
+            <div class="list-actions">
+              ${renderLearnMoreButton(movie.id)}
+              ${links.pageUrl ? `<a class="runtime-link is-pill" href="${escapeHtml(links.pageUrl)}" target="_blank" rel="noreferrer">Wikipedia</a>` : ''}
+              <a class="runtime-link is-pill" href="${escapeHtml(links.trailerUrl)}" target="_blank" rel="noreferrer">Trailer</a>
+              <a class="runtime-link is-pill" href="${escapeHtml(links.castUrl)}" target="_blank" rel="noreferrer">Cast</a>
+              <a class="runtime-link is-pill" href="${escapeHtml(links.webUrl)}" target="_blank" rel="noreferrer">Research</a>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderReviewResearchBody(movie, links) {
+      const releaseYear = getMovieReleaseYear(movie);
+      const reviewSearch = `https://www.google.com/search?q=${encodeURIComponent(`${movie.title} ${releaseYear || ''} reviews`)}`;
+      const rottenSearch = `https://www.google.com/search?q=${encodeURIComponent(`${movie.title} Rotten Tomatoes`)}`;
+      const metacriticSearch = `https://www.google.com/search?q=${encodeURIComponent(`${movie.title} Metacritic`)}`;
+      return `
+        <div class="research-body">
+          <div class="research-note">Jump into review research from multiple angles to compare critic consensus, audience sentiment, and long-form essays.</div>
+          <div class="research-card-grid">
+            <article class="research-card">
+              <div class="research-card-title">Critic Review Search</div>
+              <div class="research-card-copy">Open a broader web query focused on reviews, year-specific coverage, and retrospective criticism.</div>
+              <a class="runtime-link is-pill" href="${escapeHtml(reviewSearch)}" target="_blank" rel="noreferrer">Open Reviews</a>
+            </article>
+            <article class="research-card">
+              <div class="research-card-title">Rotten Tomatoes</div>
+              <div class="research-card-copy">Quickly look for critic and audience scores, plus short pull quotes and review summaries.</div>
+              <a class="runtime-link is-pill" href="${escapeHtml(rottenSearch)}" target="_blank" rel="noreferrer">Find RT Page</a>
+            </article>
+            <article class="research-card">
+              <div class="research-card-title">Metacritic</div>
+              <div class="research-card-copy">Useful when you want a compact critic aggregation view and linked publication reviews.</div>
+              <a class="runtime-link is-pill" href="${escapeHtml(metacriticSearch)}" target="_blank" rel="noreferrer">Find Metacritic</a>
+            </article>
+            <article class="research-card">
+              <div class="research-card-title">Deeper Research</div>
+              <div class="research-card-copy">Broaden the review hunt with the full research shortcut already tuned for this film.</div>
+              <a class="runtime-link is-pill" href="${escapeHtml(links.webUrl)}" target="_blank" rel="noreferrer">Open Research</a>
+            </article>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderTriviaResearchBody(movie) {
+      const imdbTrivia = movie.imdbId ? `https://www.imdb.com/title/${encodeURIComponent(movie.imdbId)}/trivia/` : '';
+      const triviaSearch = `https://www.google.com/search?q=${encodeURIComponent(`${movie.title} movie trivia`)}`;
+      const behindScenesSearch = `https://www.google.com/search?q=${encodeURIComponent(`${movie.title} behind the scenes`)}`;
+      return `
+        <div class="research-body">
+          <div class="research-note">Use these shortcuts to dig into behind-the-scenes stories, production facts, casting history, and memorable Oscar-era context.</div>
+          <div class="research-card-grid">
+            <article class="research-card">
+              <div class="research-card-title">IMDb Trivia</div>
+              <div class="research-card-copy">Best for production anecdotes, hidden references, deleted scenes, and set stories when available.</div>
+              ${imdbTrivia ? `<a class="runtime-link is-pill" href="${escapeHtml(imdbTrivia)}" target="_blank" rel="noreferrer">Open Trivia</a>` : `<div class="research-note">IMDb trivia is not linked for this title yet.</div>`}
+            </article>
+            <article class="research-card">
+              <div class="research-card-title">Web Trivia Search</div>
+              <div class="research-card-copy">Cast a wider net for interviews, fan-curated facts, and archival articles about the movie.</div>
+              <a class="runtime-link is-pill" href="${escapeHtml(triviaSearch)}" target="_blank" rel="noreferrer">Search Trivia</a>
+            </article>
+            <article class="research-card">
+              <div class="research-card-title">Behind The Scenes</div>
+              <div class="research-card-copy">Great for production stills, making-of coverage, set design notes, and direction choices.</div>
+              <a class="runtime-link is-pill" href="${escapeHtml(behindScenesSearch)}" target="_blank" rel="noreferrer">Open BTS Search</a>
+            </article>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSimilarResearchBody(movie) {
+      const similarMovies = getSimilarMovies(movie, 6);
+      if (!similarMovies.length) {
+        return `<div class="research-note">No close local matches were found yet for this film in the Oscar Atlas archive.</div>`;
+      }
+
+      return `
+        <div class="research-body">
+          <div class="research-note">These local Oscar Atlas picks are chosen from shared genres, directors, cast overlap, and release-era proximity.</div>
+          <div class="research-card-grid">
+            ${similarMovies.map(candidate => `
+              <article class="research-card">
+                <div class="research-card-title">${escapeHtml(candidate.title)}</div>
+                <div class="research-card-copy">${escapeHtml(candidate.description || 'Oscar-linked film in the local archive.')}</div>
+                <div class="runtime-meta">
+                  <span class="meta-pill">${candidate.winCount} wins</span>
+                  <span class="meta-pill">${candidate.nominationCount} nominations</span>
+                </div>
+                <div class="list-actions">
+                  <button type="button" class="status-btn" data-kind="movie" data-id="${candidate.id}">Open Movie</button>
+                  ${renderLearnMoreButton(candidate.id)}
+                </div>
+              </article>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function getMovieStatus(movieId) {
+      return state.movieStatuses[movieId] || '';
+    }
+
+    function loadMovieStatuses() {
+      try {
+        const raw = localStorage.getItem(MOVIE_STATUS_STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : {};
+        return parsed && typeof parsed === 'object' ? parsed : {};
+      } catch (error) {
+        return {};
+      }
+    }
+
+    function saveMovieStatuses() {
+      try {
+        localStorage.setItem(MOVIE_STATUS_STORAGE_KEY, JSON.stringify(state.movieStatuses));
+      } catch (error) {
+        /* ignore storage failures */
+      }
+    }
+
+    function setMovieStatus(movieId, nextStatus) {
+      if (!movieId) return;
+      if (!nextStatus) {
+        delete state.movieStatuses[movieId];
+      } else {
+        state.movieStatuses[movieId] = nextStatus;
+      }
+      saveMovieStatuses();
+      renderTiles();
+      renderMyLists();
+      rerenderActiveModal();
+    }
+
+    function setSyncStatus(message, tone = '') {
+      syncStatus.textContent = message || '';
+      syncStatus.classList.toggle('is-error', tone === 'error');
+      syncStatus.classList.toggle('is-success', tone === 'success');
+    }
+
+    function promptSharedKeyword(label) {
+      const entered = window.prompt(`${label}: enter a shared keyword`, '');
+      return String(entered || '').trim();
+    }
+
+    function serializeMovieStatuses() {
+      const normalized = {};
+      Object.entries(state.movieStatuses).forEach(([movieId, status]) => {
+        if (!state.moviesById.has(movieId)) return;
+        if (status !== 'watched' && status !== 'towatch') return;
+        normalized[movieId] = status;
+      });
+      return normalized;
+    }
+
+    async function exportSharedLists(keyword) {
+      if (!window.AppSharedStore) {
+        throw new Error('Shared cloud store is unavailable.');
+      }
+
+      const key = window.AppSharedStore.buildSharedKey(MOVIE_STATUS_SHARED_APP_ID, keyword);
+      await window.AppSharedStore.putSharedContent(key, {
+        statuses: serializeMovieStatuses(),
+        exportedAt: new Date().toISOString()
+      }, {
+        ttlSeconds: 0
+      });
+    }
+
+    async function importSharedLists(keyword) {
+      if (!window.AppSharedStore) {
+        throw new Error('Shared cloud store is unavailable.');
+      }
+
+      const key = window.AppSharedStore.buildSharedKey(MOVIE_STATUS_SHARED_APP_ID, keyword);
+      const payload = await window.AppSharedStore.getSharedContent(key);
+      const importedStatuses = payload && typeof payload === 'object' ? payload.statuses : null;
+      if (!importedStatuses || typeof importedStatuses !== 'object') {
+        return null;
+      }
+
+      const nextStatuses = { ...state.movieStatuses };
+      Object.entries(importedStatuses).forEach(([movieId, status]) => {
+        if (!state.moviesById.has(movieId)) return;
+        if (status !== 'watched' && status !== 'towatch') return;
+        nextStatuses[movieId] = status;
+      });
+      return nextStatuses;
+    }
+
+    function sortMovies(movieIds) {
+      return movieIds
+        .map(id => state.moviesById.get(id))
+        .filter(Boolean)
+        .sort((a, b) => {
+          const scoreA = (a.winCount * 100) + (a.nominationCount * 10) + (Math.max(...a.oscarYears) || 0);
+          const scoreB = (b.winCount * 100) + (b.nominationCount * 10) + (Math.max(...b.oscarYears) || 0);
+          return scoreB - scoreA || a.title.localeCompare(b.title);
+        });
+    }
+
+    function createFactCard(label, value, subtext = '') {
+      return `
+        <div class="fact-card">
+          <div class="section-kicker">${label}</div>
+          <div class="fact-value">${value}</div>
+          ${subtext ? `<div class="stat-subtext">${subtext}</div>` : ''}
+        </div>
+      `;
+    }
+
+    function renderHeroStats() {
+      if (!state.data) return;
+      const stats = state.data.stats;
+      heroStats.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-label">Movies In Archive</div>
+          <div class="stat-value">${formatNumber(stats.movieCount)}</div>
+          <div class="stat-subtext">Oscar-nominated and Oscar-winning films curated into one searchable atlas.</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Winning Films</div>
+          <div class="stat-value">${formatNumber(stats.winningMovieCount)}</div>
+          <div class="stat-subtext">Films with at least one Academy Award win represented in the archive.</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Actors Indexed</div>
+          <div class="stat-value">${formatNumber(stats.actorCount)}</div>
+          <div class="stat-subtext">Cast connections let you jump from people into all Oscar-recognized films they appear in.</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Directors & Genres</div>
+          <div class="stat-value">${formatNumber(stats.directorCount + stats.genreCount)}</div>
+          <div class="stat-subtext">Browse the archive by filmmaker, genre family, or ceremony year.</div>
+        </div>
+      `;
+    }
+
+    function getFilterCollection(filter) {
+      if (!state.data) return [];
+      if (filter === 'movies') return state.data.movies;
+      return state.data.indexes[filter] || [];
+    }
+
+    function getCollectionName(item, filter) {
+      if (filter === 'movies') return item.title;
+      if (filter === 'years') return item.year;
+      return item.name;
+    }
+
+    function scoreMatch(name, query) {
+      const haystack = normalizeText(name);
+      const needle = normalizeText(query);
+      if (!needle) return 1;
+      if (haystack === needle) return 120;
+      if (haystack.startsWith(needle)) return 90;
+      if (haystack.includes(needle)) return 70;
+      return 0;
+    }
+
+    function getMovieSearchScore(movie, query) {
+      const needle = normalizeText(query);
+      if (!needle) return (movie.winCount * 100) + (movie.nominationCount * 10) + (Math.max(...movie.oscarYears) || 0);
+
+      const fields = [
+        movie.title,
+        movie.description,
+        ...movie.directors,
+        ...movie.cast,
+        ...movie.genres,
+        ...movie.categories,
+        ...movie.oscarYears.map(String),
+        ...movie.nominatedPeople
+      ];
+      let score = 0;
+      fields.forEach(field => {
+        score = Math.max(score, scoreMatch(field, needle));
+      });
+
+      if (needle.includes('winner') && movie.winCount > 0) score += 18;
+      if (needle.includes('best picture') && movie.categories.some(category => normalizeText(category).includes('best picture'))) score += 22;
+      if (movie.title.toLowerCase().includes(needle)) score += 15;
+      return score;
+    }
+
+    function filterListMovies(movies, query) {
+      const needle = normalizeText(query);
+      if (!needle) return movies;
+
+      return movies.filter(movie => {
+        const fields = [
+          movie.title,
+          movie.description,
+          movie.releaseDate,
+          ...movie.directors,
+          ...movie.cast,
+          ...movie.genres,
+          ...movie.categories,
+          ...movie.oscarYears.map(String)
+        ];
+        return fields.some(field => normalizeText(field).includes(needle));
+      });
+    }
+
+    function getResults() {
+      const filter = state.filter;
+      const query = state.query;
+
+      if (!state.data) return [];
+
+      if (filter === 'movies') {
+        return state.data.movies
+          .map(movie => ({ movie, score: getMovieSearchScore(movie, query) }))
+          .filter(entry => entry.score > 0)
+          .sort((a, b) => b.score - a.score || b.movie.winCount - a.movie.winCount || b.movie.nominationCount - a.movie.nominationCount || a.movie.title.localeCompare(b.movie.title))
+          .slice(0, 72)
+          .map(entry => entry.movie);
+      }
+
+      const list = getFilterCollection(filter)
+        .map(item => {
+          const name = getCollectionName(item, filter);
+          const score = scoreMatch(name, query);
+          return { item, score, name };
+        })
+        .filter(entry => query ? entry.score > 0 : true)
+        .sort((a, b) => {
+          if (filter === 'years') return Number(b.name) - Number(a.name);
+          return b.score - a.score || b.item.movieCount - a.item.movieCount || a.name.localeCompare(b.name);
+        })
+        .slice(0, 72)
+        .map(entry => entry.item);
+
+      return list;
+    }
+
+    function renderQuickPicks() {
+      const examples = FILTER_META[state.filter].examples || [];
+      quickPicks.innerHTML = examples
+        .map(example => `<button type="button" class="quick-chip" data-query="${example}">${example}</button>`)
+        .join('');
+    }
+
+    function renderSummary(results) {
+      const label = FILTER_META[state.filter].label;
+      const queryText = state.query ? ` for <strong>"${state.query}"</strong>` : '';
+      resultsSummary.innerHTML = `Showing <strong>${formatNumber(results.length)}</strong> ${label}${queryText}.`;
+      resultsHint.textContent = state.query
+        ? 'Open any tile for a deep dive, then jump again through cast, director, genre, or year connections.'
+        : `Browsing ${label}. Use the search bar or tap an example prompt to narrow the field.`;
+    }
+
+    function renderMovieTile(movie) {
+      const years = `${movie.oscarYears[0]}${movie.oscarYears.length > 1 ? `-${movie.oscarYears[movie.oscarYears.length - 1]}` : ''}`;
+      const castPreview = movie.cast.slice(0, 3).join(', ') || 'Cast details unavailable';
+      const genrePreview = movie.genres.slice(0, 2).join(' · ') || 'Genre details unavailable';
+      const directorPreview = movie.directors.slice(0, 2).join(', ') || 'Director details unavailable';
+      const status = getMovieStatus(movie.id);
+
+      return `
+        <article class="tile is-clickable" data-kind="movie" data-id="${movie.id}">
+          <div class="tile-kicker">Movie</div>
+          <div>
+            <div class="tile-title">${movie.title}</div>
+            <div class="tile-subtitle">${movie.description || 'Open to inspect awards, cast, directors, genres, and linked Oscar history.'}</div>
+          </div>
+          <div class="tile-meta">
+            <span class="meta-pill">${movie.winCount} wins</span>
+            <span class="meta-pill">${movie.nominationCount} nominations</span>
+            <span class="meta-pill">${years}</span>
+          </div>
+          <div class="tile-list">
+            <div><strong>Directors:</strong> ${directorPreview}</div>
+            <div><strong>Genres:</strong> ${genrePreview}</div>
+            <div><strong>Cast:</strong> ${castPreview}</div>
+          </div>
+          <div class="tile-actions">
+            ${renderLearnMoreButton(movie.id)}
+            <button type="button" class="status-btn ${status === 'watched' ? 'is-active' : ''}" data-action="status" data-status="watched" data-movie-id="${movie.id}">Watched</button>
+            <button type="button" class="status-btn ${status === 'towatch' ? 'is-active' : ''}" data-action="status" data-status="towatch" data-movie-id="${movie.id}">To Watch</button>
+            ${status ? `<button type="button" class="status-btn is-clear" data-action="status" data-status="" data-movie-id="${movie.id}">Clear</button>` : ''}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderEntityTile(item, kind) {
+      const title = kind === 'years' ? item.year : item.name;
+      const movies = sortMovies(item.movieIds).slice(0, 3);
+      const preview = movies.map(movie => movie.title).join(' · ') || 'No matching movies available';
+      const subtitleMap = {
+        actors: 'Actor research view',
+        directors: 'Director research view',
+        genres: 'Genre research view',
+        years: 'Oscar year research view'
+      };
+      return `
+        <article class="tile is-clickable" data-kind="${kind}" data-id="${encodeURIComponent(title)}">
+          <div class="tile-kicker">${subtitleMap[kind]}</div>
+          <div>
+            <div class="tile-title">${title}</div>
+            <div class="tile-subtitle">${preview}</div>
+          </div>
+          <div class="tile-meta">
+            <span class="meta-pill">${item.movieCount} movies</span>
+            <span class="meta-pill">${item.winningMovieCount} winning films</span>
+          </div>
+          <div class="tile-list">
+            <div>Open to see every linked Oscar movie, plus faster hops into related research.</div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderListMovie(movie) {
+      const status = getMovieStatus(movie.id);
+      return `
+        <article class="mini-movie" data-kind="movie" data-id="${movie.id}">
+          <div class="mini-title">${movie.title}</div>
+          <div class="mini-meta">
+            ${movie.winCount} wins · ${movie.nominationCount} nominations · ${movie.oscarYears.join(', ')}
+            <br>
+            ${movie.directors.slice(0, 2).join(', ') || 'Director unknown'}
+          </div>
+          <div class="list-actions">
+            ${renderLearnMoreButton(movie.id)}
+            <button type="button" class="status-btn ${status === 'watched' ? 'is-active' : ''}" data-action="status" data-status="watched" data-movie-id="${movie.id}">Watched</button>
+            <button type="button" class="status-btn ${status === 'towatch' ? 'is-active' : ''}" data-action="status" data-status="towatch" data-movie-id="${movie.id}">To Watch</button>
+            <button type="button" class="status-btn is-clear" data-action="status" data-status="" data-movie-id="${movie.id}">Clear</button>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderMovieStatusActions(movieId) {
+      const status = getMovieStatus(movieId);
+      return `
+        <div class="list-actions">
+          ${renderLearnMoreButton(movieId)}
+          <button type="button" class="status-btn ${status === 'watched' ? 'is-active' : ''}" data-action="status" data-status="watched" data-movie-id="${movieId}">Watched</button>
+          <button type="button" class="status-btn ${status === 'towatch' ? 'is-active' : ''}" data-action="status" data-status="towatch" data-movie-id="${movieId}">To Watch</button>
+          ${status ? `<button type="button" class="status-btn is-clear" data-action="status" data-status="" data-movie-id="${movieId}">Clear</button>` : ''}
+        </div>
+      `;
+    }
+
+    function buildWikipediaQueries(movie) {
+      const releaseYear = getMovieReleaseYear(movie);
+      return [
+        `${movie.title} ${releaseYear} film`,
+        `${movie.title} film`,
+        `${movie.title} movie`
+      ].filter((value, index, list) => value && list.indexOf(value) === index);
+    }
+
+    function scoreWikipediaCandidate(page, movie) {
+      const normalizedTitle = normalizeText(movie.title);
+      const pageTitle = normalizeText(page.title);
+      const snippet = normalizeText(page.snippet || '');
+      const releaseYear = String(getMovieReleaseYear(movie) || '');
+      let score = 0;
+
+      if (pageTitle === normalizedTitle) score += 140;
+      if (pageTitle.startsWith(normalizedTitle)) score += 90;
+      if (pageTitle.includes(normalizedTitle)) score += 50;
+      if (pageTitle.includes('film')) score += 24;
+      if (snippet.includes('film')) score += 16;
+      if (releaseYear && (pageTitle.includes(releaseYear) || snippet.includes(releaseYear))) score += 22;
+
+      movie.directors.slice(0, 2).forEach(name => {
+        const surname = normalizeText(name).split(' ').pop();
+        if (!surname) return;
+        if (snippet.includes(surname)) score += 8;
+      });
+
+      return score;
+    }
+
+    async function fetchJson(url) {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Live lookup failed (${response.status}).`);
+      }
+      return response.json();
+    }
+
+    async function fetchWikipediaSummary(pageTitle) {
+      return fetchJson(`${WIKIPEDIA_SUMMARY_ENDPOINT}${encodeURIComponent(pageTitle)}`);
+    }
+
+    async function fetchMovieResearch(movie) {
+      let bestCandidate = null;
+
+      for (const query of buildWikipediaQueries(movie)) {
+        const searchUrl = `${WIKIPEDIA_SEARCH_ENDPOINT}?action=query&list=search&srsearch=${encodeURIComponent(query)}&srlimit=8&format=json&origin=*`;
+        const payload = await fetchJson(searchUrl);
+        const pages = payload?.query?.search || [];
+        pages.forEach(page => {
+          const candidate = { page, score: scoreWikipediaCandidate(page, movie) };
+          if (!bestCandidate || candidate.score > bestCandidate.score) {
+            bestCandidate = candidate;
+          }
+        });
+
+        if (bestCandidate && bestCandidate.score >= 140) break;
+      }
+
+      if (!bestCandidate || bestCandidate.score < 40) {
+        throw new Error('No live movie background was found for this title yet.');
+      }
+
+      const summary = await fetchWikipediaSummary(bestCandidate.page.title);
+      return {
+        pageTitle: summary.title || bestCandidate.page.title,
+        description: summary.description || '',
+        extract: summary.extract || '',
+        imageUrl: summary.originalimage?.source || summary.thumbnail?.source || '',
+        pageUrl: summary.content_urls?.desktop?.page || ''
+      };
+    }
+
+    function renderMovieResearchSection(movie) {
+      const researchState = state.movieResearch.get(movie.id);
+
+      if (!researchState || researchState.status === 'idle') {
+        return `
+          <div class="runtime-state">Use Learn More to pull a live poster-style image and encyclopedia snapshot for this movie. This lookup happens at runtime, so the local archive stays lightweight.</div>
+          <div class="list-actions">${renderLearnMoreButton(movie.id)}</div>
+        `;
+      }
+
+      if (researchState.status === 'loading') {
+        return `
+          <div class="runtime-state">Loading a live movie snapshot with poster image, summary, and source link...</div>
+          <div class="list-actions">${renderLearnMoreButton(movie.id)}</div>
+        `;
+      }
+
+      if (researchState.status === 'error') {
+        return `
+          <div class="runtime-state">${escapeHtml(researchState.message || 'Live movie details are unavailable right now.')}</div>
+          <div class="list-actions">${renderLearnMoreButton(movie.id)}</div>
+        `;
+      }
+
+      const details = researchState.data || {};
+      const activeTab = getResearchTab(movie.id);
+      const links = buildResearchLinks(movie, details);
+      let body = '';
+
+      if (activeTab === 'reviews') {
+        body = renderReviewResearchBody(movie, links);
+      } else if (activeTab === 'trivia') {
+        body = renderTriviaResearchBody(movie);
+      } else if (activeTab === 'similar') {
+        body = renderSimilarResearchBody(movie);
+      } else {
+        body = renderOverviewResearchBody(movie, details, links);
+      }
+
+      return `
+        ${renderResearchTabs(movie.id, activeTab)}
+        ${body}
+      `;
+    }
+
+    async function loadMovieResearch(movieId) {
+      const movie = state.moviesById.get(movieId);
+      if (!movie) return;
+
+      const existing = state.movieResearch.get(movieId);
+      if (existing?.status === 'loading') return;
+      if (existing?.status === 'ready') {
+        rerenderActiveModal();
+        return;
+      }
+
+      state.movieResearch.set(movieId, { status: 'loading' });
+      rerenderActiveModal();
+
+      try {
+        const details = await fetchMovieResearch(movie);
+        state.movieResearch.set(movieId, {
+          status: 'ready',
+          data: details
+        });
+      } catch (error) {
+        state.movieResearch.set(movieId, {
+          status: 'error',
+          message: error.message || 'Live movie details are unavailable right now.'
+        });
+      }
+
+      rerenderActiveModal();
+    }
+
+    function renderMyLists() {
+      const watchedMovies = sortMovies(Object.keys(state.movieStatuses).filter(movieId => state.movieStatuses[movieId] === 'watched'));
+      const toWatchMovies = sortMovies(Object.keys(state.movieStatuses).filter(movieId => state.movieStatuses[movieId] === 'towatch'));
+      const watchedFiltered = filterListMovies(watchedMovies, state.watchedQuery);
+      const toWatchFiltered = filterListMovies(toWatchMovies, state.toWatchQuery);
+
+      watchedCount.textContent = `${watchedMovies.length} movie${watchedMovies.length === 1 ? '' : 's'}`;
+      toWatchCount.textContent = `${toWatchMovies.length} movie${toWatchMovies.length === 1 ? '' : 's'}`;
+
+      watchedList.innerHTML = watchedMovies.length
+        ? watchedFiltered.length
+          ? watchedFiltered.map(renderListMovie).join('')
+          : '<div class="list-empty">No watched movies match your search yet.</div>'
+        : '<div class="list-empty">No watched movies yet. Mark titles from the main results to build your watched list.</div>';
+
+      toWatchList.innerHTML = toWatchMovies.length
+        ? toWatchFiltered.length
+          ? toWatchFiltered.map(renderListMovie).join('')
+          : '<div class="list-empty">No to-watch movies match your search yet.</div>'
+        : '<div class="list-empty">No to-watch movies yet. Mark titles from the main results to build your watch queue.</div>';
+    }
+
+    function renderTiles() {
+      const results = getResults();
+      renderSummary(results);
+
+      if (!state.data) {
+        tileGrid.innerHTML = '<div class="loading-state">Loading the local Oscar archive...</div>';
+        return;
+      }
+
+      if (!results.length) {
+        tileGrid.innerHTML = `<div class="empty-state">${FILTER_META[state.filter].emptyMessage}</div>`;
+        return;
+      }
+
+      tileGrid.innerHTML = results
+        .map(item => state.filter === 'movies' ? renderMovieTile(item) : renderEntityTile(item, state.filter))
+        .join('');
+    }
+
+    function getEntityRecord(kind, id) {
+      if (!state.data) return null;
+      if (kind === 'movie') return state.moviesById.get(id) || null;
+      if (kind === 'years') return state.data.indexes.years.find(entry => entry.year === id) || null;
+      return (state.data.indexes[kind] || []).find(entry => entry.name === id) || null;
+    }
+
+    function buildMovieMiniCards(movieIds) {
+      return sortMovies(movieIds).map(movie => `
+        <article class="mini-movie" data-kind="movie" data-id="${movie.id}">
+          <div class="mini-title">${movie.title}</div>
+          <div class="mini-meta">
+            ${movie.winCount} wins · ${movie.nominationCount} nominations · ${movie.oscarYears.join(', ')}
+            <br>
+            ${movie.directors.slice(0, 2).join(', ') || 'Director unknown'}
+          </div>
+          ${renderMovieStatusActions(movie.id)}
+        </article>
+      `).join('');
+    }
+
+    function renderDetailSections(sections) {
+      modalSections.innerHTML = sections.map(section => `
+        <section class="section">
+          <div class="section-kicker">${section.kicker}</div>
+          <div class="section-title">${section.title}</div>
+          ${section.content}
+        </section>
+      `).join('');
+    }
+
+    function openMovieDetail(movie, options = {}) {
+      if (options.loadResearch) {
+        loadMovieResearch(movie.id);
+      }
+
+      const yearLabel = movie.yearLabels.join(', ');
+      const directorChips = movie.directors.length
+        ? movie.directors.map(name => `<button type="button" class="detail-chip" data-kind="directors" data-id="${encodeURIComponent(name)}">Director: ${name}</button>`).join('')
+        : '<span class="tile-subtitle">Director metadata is missing for this film.</span>';
+      const genreChips = movie.genres.length
+        ? movie.genres.map(name => `<button type="button" class="detail-chip" data-kind="genres" data-id="${encodeURIComponent(name)}">Genre: ${titleCase(name.replace(/ film$/i, ''))}</button>`).join('')
+        : '<span class="tile-subtitle">Genre metadata is missing for this film.</span>';
+      const castChips = movie.cast.length
+        ? movie.cast.slice(0, 36).map(name => `<button type="button" class="detail-chip" data-kind="actors" data-id="${encodeURIComponent(name)}">${name}</button>`).join('')
+        : '<span class="tile-subtitle">Cast metadata is limited for this film.</span>';
+
+      modalIntro.innerHTML = `
+        <div class="section-kicker">Movie Detail</div>
+        <div class="modal-title">${movie.title}</div>
+        <div class="modal-subtitle">${movie.description || 'This film appears in the Oscar Atlas archive. Open the sections below to explore the awards trail, cast, directors, genres, and nominated people linked to it.'}</div>
+      `;
+
+      modalFacts.innerHTML = [
+        createFactCard('Oscar Wins', movie.winCount, `${movie.nominationCount} nominations across ${yearLabel}`),
+        createFactCard('Oscar Years', movie.oscarYears.join(', '), 'Ceremony years where this film appeared'),
+        createFactCard('Runtime', formatRuntime(movie.runtimeMinutes), movie.releaseDate || 'Release date unavailable'),
+        createFactCard('People Indexed', `${movie.cast.length + movie.directors.length}`, `${movie.cast.length} cast · ${movie.directors.length} directors`)
+      ].join('');
+
+      renderDetailSections([
+        {
+          kicker: 'Live Snapshot',
+          title: 'Poster and movie background',
+          content: renderMovieResearchSection(movie)
+        },
+        {
+          kicker: 'Your Queue',
+          title: 'Add this movie to your personal lists',
+          content: renderMovieStatusActions(movie.id)
+        },
+        {
+          kicker: 'Connections',
+          title: 'Cast, directors, genres, and Oscar-nominated people',
+          content: `
+            <div class="detail-chip-row">
+              ${directorChips}
+              ${genreChips}
+              ${castChips}
+            </div>
+          `
+        },
+        {
+          kicker: 'Awards Trail',
+          title: 'Every nomination and win for this film',
+          content: `
+            <div class="awards-list">
+              ${movie.awards.map(award => `
+                <div class="award-entry">
+                  <div class="award-topline">
+                    <span>${award.category}</span>
+                    <span class="award-badge ${award.won ? 'winner' : 'nominee'}">${award.won ? 'Winner' : 'Nominee'}</span>
+                  </div>
+                  <div class="award-year">${award.yearLabel}</div>
+                  <div class="award-meta">${award.nominees.join(', ') || 'Nominee details unavailable'}</div>
+                </div>
+              `).join('')}
+            </div>
+          `
+        }
+      ]);
+
+      showModal();
+    }
+
+    function openCollectionDetail(kind, entity) {
+      const movieList = sortMovies(entity.movieIds);
+      const totalWins = movieList.reduce((sum, movie) => sum + movie.winCount, 0);
+      const totalNominations = movieList.reduce((sum, movie) => sum + movie.nominationCount, 0);
+      const name = kind === 'years' ? entity.year : entity.name;
+      const label = kind === 'years' ? 'Oscar Year' : kind.slice(0, -1).replace(/^\w/, letter => letter.toUpperCase());
+      const descriptionMap = {
+        actors: 'All Oscar-nominated and Oscar-winning films in this archive featuring the selected actor.',
+        directors: 'All Oscar-nominated and Oscar-winning films in this archive linked to the selected director.',
+        genres: 'Every Oscar-nominated and Oscar-winning film in this archive grouped under the selected genre.',
+        years: 'Every Oscar-nominated and Oscar-winning film represented for the selected Oscar ceremony year.'
+      };
+
+      modalIntro.innerHTML = `
+        <div class="section-kicker">${label} Detail</div>
+        <div class="modal-title">${name}</div>
+        <div class="modal-subtitle">${descriptionMap[kind]}</div>
+      `;
+
+      modalFacts.innerHTML = [
+        createFactCard('Movies', entity.movieCount, `${entity.winningMovieCount} of them have at least one Oscar win`),
+        createFactCard('Combined Wins', totalWins, `${totalNominations} total nominations across the linked films`),
+        createFactCard('First Film', movieList[movieList.length - 1]?.title || 'Unknown', movieList[movieList.length - 1]?.oscarYears.join(', ') || ''),
+        createFactCard('Latest Film', movieList[0]?.title || 'Unknown', movieList[0]?.oscarYears.join(', ') || '')
+      ].join('');
+
+      const spotlightChips = kind === 'actors' || kind === 'directors'
+        ? movieList.slice(0, 12).flatMap(movie => movie.genres.slice(0, 1)).filter(Boolean)
+        : kind === 'genres'
+          ? movieList.slice(0, 12).flatMap(movie => movie.directors.slice(0, 1)).filter(Boolean)
+          : movieList.slice(0, 12).flatMap(movie => movie.directors.slice(0, 1)).filter(Boolean);
+      const spotlightMarkup = Array.from(new Set(spotlightChips)).slice(0, 14).map(chip => {
+        const targetKind = kind === 'genres' ? 'directors' : 'genres';
+        return `<button type="button" class="detail-chip" data-kind="${targetKind}" data-id="${encodeURIComponent(chip)}">${chip}</button>`;
+      }).join('');
+
+      renderDetailSections([
+        {
+          kicker: 'Spotlight',
+          title: 'Useful jumps for continued research',
+          content: `
+            <div class="detail-chip-row">
+              ${spotlightMarkup || '<span class="tile-subtitle">No linked jump suggestions are available for this selection yet.</span>'}
+            </div>
+          `
+        },
+        {
+          kicker: 'Filmography',
+          title: 'Linked Oscar films',
+          content: `<div class="mini-movie-grid">${buildMovieMiniCards(entity.movieIds)}</div>`
+        }
+      ]);
+
+      showModal();
+    }
+
+    function showModal() {
+      detailModal.classList.add('active');
+      detailModal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeModal() {
+      detailModal.classList.remove('active');
+      detailModal.setAttribute('aria-hidden', 'true');
+      state.activeModal = null;
+    }
+
+    function rerenderActiveModal() {
+      if (!state.activeModal) return;
+      const entity = getEntityRecord(state.activeModal.kind, state.activeModal.id);
+      if (!entity) return;
+
+      if (state.activeModal.kind === 'movie') {
+        openMovieDetail(entity);
+        return;
+      }
+
+      openCollectionDetail(state.activeModal.kind, entity);
+    }
+
+    function openEntity(kind, rawId) {
+      const id = decodeURIComponent(rawId);
+      const entity = getEntityRecord(kind, id);
+      if (!entity) return;
+      state.activeModal = { kind, id };
+      if (kind === 'movie') {
+        openMovieDetail(entity);
+        return;
+      }
+      openCollectionDetail(kind, entity);
+    }
+
+    function openMovieLearnMore(movieId) {
+      const movie = getEntityRecord('movie', movieId);
+      if (!movie) return;
+      state.activeModal = { kind: 'movie', id: movieId };
+      openMovieDetail(movie, { loadResearch: true });
+    }
+
+    function refreshView() {
+      renderQuickPicks();
+      renderTiles();
+      renderMyLists();
+    }
+
+    async function initialize() {
+      tileGrid.innerHTML = '<div class="loading-state">Loading the Oscar archive...</div>';
+
+      try {
+        const data = window.OSCAR_ATLAS_DATA;
+        if (!data) throw new Error('The local Oscar Atlas data script is missing.');
+        state.data = data;
+        state.moviesById = new Map(data.movies.map(movie => [movie.id, movie]));
+        state.movieStatuses = loadMovieStatuses();
+        renderHeroStats();
+        refreshView();
+      } catch (error) {
+        resultsSummary.textContent = 'The Oscar archive could not be loaded.';
+        resultsHint.textContent = error.message || 'Check that the local JSON file exists next to this app.';
+        tileGrid.innerHTML = '<div class="empty-state">The explorer could not load its local movie dataset.</div>';
+      }
+    }
+
+    searchInput.addEventListener('input', event => {
+      state.query = event.target.value.trim();
+      renderTiles();
+    });
+
+    filterSelect.addEventListener('change', event => {
+      state.filter = event.target.value;
+      renderQuickPicks();
+      renderTiles();
+    });
+
+    quickPicks.addEventListener('click', event => {
+      const button = event.target.closest('[data-query]');
+      if (!button) return;
+      const nextQuery = button.dataset.query || '';
+      searchInput.value = nextQuery;
+      state.query = nextQuery.trim();
+      renderTiles();
+    });
+
+    watchedSearchInput.addEventListener('input', event => {
+      state.watchedQuery = event.target.value.trim();
+      renderMyLists();
+    });
+
+    toWatchSearchInput.addEventListener('input', event => {
+      state.toWatchQuery = event.target.value.trim();
+      renderMyLists();
+    });
+
+    exportListsBtn.addEventListener('click', async () => {
+      const keyword = promptSharedKeyword('Shared export');
+      if (!keyword) return;
+
+      const originalLabel = exportListsBtn.textContent;
+      exportListsBtn.disabled = true;
+      exportListsBtn.textContent = 'Exporting...';
+      setSyncStatus('Exporting your watched and to-watch lists...', '');
+
+      try {
+        await exportSharedLists(keyword);
+        const total = Object.keys(serializeMovieStatuses()).length;
+        setSyncStatus(`Shared export complete (${keyword}). Exported ${total} saved movie${total === 1 ? '' : 's'}.`, 'success');
+      } catch (error) {
+        setSyncStatus(error.message || 'Unable to export your lists right now.', 'error');
+      } finally {
+        exportListsBtn.disabled = false;
+        exportListsBtn.textContent = originalLabel;
+      }
+    });
+
+    importListsBtn.addEventListener('click', async () => {
+      const keyword = promptSharedKeyword('Shared import');
+      if (!keyword) return;
+
+      const originalLabel = importListsBtn.textContent;
+      const previousStatuses = { ...state.movieStatuses };
+      importListsBtn.disabled = true;
+      importListsBtn.textContent = 'Importing...';
+      setSyncStatus('Importing shared watched and to-watch lists...', '');
+
+      try {
+        const nextStatuses = await importSharedLists(keyword);
+        if (!nextStatuses) {
+          setSyncStatus(`No shared movie lists were found for keyword "${keyword}".`, '');
+          return;
+        }
+        state.movieStatuses = nextStatuses;
+        saveMovieStatuses();
+        renderTiles();
+        renderMyLists();
+        const importedCount = Object.keys(nextStatuses).filter(key => nextStatuses[key] !== previousStatuses[key]).length;
+        setSyncStatus(
+          `Shared import complete (${keyword}). Your local lists were merged with ${importedCount} updated entr${importedCount === 1 ? 'y' : 'ies'}.`,
+          'success'
+        );
+      } catch (error) {
+        state.movieStatuses = previousStatuses;
+        setSyncStatus(error.message || 'Unable to import your lists right now.', 'error');
+      } finally {
+        importListsBtn.disabled = false;
+        importListsBtn.textContent = originalLabel;
+      }
+    });
+
+    tileGrid.addEventListener('click', event => {
+      const learnButton = event.target.closest('[data-action="learn-more"][data-movie-id]');
+      if (learnButton) {
+        event.stopPropagation();
+        openMovieLearnMore(learnButton.dataset.movieId);
+        return;
+      }
+
+      const statusButton = event.target.closest('[data-action="status"][data-movie-id]');
+      if (statusButton) {
+        event.stopPropagation();
+        setMovieStatus(statusButton.dataset.movieId, statusButton.dataset.status);
+        return;
+      }
+
+      const tile = event.target.closest('.tile');
+      if (!tile) return;
+      openEntity(tile.dataset.kind, tile.dataset.id);
+    });
+
+    watchedList.addEventListener('click', event => {
+      const learnButton = event.target.closest('[data-action="learn-more"][data-movie-id]');
+      if (learnButton) {
+        event.stopPropagation();
+        openMovieLearnMore(learnButton.dataset.movieId);
+        return;
+      }
+
+      const statusButton = event.target.closest('[data-action="status"][data-movie-id]');
+      if (statusButton) {
+        event.stopPropagation();
+        setMovieStatus(statusButton.dataset.movieId, statusButton.dataset.status);
+        return;
+      }
+
+      const tile = event.target.closest('[data-kind][data-id]');
+      if (!tile) return;
+      openEntity(tile.dataset.kind, tile.dataset.id);
+    });
+
+    toWatchList.addEventListener('click', event => {
+      const learnButton = event.target.closest('[data-action="learn-more"][data-movie-id]');
+      if (learnButton) {
+        event.stopPropagation();
+        openMovieLearnMore(learnButton.dataset.movieId);
+        return;
+      }
+
+      const statusButton = event.target.closest('[data-action="status"][data-movie-id]');
+      if (statusButton) {
+        event.stopPropagation();
+        setMovieStatus(statusButton.dataset.movieId, statusButton.dataset.status);
+        return;
+      }
+
+      const tile = event.target.closest('[data-kind][data-id]');
+      if (!tile) return;
+      openEntity(tile.dataset.kind, tile.dataset.id);
+    });
+
+    detailModal.addEventListener('click', event => {
+      if (event.target === detailModal) {
+        closeModal();
+        return;
+      }
+
+      const researchTab = event.target.closest('[data-action="research-tab"][data-movie-id][data-tab]');
+      if (researchTab) {
+        event.stopPropagation();
+        setResearchTab(researchTab.dataset.movieId, researchTab.dataset.tab);
+        return;
+      }
+
+      const learnButton = event.target.closest('[data-action="learn-more"][data-movie-id]');
+      if (learnButton) {
+        event.stopPropagation();
+        openMovieLearnMore(learnButton.dataset.movieId);
+        return;
+      }
+
+      const statusButton = event.target.closest('[data-action="status"][data-movie-id]');
+      if (statusButton) {
+        event.stopPropagation();
+        setMovieStatus(statusButton.dataset.movieId, statusButton.dataset.status);
+        return;
+      }
+
+      const button = event.target.closest('[data-kind][data-id]');
+      if (!button) return;
+      openEntity(button.dataset.kind, button.dataset.id);
+    });
+
+    closeModalBtn.addEventListener('click', closeModal);
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && detailModal.classList.contains('active')) {
+        closeModal();
+      }
+    });
+
+    initialize();
+  </script>
+  <script>window.APP_TELEMETRY_ID = "oscar-atlas";</script>
+  <script src="app-telemetry.js?v=20260311-worker2" defer></script>
+</body>
+</html>
