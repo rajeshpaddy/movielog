@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+target="${1:-app-catalog.html}"
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+if [[ "$target" = /* ]]; then
+  resolved_path="$target"
+else
+  resolved_path="$repo_root/$target"
+fi
+
+if [[ ! -f "$resolved_path" ]]; then
+  echo "File not found: $target" >&2
+  exit 1
+fi
+
+chromium --new-window "file://$resolved_path"

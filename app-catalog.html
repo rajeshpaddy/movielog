@@ -147,28 +147,93 @@
     .search-input:focus { outline: none; box-shadow: 0 0 15px rgba(0, 217, 255, 0.3); }
     .catalog-tabs {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       margin-bottom: 18px;
       flex-wrap: wrap;
+      padding: 8px;
+      border-radius: 20px;
+      background: linear-gradient(180deg, rgba(10, 24, 46, 0.96), rgba(8, 18, 35, 0.92));
+      border: 1px solid rgba(0, 217, 255, 0.14);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
     }
     .catalog-tab {
-      border: 1px solid rgba(0, 217, 255, 0.18);
-      background: rgba(12, 28, 52, 0.92);
+      flex: 1 1 220px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      text-align: left;
+      border: 1px solid transparent;
+      background: rgba(12, 28, 52, 0.4);
       color: #9dc6e4;
-      border-radius: 999px;
-      padding: 10px 16px;
+      border-radius: 14px;
+      padding: 14px 16px;
       font-size: 14px;
       font-weight: 700;
       cursor: pointer;
-      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    .catalog-tab:hover {
+      border-color: rgba(0, 217, 255, 0.18);
+      background: rgba(14, 34, 63, 0.72);
+    }
+    .catalog-tab:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.18);
+    }
+    .catalog-tab-copy {
+      min-width: 0;
+    }
+    .catalog-tab-title {
+      display: block;
+      color: #e9fbff;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+    }
+    .catalog-tab-desc {
+      display: block;
+      margin-top: 3px;
+      color: #7fa0c0;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.35;
+    }
+    .catalog-tab-indicator {
+      flex: 0 0 auto;
+      display: inline-grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 217, 255, 0.14);
+      background: rgba(0, 0, 0, 0.18);
+      color: #7fdfff;
+      font-size: 14px;
+      font-weight: 900;
     }
     .catalog-tab.active {
       background: linear-gradient(135deg, #00d9ff, #43f0c7);
       color: #061019;
-      border-color: transparent;
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 10px 24px rgba(0, 217, 255, 0.2);
+      transform: translateY(-1px);
+    }
+    .catalog-tab.active .catalog-tab-title,
+    .catalog-tab.active .catalog-tab-desc {
+      color: #061019;
+    }
+    .catalog-tab.active .catalog-tab-indicator {
+      border-color: rgba(6, 16, 25, 0.16);
+      background: rgba(6, 16, 25, 0.14);
+      color: #061019;
     }
     .catalog-panel {
       display: none;
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid rgba(0, 217, 255, 0.12);
+      background: linear-gradient(180deg, rgba(8, 18, 35, 0.72), rgba(11, 24, 44, 0.42));
     }
     .catalog-panel.active {
       display: block;
@@ -573,6 +638,9 @@
     @media (max-width: 640px) {
       .webapp-form { grid-template-columns: 1fr; }
       .webapp-actions { flex-direction: column; align-items: stretch; }
+      .catalog-tab {
+        flex-basis: 100%;
+      }
     }
   </style>
 </head>
@@ -586,12 +654,38 @@
       <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search apps...">
     </div>
 
-    <div class="catalog-tabs" id="catalogTabs">
-      <button type="button" class="catalog-tab active" data-tab="apps">Apps</button>
-      <button type="button" class="catalog-tab" data-tab="tiles">Images & URLs</button>
+    <div class="catalog-tabs" id="catalogTabs" role="tablist" aria-label="Catalog views">
+      <button
+        type="button"
+        class="catalog-tab active"
+        data-tab="apps"
+        id="catalogTabApps"
+        role="tab"
+        aria-selected="true"
+        aria-controls="appsPanel">
+        <span class="catalog-tab-copy">
+          <span class="catalog-tab-title">Apps</span>
+          <span class="catalog-tab-desc">Browse built-in tools and catalog entries</span>
+        </span>
+        <span class="catalog-tab-indicator" aria-hidden="true">A</span>
+      </button>
+      <button
+        type="button"
+        class="catalog-tab"
+        data-tab="tiles"
+        id="catalogTabTiles"
+        role="tab"
+        aria-selected="false"
+        aria-controls="tilesPanel">
+        <span class="catalog-tab-copy">
+          <span class="catalog-tab-title">Images & URLs</span>
+          <span class="catalog-tab-desc">Manage custom website shortcuts and image tiles</span>
+        </span>
+        <span class="catalog-tab-indicator" aria-hidden="true">+</span>
+      </button>
     </div>
 
-    <div class="catalog-panel active" id="appsPanel">
+    <div class="catalog-panel active" id="appsPanel" role="tabpanel" aria-labelledby="catalogTabApps">
       <a class="video-tile" href="https://rajeshpaddy.github.io/movielog/catalog-guide-chat.html">
         <span class="app-usage-badge is-loading" data-telemetry-id="catalog-guide-chat">Loading...</span>
         <div class="video-tile-title">🧭 Catalog Guide Chat</div>
@@ -600,7 +694,7 @@
       <div class="app-grid" id="appGrid"></div>
     </div>
 
-    <div class="catalog-panel" id="tilesPanel">
+    <div class="catalog-panel" id="tilesPanel" role="tabpanel" aria-labelledby="catalogTabTiles" aria-hidden="true">
       <section class="webapp-composer">
         <div class="webapp-composer-head">
           <div class="webapp-composer-title">Add a Custom Tile</div>
@@ -1313,10 +1407,15 @@
     function setActiveCatalogTab(tab) {
       activeCatalogTab = tab === 'tiles' ? 'tiles' : 'apps';
       catalogTabButtons.forEach(button => {
-        button.classList.toggle('active', button.dataset.tab === activeCatalogTab);
+        const isActive = button.dataset.tab === activeCatalogTab;
+        button.classList.toggle('active', isActive);
+        button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        button.tabIndex = isActive ? 0 : -1;
       });
       appsPanel.classList.toggle('active', activeCatalogTab === 'apps');
+      appsPanel.setAttribute('aria-hidden', activeCatalogTab === 'apps' ? 'false' : 'true');
       tilesPanel.classList.toggle('active', activeCatalogTab === 'tiles');
+      tilesPanel.setAttribute('aria-hidden', activeCatalogTab === 'tiles' ? 'false' : 'true');
       applySearchQuery(searchInput.value);
     }
 
