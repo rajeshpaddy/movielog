@@ -13,6 +13,25 @@
     .tab { flex: 1; padding: 15px; background: #16213e; border: none; border-radius: 10px; color: #888; font-size: 18px; cursor: pointer; }
     .tab.active { background: #0f3460; color: #00d9ff; }
     .tab:hover:not(.active) { background: #1a2a4a; }
+    .transfer-bar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+    .transfer-btn {
+      background: #16213e;
+      color: #eee;
+      border: 1px solid #0f3460;
+      border-radius: 999px;
+      padding: 10px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .transfer-btn:hover { background: #1a2a4a; }
+    .status {
+      min-height: 24px;
+      margin-bottom: 18px;
+      color: #9ee7ff;
+      font-size: 14px;
+    }
+    .status.error { color: #ff9eb0; }
     .view { display: none; }
     .view.active { display: block; }
     .month-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #16213e; padding: 15px; border-radius: 10px; }
@@ -86,6 +105,13 @@
   <div class="container">
     <h1>Monthly Bill Tracker</h1>
     
+    <div class="transfer-bar">
+      <button id="exportSharedBtn" class="transfer-btn" type="button">Cloud Export</button>
+      <button id="importSharedBtn" class="transfer-btn" type="button">Cloud Import</button>
+    </div>
+    
+    <div id="status" class="status" aria-live="polite"></div>
+    
     <div class="tabs">
       <button class="tab active" data-tab="monthly">Monthly</button>
       <button class="tab" data-tab="yearly">Yearly</button>
@@ -127,8 +153,17 @@
 
   <script>
     const STORAGE_KEY = 'billTrackerData';
+    const APP_ID = 'bill-tracker';
     let currentDate = new Date();
     let currentYear = new Date().getFullYear();
+    const statusEl = document.getElementById('status');
+    const exportSharedBtn = document.getElementById('exportSharedBtn');
+    const importSharedBtn = document.getElementById('importSharedBtn');
+
+    function setStatus(message, isError) {
+      statusEl.textContent = message || '';
+      statusEl.classList.toggle('error', !!isError);
+    }
     
     function getStorage() {
       const data = localStorage.getItem(STORAGE_KEY);
@@ -137,6 +172,102 @@
     
     function saveStorage(data) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function normalizeKeyword(rawValue) {
+      const raw = String(rawValue || '').trim().toLowerCase();
+      if (!raw) return '';
+      return raw.replaceAll(/\s+/g, '-').replaceAll(/[^a-z0-9-_]/g, '');
+    }
+
+    function promptKeyword(actionLabel) {
+      const value = prompt(`${actionLabel}: enter a keyword`, '');
+      if (value == null) return '';
+      const keyword = normalizeKeyword(value);
+      if (!keyword) {
+        setStatus('Keyword is required and must contain letters or numbers.', true);
+      }
+      return keyword;
+    }
+
+    function getSharedKey(keyword) {
+      return window.AppSharedStore.buildSharedKey(APP_ID, keyword);
+    }
+
+    function sanitizeStorageShape(input) {
+      if (!input || typeof input !== 'object' || Array.isArray(input)) {
+        throw new Error('Imported bill data format is invalid.');
+      }
+
+      const sanitized = {};
+
+      Object.entries(input).forEach(([monthKey, bills]) => {
+        if (!/^\d{4}-\d{2}$/.test(monthKey) || !Array.isArray(bills)) {
+          return;
+        }
+
+        sanitized[monthKey] = bills
+          .filter(bill => bill && typeof bill === 'object')
+          .map(bill => {
+            const name = String(bill.name || '').trim();
+            const amount = Number(bill.amount);
+            const paid = Boolean(bill.paid);
+            if (!name || !Number.isFinite(amount) || amount < 0) {
+              return null;
+            }
+            return { name, amount, paid };
+          })
+          .filter(Boolean);
+      });
+
+      return sanitized;
+    }
+
+    function getStorageStats(storage) {
+      const months = Object.keys(storage).length;
+      const bills = Object.values(storage).reduce((sum, monthBills) => sum + monthBills.length, 0);
+      return { months, bills };
+    }
+
+    async function exportSharedData() {
+      const keyword = promptKeyword('Cloud export');
+      if (!keyword) return;
+
+      const payload = {
+        app: APP_ID,
+        version: 1,
+        keyword,
+        exportedAt: new Date().toISOString(),
+        data: getStorage()
+      };
+
+      try {
+        await window.AppSharedStore.putSharedContent(getSharedKey(keyword), payload);
+        const stats = getStorageStats(payload.data);
+        setStatus(`Shared export complete (${keyword}). Saved ${stats.bills} bills across ${stats.months} months.`, false);
+      } catch (error) {
+        setStatus(error.message || 'Shared export failed.', true);
+      }
+    }
+
+    async function importSharedData() {
+      const keyword = promptKeyword('Cloud import');
+      if (!keyword) return;
+
+      try {
+        const payload = await window.AppSharedStore.getSharedContent(getSharedKey(keyword));
+        if (!payload || payload.app !== APP_ID) {
+          throw new Error('Shared data format is invalid.');
+        }
+
+        const sanitized = sanitizeStorageShape(payload.data);
+        saveStorage(sanitized);
+        const stats = getStorageStats(sanitized);
+        render();
+        setStatus(`Shared import complete (${keyword}). Loaded ${stats.bills} bills across ${stats.months} months.`, false);
+      } catch (error) {
+        setStatus(error.message || 'Shared import failed.', true);
+      }
     }
     
     function getMonthKey(date) {
@@ -377,6 +508,8 @@
     });
     
     document.getElementById('carryoverBtn').addEventListener('click', copyFromPreviousMonth);
+    exportSharedBtn.addEventListener('click', exportSharedData);
+    importSharedBtn.addEventListener('click', importSharedData);
     
     render();
   </script>
