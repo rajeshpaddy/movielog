@@ -8,6 +8,8 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import csv
+import html
+import re
 from collections import defaultdict
 from io import StringIO
 from pathlib import Path
@@ -16,9 +18,36 @@ from pathlib import Path
 NOMINATIONS_URL = "https://raw.githubusercontent.com/delventhalz/json-nominations/main/oscar-nominations.json"
 SUPPLEMENTAL_RECENT_URL = "https://raw.githubusercontent.com/DLu/oscar_data/main/oscars.csv"
 WIKIDATA_ENDPOINT = "https://query.wikidata.org/sparql"
+OSCARS_CEREMONY_TEMPLATE = "https://www.oscars.org/oscars/ceremonies/{year}"
 USER_AGENT = "movielog-oscar-explorer/1.0 (https://github.com/rajeshpaddy/movielog)"
 CHUNK_SIZE = 140
 REQUEST_PAUSE_SECONDS = 0.25
+OFFICIAL_WINNER_RECORDS_2026 = [
+    {"year": 2026, "category": "Actor in a Leading Role", "movieTitle": "Sinners", "nomineeCandidates": ["Michael B. Jordan"]},
+    {"year": 2026, "category": "Actor in a Supporting Role", "movieTitle": "One Battle after Another", "nomineeCandidates": ["Sean Penn"]},
+    {"year": 2026, "category": "Actress in a Leading Role", "movieTitle": "Hamnet", "nomineeCandidates": ["Jessie Buckley"]},
+    {"year": 2026, "category": "Actress in a Supporting Role", "movieTitle": "Weapons", "nomineeCandidates": ["Amy Madigan"]},
+    {"year": 2026, "category": "Animated Feature Film", "movieTitle": "KPop Demon Hunters", "nomineeCandidates": ["Chris Appelhans", "Maggie Kang", "Michelle L.M. Wong"]},
+    {"year": 2026, "category": "Animated Short Film", "movieTitle": "The Girl Who Cried Pearls", "nomineeCandidates": ["Chris Lavis", "Maciek Szczerbowski"]},
+    {"year": 2026, "category": "Casting", "movieTitle": "One Battle after Another", "nomineeCandidates": ["Cassandra Kulukundis"]},
+    {"year": 2026, "category": "Cinematography", "movieTitle": "Sinners", "nomineeCandidates": ["Autumn Durald Arkapaw"]},
+    {"year": 2026, "category": "Costume Design", "movieTitle": "Frankenstein", "nomineeCandidates": ["Kate Hawley"]},
+    {"year": 2026, "category": "Directing", "movieTitle": "One Battle after Another", "nomineeCandidates": ["Paul Thomas Anderson"]},
+    {"year": 2026, "category": "Documentary Feature Film", "movieTitle": "Mr. Nobody against Putin", "nomineeCandidates": ["Alzbeta Karaskova", "David Borenstein", "Helle Faber", "Pavel Talankin"]},
+    {"year": 2026, "category": "Documentary Short Film", "movieTitle": "All the Empty Rooms", "nomineeCandidates": ["Conall Jones", "Joshua Seftel"]},
+    {"year": 2026, "category": "Film Editing", "movieTitle": "One Battle after Another", "nomineeCandidates": ["Andy Jurgensen"]},
+    {"year": 2026, "category": "International Feature Film", "movieTitle": "Sentimental Value", "nomineeCandidates": ["Sentimental Value"]},
+    {"year": 2026, "category": "Live Action Short Film", "movieTitle": "The Singers", "nomineeCandidates": ["Alexandre Singh", "Jack Piatt", "Natalie Musteata", "Sam A. Davis"]},
+    {"year": 2026, "category": "Makeup and Hairstyling", "movieTitle": "Frankenstein", "nomineeCandidates": ["Cliona Furey", "Jordan Samuel", "Mike Hill"]},
+    {"year": 2026, "category": "Music (Original Score)", "movieTitle": "Sinners", "nomineeCandidates": ["Ludwig Goransson"]},
+    {"year": 2026, "category": "Music (Original Song)", "movieTitle": "KPop Demon Hunters", "nomineeCandidates": ["EJAE", "Hee Dong Nam", "Jeong Hoon Seo", "Joong Gyu Kwak", "Mark Sonnenblick", "Teddy Park", "Yu Han Lee"]},
+    {"year": 2026, "category": "Best Picture", "movieTitle": "One Battle after Another", "nomineeCandidates": ["Adam Somner", "Paul Thomas Anderson", "Sara Murphy"]},
+    {"year": 2026, "category": "Production Design", "movieTitle": "Frankenstein", "nomineeCandidates": ["Tamara Deverell", "Shane Vieau"]},
+    {"year": 2026, "category": "Sound", "movieTitle": "F1", "nomineeCandidates": ["Al Nelson", "Gareth John", "Gary A. Rizzo", "Gwendolyn Yates Whittle", "Juan Peralta"]},
+    {"year": 2026, "category": "Visual Effects", "movieTitle": "Avatar: Fire and Ash", "nomineeCandidates": ["Daniel Barrett", "Eric Saindon", "Joe Letteri", "Richard Baneham"]},
+    {"year": 2026, "category": "Writing (Adapted Screenplay)", "movieTitle": "One Battle after Another", "nomineeCandidates": ["Paul Thomas Anderson"]},
+    {"year": 2026, "category": "Writing (Original Screenplay)", "movieTitle": "Sinners", "nomineeCandidates": ["Ryan Coogler"]},
+]
 
 
 def fetch_json(url):
@@ -75,6 +104,10 @@ def compact_name_list(items):
     return sorted({value.strip() for value in items if str(value).strip()}, key=str.casefold)
 
 
+def normalize_key(value):
+    return re.sub(r"[^a-z0-9]+", "", str(value or "").casefold())
+
+
 def build_recent_nominations_from_tsv(tsv_text, release_year_min=2023):
     reader = csv.DictReader(StringIO(tsv_text), delimiter="\t")
     entries = []
@@ -116,6 +149,158 @@ def build_recent_nominations_from_tsv(tsv_text, release_year_min=2023):
         )
 
     return entries
+
+
+def fetch_html(url):
+    request = urllib.request.Request(
+        url,
+        headers={
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "User-Agent": USER_AGENT,
+        },
+    )
+    with urllib.request.urlopen(request, timeout=60) as response:
+        return response.read().decode("utf-8")
+
+
+def clean_html_text(value):
+    text = html.unescape(re.sub(r"<.*?>", "", value or ""))
+    return " ".join(text.replace("\xa0", " ").split())
+
+
+def extract_name_candidates(raw_text):
+    text = clean_html_text(raw_text)
+    if not text:
+        return []
+
+    text = re.sub(r"^from\s+.+?;\s*", "", text, flags=re.IGNORECASE)
+    text = re.sub(
+        r"^(music and lyric by|music by|lyric by|lyrics by|written by|screenplay by|adapted screenplay by|story by)\s+",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(r",\s*producers?$", "", text, flags=re.IGNORECASE)
+    text = text.replace("&", " and ")
+
+    parts = []
+    for segment in text.split(";"):
+        for chunk in re.split(r",|\band\b", segment):
+            value = " ".join(chunk.split()).strip()
+            if value:
+                parts.append(value)
+
+    return compact_name_list(parts)
+
+
+def extract_song_movie_title(entity_text):
+    match = re.search(r"from\s+(.+?);", clean_html_text(entity_text), flags=re.IGNORECASE)
+    return match.group(1).strip() if match else ""
+
+
+def parse_official_winner_records(ceremony_html, ceremony_year):
+    category_starts = [match.start() for match in re.finditer(r'<div data-term-id="\d+" class="paragraph paragraph--type--award-category', ceremony_html)]
+    records = []
+
+    for index, start in enumerate(category_starts):
+        end = category_starts[index + 1] if index + 1 < len(category_starts) else len(ceremony_html)
+        block = ceremony_html[start:end]
+        category_match = re.search(r'field--name-field-award-category-oscars[^>]*>(.*?)</div>', block, flags=re.DOTALL)
+        winner_match = re.search(
+            r'field field--name-field-honoree-type winner">Winner</div>(.*?)<div class="field field--name-field-honoree-type nominee',
+            block,
+            flags=re.DOTALL,
+        )
+        if not category_match or not winner_match:
+            continue
+
+        category = clean_html_text(category_match.group(1))
+        winner_block = winner_match.group(1)
+        award_film_match = re.search(r'field field--name-field-award-film[^>]*>(.*?)</div>', winner_block, flags=re.DOTALL)
+        entity_matches = re.findall(r'<div class="field__item">(.*?)</div>', winner_block, flags=re.DOTALL)
+
+        award_film = clean_html_text(award_film_match.group(1)) if award_film_match else ""
+        entities = [clean_html_text(entity) for entity in entity_matches if clean_html_text(entity)]
+
+        movie_title = award_film
+        if category == "International Feature Film":
+            movie_title = entities[0] if entities else award_film
+        elif category == "Music (Original Song)":
+            movie_title = ""
+            for entity in entities:
+                movie_title = extract_song_movie_title(entity)
+                if movie_title:
+                    break
+            movie_title = movie_title or award_film
+
+        records.append(
+            {
+                "year": ceremony_year,
+                "category": category,
+                "movieTitle": movie_title,
+                "nomineeCandidates": compact_name_list(
+                    candidate
+                    for entity in entities
+                    for candidate in extract_name_candidates(entity)
+                ),
+            }
+        )
+
+    return records
+
+
+def apply_official_winner_records(nominations, winner_records):
+    winners_by_key = {(str(record["year"]), record["category"]): record for record in winner_records}
+    grouped_entries = defaultdict(list)
+    for entry in nominations:
+        grouped_entries[(str(entry.get("year", "")), str(entry.get("category", "")).strip())].append(entry)
+
+    for key, record in winners_by_key.items():
+        entries = grouped_entries.get(key, [])
+        if not entries:
+            continue
+
+        movie_key = normalize_key(record.get("movieTitle"))
+        nominee_keys = {normalize_key(value) for value in record.get("nomineeCandidates", []) if normalize_key(value)}
+
+        for entry in entries:
+            entry["won"] = False
+
+        matched_entries = []
+        movie_matched_entries = []
+        nominee_matched_entries = []
+
+        for entry in entries:
+            entry_movie_keys = {
+                normalize_key(movie.get("title"))
+                for movie in entry.get("movies", [])
+                if normalize_key(movie.get("title"))
+            }
+            entry_nominee_keys = {
+                normalize_key(nominee)
+                for nominee in entry.get("nominees", [])
+                if normalize_key(nominee)
+            }
+            movie_matches = bool(movie_key and movie_key in entry_movie_keys)
+            nominee_matches = bool(nominee_keys and nominee_keys.intersection(entry_nominee_keys))
+
+            if movie_matches:
+                movie_matched_entries.append(entry)
+            if nominee_matches:
+                nominee_matched_entries.append(entry)
+            if movie_matches and nominee_matches:
+                matched_entries.append(entry)
+
+        if not matched_entries and nominee_matched_entries:
+            matched_entries = nominee_matched_entries
+
+        if not matched_entries and movie_matched_entries:
+            matched_entries = movie_matched_entries[:1] if len(movie_matched_entries) > 1 else movie_matched_entries
+
+        for entry in matched_entries:
+            entry["won"] = True
+
+    return nominations
 
 
 def build_movie_records(nominations):
@@ -375,6 +560,11 @@ def main():
     nominations = fetch_json(NOMINATIONS_URL)
     supplemental_recent = build_recent_nominations_from_tsv(fetch_text(SUPPLEMENTAL_RECENT_URL))
     nominations = [entry for entry in nominations if parse_ceremony_year(entry["year"]) < 2024] + supplemental_recent
+    try:
+        official_2026_records = parse_official_winner_records(fetch_html(OSCARS_CEREMONY_TEMPLATE.format(year=2026)), 2026)
+    except urllib.error.HTTPError:
+        official_2026_records = OFFICIAL_WINNER_RECORDS_2026
+    nominations = apply_official_winner_records(nominations, official_2026_records)
     movies = build_movie_records(nominations)
     print(f"Loaded {len(nominations)} nomination entries and {len(movies)} unique films.", file=sys.stderr)
     movies = enrich_movies(movies)
@@ -384,6 +574,7 @@ def main():
         "sources": [
             NOMINATIONS_URL,
             SUPPLEMENTAL_RECENT_URL,
+            OSCARS_CEREMONY_TEMPLATE.format(year=2026),
             "https://query.wikidata.org/",
         ],
         "stats": {
