@@ -62,7 +62,7 @@
 
     .app-shell {
       display: grid;
-      grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+      grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
       gap: 24px;
       align-items: start;
     }
@@ -163,6 +163,88 @@
 
     .status.error {
       color: var(--danger);
+    }
+
+    .sidebar {
+      display: grid;
+      gap: 18px;
+    }
+
+    .countdown-list {
+      display: grid;
+      gap: 10px;
+      max-height: 540px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .countdown-item {
+      width: 100%;
+      text-align: left;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--ink);
+      border-radius: 20px;
+      padding: 14px 16px;
+      cursor: pointer;
+      display: grid;
+      gap: 6px;
+    }
+
+    .countdown-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 209, 102, 0.28);
+    }
+
+    .countdown-item.active {
+      background: rgba(255, 209, 102, 0.12);
+      border-color: rgba(255, 209, 102, 0.44);
+      box-shadow: 0 0 0 1px rgba(255, 209, 102, 0.18);
+    }
+
+    .countdown-item-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .countdown-item-name {
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+    }
+
+    .countdown-item-days {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .countdown-item-date {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .empty-list {
+      border: 1px dashed rgba(255, 255, 255, 0.16);
+      border-radius: 20px;
+      padding: 24px 18px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .detail-actions {
+      margin-top: 18px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
     }
 
     .display {
@@ -371,26 +453,38 @@
     </section>
 
     <section class="app-shell">
-      <div class="panel">
-        <div class="controls-title">Countdown Setup</div>
+      <div class="sidebar">
+        <div class="panel">
+          <div class="controls-title">Countdown Setup</div>
 
-        <div class="field">
-          <label for="targetDate">Target date</label>
-          <input type="date" id="targetDate">
+          <div class="field">
+            <label for="eventName">Event name</label>
+            <input type="text" id="eventName" placeholder="Birthday, trip, launch day, anniversary">
+          </div>
+
+          <div class="field">
+            <label for="targetDate">Target date</label>
+            <input type="date" id="targetDate">
+          </div>
+
+          <div class="field">
+            <label for="eventMessage">Message for the event</label>
+            <textarea id="eventMessage" placeholder="A special line to show below the big day count"></textarea>
+          </div>
+
+          <div class="button-row">
+            <button class="btn btn-primary" id="saveBtn" type="button">Save Countdown</button>
+            <button class="btn btn-secondary" id="newBtn" type="button">New Countdown</button>
+          </div>
+
+          <div id="status" class="status" aria-live="polite"></div>
+          <p class="helper-text">Each saved countdown appears below with the event name and day count. Pick one on the left to show it in the big calendar on the right.</p>
         </div>
 
-        <div class="field">
-          <label for="eventMessage">Message for the event</label>
-          <textarea id="eventMessage" placeholder="Wedding day, move-in day, trip to Japan, graduation, or anything else you want to count toward"></textarea>
+        <div class="panel">
+          <div class="controls-title">Saved Countdowns</div>
+          <div id="countdownList" class="countdown-list" aria-live="polite"></div>
         </div>
-
-        <div class="button-row">
-          <button class="btn btn-primary" id="saveBtn" type="button">Save Countdown</button>
-          <button class="btn btn-secondary" id="resetBtn" type="button">Reset</button>
-        </div>
-
-        <div id="status" class="status" aria-live="polite"></div>
-        <p class="helper-text">The countdown updates automatically and stays saved in this browser, so you can keep one special date pinned and visible.</p>
       </div>
 
       <div class="panel display">
@@ -409,6 +503,10 @@
           </div>
           <div class="message-line" id="messageLine">Set a date and message to see your countdown story here.</div>
           <div class="message-subline" id="messageSubline">The big number shows calendar days between today and your selected date.</div>
+          <div class="detail-actions">
+            <button class="btn btn-secondary" id="editBtn" type="button">Edit Selected</button>
+            <button class="btn btn-secondary" id="deleteBtn" type="button">Delete Selected</button>
+          </div>
         </div>
       </div>
     </section>
@@ -418,11 +516,15 @@
     const STORAGE_KEY = 'daysCountdownState';
     const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
+    const eventNameInput = document.getElementById('eventName');
     const targetDateInput = document.getElementById('targetDate');
     const eventMessageInput = document.getElementById('eventMessage');
     const saveBtn = document.getElementById('saveBtn');
-    const resetBtn = document.getElementById('resetBtn');
+    const newBtn = document.getElementById('newBtn');
+    const editBtn = document.getElementById('editBtn');
+    const deleteBtn = document.getElementById('deleteBtn');
     const statusEl = document.getElementById('status');
+    const countdownListEl = document.getElementById('countdownList');
     const calendarMonthEl = document.getElementById('calendarMonth');
     const calendarYearEl = document.getElementById('calendarYear');
     const countNumberEl = document.getElementById('countNumber');
@@ -430,6 +532,11 @@
     const targetDateTextEl = document.getElementById('targetDateText');
     const messageLineEl = document.getElementById('messageLine');
     const messageSublineEl = document.getElementById('messageSubline');
+    let state = {
+      items: [],
+      selectedId: null,
+      editingId: null
+    };
 
     function setStatus(message, isError) {
       statusEl.textContent = message || '';
@@ -444,6 +551,10 @@
     }
 
     function normalizeMessage(value) {
+      return String(value || '').trim().replaceAll(/\s+/g, ' ');
+    }
+
+    function normalizeName(value) {
       return String(value || '').trim().replaceAll(/\s+/g, ' ');
     }
 
@@ -473,10 +584,12 @@
       });
     }
 
-    function getDefaultState() {
+    function getDefaultCountdown() {
       const tomorrow = startOfToday();
       tomorrow.setDate(tomorrow.getDate() + 30);
       return {
+        id: `cd-${Date.now()}`,
+        name: 'Big Event',
         targetDate: toDateInputValue(tomorrow),
         message: 'the big event'
       };
@@ -485,44 +598,179 @@
     function loadState() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return getDefaultState();
+        if (!raw) {
+          const item = getDefaultCountdown();
+          return { items: [item], selectedId: item.id };
+        }
         const parsed = JSON.parse(raw);
-        if (!parsed || typeof parsed !== 'object') return getDefaultState();
+        if (!parsed || typeof parsed !== 'object') throw new Error('Invalid storage');
+        const items = Array.isArray(parsed.items) ? parsed.items.map(item => ({
+          id: String(item.id || `cd-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`),
+          name: normalizeName(item.name || '') || 'Untitled Event',
+          targetDate: typeof item.targetDate === 'string' ? item.targetDate : '',
+          message: normalizeMessage(item.message || '')
+        })).filter(item => parseInputDate(item.targetDate)) : [];
+        if (!items.length) {
+          const item = getDefaultCountdown();
+          return { items: [item], selectedId: item.id };
+        }
         return {
-          targetDate: typeof parsed.targetDate === 'string' ? parsed.targetDate : getDefaultState().targetDate,
-          message: normalizeMessage(parsed.message || '') || getDefaultState().message
+          items,
+          selectedId: items.some(item => item.id === parsed.selectedId) ? parsed.selectedId : items[0].id
         };
       } catch (error) {
-        return getDefaultState();
+        const item = getDefaultCountdown();
+        return { items: [item], selectedId: item.id };
       }
     }
 
-    function saveState() {
+    function persistState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        items: state.items,
+        selectedId: state.selectedId
+      }));
+    }
+
+    function getSelectedCountdown() {
+      return state.items.find(item => item.id === state.selectedId) || null;
+    }
+
+    function saveCountdown() {
+      const name = normalizeName(eventNameInput.value);
       const targetDate = targetDateInput.value;
       const message = normalizeMessage(eventMessageInput.value);
+      if (!name) {
+        setStatus('Please enter an event name.', true);
+        return false;
+      }
       if (!targetDate) {
         setStatus('Please choose a target date first.', true);
         return false;
       }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ targetDate, message }));
-      setStatus('Countdown saved locally.', false);
+
+      if (state.editingId) {
+        state.items = state.items.map(item => item.id === state.editingId ? { ...item, name, targetDate, message } : item);
+        state.selectedId = state.editingId;
+        setStatus('Countdown updated.', false);
+      } else {
+        const item = {
+          id: `cd-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          name,
+          targetDate,
+          message
+        };
+        state.items.unshift(item);
+        state.selectedId = item.id;
+        setStatus('Countdown added.', false);
+      }
+
+      state.editingId = null;
+      persistState();
       return true;
     }
 
-    function resetState() {
-      const state = getDefaultState();
-      targetDateInput.value = state.targetDate;
+    function startNewCountdown() {
+      state.editingId = null;
+      eventNameInput.value = '';
+      targetDateInput.value = '';
       eventMessageInput.value = '';
-      localStorage.removeItem(STORAGE_KEY);
+      setStatus('Ready for a new countdown.', false);
+    }
+
+    function editSelectedCountdown() {
+      const item = getSelectedCountdown();
+      if (!item) {
+        setStatus('Select a countdown to edit.', true);
+        return;
+      }
+      state.editingId = item.id;
+      eventNameInput.value = item.name;
+      targetDateInput.value = item.targetDate;
+      eventMessageInput.value = item.message;
+      setStatus('Editing selected countdown.', false);
+    }
+
+    function deleteSelectedCountdown() {
+      const item = getSelectedCountdown();
+      if (!item) {
+        setStatus('Select a countdown to delete.', true);
+        return;
+      }
+      if (!confirm(`Delete "${item.name}"?`)) {
+        return;
+      }
+      state.items = state.items.filter(entry => entry.id !== item.id);
+      if (!state.items.length) {
+        const fallback = getDefaultCountdown();
+        state.items = [fallback];
+        state.selectedId = fallback.id;
+      } else if (state.selectedId === item.id) {
+        state.selectedId = state.items[0].id;
+      }
+      state.editingId = null;
+      persistState();
+      populateFormFromSelected();
+      renderList();
       renderCountdown();
-      setStatus('Countdown reset.', false);
+      setStatus('Countdown deleted.', false);
+    }
+
+    function getCountdownSummary(item) {
+      const targetDate = parseInputDate(item.targetDate);
+      if (!targetDate) return 'No date';
+      const diff = diffInCalendarDays(targetDate);
+      if (diff > 0) return `${diff} ${diff === 1 ? 'day' : 'days'}`;
+      if (diff === 0) return 'Today';
+      const elapsed = Math.abs(diff);
+      return `${elapsed} ${elapsed === 1 ? 'day' : 'days'} ago`;
+    }
+
+    function renderList() {
+      if (!state.items.length) {
+        countdownListEl.innerHTML = '<div class="empty-list">No countdowns yet. Add one above to start your list.</div>';
+        return;
+      }
+
+      countdownListEl.innerHTML = state.items.map(item => `
+        <button class="countdown-item ${item.id === state.selectedId ? 'active' : ''}" type="button" data-id="${item.id}">
+          <div class="countdown-item-top">
+            <span class="countdown-item-name">${item.name}</span>
+            <span class="countdown-item-days">${getCountdownSummary(item)}</span>
+          </div>
+          <div class="countdown-item-date">${formatLongDate(parseInputDate(item.targetDate))}</div>
+        </button>
+      `).join('');
+
+      countdownListEl.querySelectorAll('.countdown-item').forEach(button => {
+        button.addEventListener('click', () => {
+          state.selectedId = button.dataset.id;
+          state.editingId = null;
+          persistState();
+          renderList();
+          renderCountdown();
+          setStatus('', false);
+        });
+      });
+    }
+
+    function populateFormFromSelected() {
+      const item = getSelectedCountdown();
+      if (!item) {
+        startNewCountdown();
+        return;
+      }
+      eventNameInput.value = item.name;
+      targetDateInput.value = item.targetDate;
+      eventMessageInput.value = item.message;
     }
 
     function renderCountdown() {
-      const targetDate = parseInputDate(targetDateInput.value);
-      const message = normalizeMessage(eventMessageInput.value) || 'the event';
+      const item = getSelectedCountdown();
+      const targetDate = item ? parseInputDate(item.targetDate) : null;
+      const name = item ? item.name : 'the event';
+      const message = item ? (normalizeMessage(item.message) || item.name) : 'the event';
 
-      if (!targetDate) {
+      if (!item || !targetDate) {
         calendarMonthEl.textContent = 'Pick a Date';
         calendarYearEl.textContent = 'Countdown ready when you are';
         countNumberEl.textContent = '--';
@@ -542,40 +790,51 @@
       if (dayDiff > 0) {
         countLabelEl.textContent = dayDiff === 1 ? 'Day Left' : 'Days Left';
         messageLineEl.textContent = `${dayDiff} ${dayDiff === 1 ? 'day' : 'days'} until ${message}`;
-        messageSublineEl.textContent = 'A live calendar countdown to your upcoming date.';
+        messageSublineEl.textContent = `${name} is the selected event in your countdown list.`;
         return;
       }
 
       if (dayDiff === 0) {
         countLabelEl.textContent = 'Today';
         messageLineEl.textContent = `${message} is today`;
-        messageSublineEl.textContent = 'This is the day you have been counting toward.';
+        messageSublineEl.textContent = `${name} has arrived.`;
         return;
       }
 
       const elapsed = Math.abs(dayDiff);
       countLabelEl.textContent = elapsed === 1 ? 'Day Since' : 'Days Since';
       messageLineEl.textContent = `${elapsed} ${elapsed === 1 ? 'day' : 'days'} since ${message}`;
-      messageSublineEl.textContent = 'Your selected date has already passed, so the calendar now shows time since the event.';
+      messageSublineEl.textContent = `${name} has already passed, so the calendar now shows time since the event.`;
     }
 
     function hydrate() {
-      const state = loadState();
-      targetDateInput.value = state.targetDate;
-      eventMessageInput.value = state.message === 'the big event' ? '' : state.message;
+      state = {
+        ...loadState(),
+        editingId: null
+      };
+      populateFormFromSelected();
+      renderList();
       renderCountdown();
     }
 
     saveBtn.addEventListener('click', () => {
-      if (saveState()) renderCountdown();
+      if (saveCountdown()) {
+        populateFormFromSelected();
+        renderList();
+        renderCountdown();
+      }
     });
-    resetBtn.addEventListener('click', resetState);
-    targetDateInput.addEventListener('input', renderCountdown);
-    eventMessageInput.addEventListener('input', renderCountdown);
+    newBtn.addEventListener('click', startNewCountdown);
+    editBtn.addEventListener('click', editSelectedCountdown);
+    deleteBtn.addEventListener('click', deleteSelectedCountdown);
     eventMessageInput.addEventListener('keydown', (event) => {
       if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
         event.preventDefault();
-        if (saveState()) renderCountdown();
+        if (saveCountdown()) {
+          populateFormFromSelected();
+          renderList();
+          renderCountdown();
+        }
       }
     });
 
