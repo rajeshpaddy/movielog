@@ -23,6 +23,8 @@
     .option-name { font-size: 20px; font-weight: bold; }
     .option-desc { font-size: 14px; color: #aaa; margin-top: 5px; }
     .complexity-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+    .compact-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+    .compact-cards .option-card { padding: 16px 12px; }
     .btn { padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; font-weight: bold; width: 100%; }
     .btn-primary { background: #00d9ff; color: #1a1a2e; }
     .btn-primary:hover { background: #00b8d4; }
@@ -30,11 +32,12 @@
     .btn-danger { background: #e94560; color: #fff; }
     .btn-row { display: flex; gap: 10px; margin-top: 20px; }
     .flash-card { background: #0f3460; border-radius: 15px; padding: 40px 20px; min-height: 200px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; }
+    .flash-prompt { font-size: 14px; color: #94dff0; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
     .flash-text { font-size: 32px; font-weight: bold; margin-bottom: 10px; }
     .flash-hint { font-size: 16px; color: #aaa; margin-top: 20px; }
     .flash-translation { font-size: 24px; color: #00d9ff; margin-top: 20px; display: none; }
     .flash-card.revealed .flash-translation { display: block; }
-    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin-bottom: 20px; }
     .stat-card { background: #0f3460; border-radius: 10px; padding: 20px; text-align: center; }
     .stat-value { font-size: 32px; font-weight: bold; }
     .stat-label { font-size: 14px; color: #aaa; margin-top: 5px; }
@@ -54,6 +57,33 @@
     .progress-text { text-align: center; margin-bottom: 15px; color: #aaa; }
     .complete-card { background: #0f3460; border-radius: 10px; padding: 40px; text-align: center; }
     .complete-title { font-size: 24px; font-weight: bold; color: #4caf50; margin-bottom: 20px; }
+    .meta-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 18px 0 20px; }
+    .meta-pill { background: rgba(8, 18, 34, 0.75); border: 1px solid rgba(0, 217, 255, 0.16); border-radius: 10px; padding: 12px; text-align: left; }
+    .meta-label { color: #8db5c9; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; }
+    .meta-value { color: #fff; font-size: 16px; font-weight: bold; margin-top: 4px; }
+    .section-stack { display: grid; gap: 18px; }
+    .section-card { background: #16213e; border-radius: 10px; padding: 18px; text-align: left; }
+    .section-title { color: #d8f7ff; font-size: 18px; font-weight: bold; margin-bottom: 14px; }
+    .breakdown-grid { display: grid; gap: 10px; }
+    .breakdown-row { display: flex; justify-content: space-between; gap: 14px; padding: 12px 14px; border-radius: 10px; background: #0f3460; align-items: center; }
+    .breakdown-label { font-weight: bold; }
+    .breakdown-meta { color: #8db5c9; font-size: 13px; margin-top: 2px; }
+    .setup-summary { color: #8db5c9; font-size: 14px; margin: -4px 0 18px; }
+    .keyboard-hint { margin-top: 12px; color: #8db5c9; font-size: 13px; }
+    @media (max-width: 640px) {
+      .option-cards,
+      .complexity-cards,
+      .compact-cards {
+        grid-template-columns: 1fr;
+      }
+      .btn-row,
+      .period-nav,
+      .report-item,
+      .breakdown-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
   </style>
 </head>
 <body>
@@ -95,6 +125,7 @@
     <div id="practiceView" class="view active">
       <div id="setupCard" class="card">
         <div class="card-title">Select Mode</div>
+        <div class="setup-summary" id="setupSummary">Build a short practice set and track progress by week, month, and year.</div>
         <div class="option-cards">
           <div class="option-card" id="selectWord" onclick="selectMode('word')">
             <div class="option-name">Words</div>
@@ -118,6 +149,34 @@
             <div class="option-name">Advanced</div>
           </div>
         </div>
+
+        <div class="card-title">Translation Direction</div>
+        <div class="option-cards">
+          <div class="option-card" id="selectEsToEn" onclick="selectDirection('esToEn')">
+            <div class="option-name">Spanish → English</div>
+            <div class="option-desc">Read Spanish, answer in English</div>
+          </div>
+          <div class="option-card" id="selectEnToEs" onclick="selectDirection('enToEs')">
+            <div class="option-name">English → Spanish</div>
+            <div class="option-desc">Read English, answer in Spanish</div>
+          </div>
+        </div>
+
+        <div class="card-title">Cards Per Session</div>
+        <div class="compact-cards">
+          <div class="option-card" id="selectCount5" onclick="selectCardCount(5)">
+            <div class="option-name">5</div>
+            <div class="option-desc">Quick round</div>
+          </div>
+          <div class="option-card" id="selectCount10" onclick="selectCardCount(10)">
+            <div class="option-name">10</div>
+            <div class="option-desc">Balanced</div>
+          </div>
+          <div class="option-card" id="selectCountAll" onclick="selectCardCount('all')">
+            <div class="option-name">All</div>
+            <div class="option-desc">Full set</div>
+          </div>
+        </div>
         
         <button class="btn btn-primary" onclick="startPractice()">Start Practice</button>
       </div>
@@ -125,6 +184,7 @@
       <div id="flashCard" class="card" style="display: none;">
         <div class="progress-text" id="progressText">Card 1 of 10</div>
         <div class="flash-card" onclick="revealCard()">
+          <div class="flash-prompt" id="flashPrompt">Translate to English</div>
           <div class="flash-text" id="flashText"></div>
           <div class="flash-hint">Click to reveal</div>
           <div class="flash-translation" id="flashTranslation"></div>
@@ -133,6 +193,7 @@
           <button class="btn btn-danger" onclick="markWrong()">✗ Wrong</button>
           <button class="btn btn-success" onclick="markCorrect()">✓ Correct</button>
         </div>
+        <div class="keyboard-hint">Keyboard: `Space` reveal, `1` wrong, `2` correct</div>
       </div>
       
       <div id="completeCard" class="complete-card" style="display: none;">
@@ -149,6 +210,24 @@
           <div class="stat-card">
             <div class="stat-value" id="sessionAccuracy">0%</div>
             <div class="stat-label">Accuracy</div>
+          </div>
+        </div>
+        <div class="meta-strip">
+          <div class="meta-pill">
+            <div class="meta-label">Mode</div>
+            <div class="meta-value" id="sessionModeLabel">Words</div>
+          </div>
+          <div class="meta-pill">
+            <div class="meta-label">Level</div>
+            <div class="meta-value" id="sessionComplexityLabel">Beginner</div>
+          </div>
+          <div class="meta-pill">
+            <div class="meta-label">Direction</div>
+            <div class="meta-value" id="sessionDirectionLabel">Spanish → English</div>
+          </div>
+          <div class="meta-pill">
+            <div class="meta-label">Cards</div>
+            <div class="meta-value" id="sessionCountLabel">10</div>
           </div>
         </div>
         <button class="btn btn-primary" onclick="doneSession()">Done</button>
@@ -183,9 +262,22 @@
           <div class="stat-value stat-wrong" id="totalWrong">0</div>
           <div class="stat-label">Wrong</div>
         </div>
+        <div class="stat-card">
+          <div class="stat-value" id="totalAccuracy">0%</div>
+          <div class="stat-label">Accuracy</div>
+        </div>
       </div>
       
-      <div class="report-list" id="reportList"></div>
+      <div class="section-stack">
+        <div class="section-card">
+          <div class="section-title">Breakdown</div>
+          <div class="breakdown-grid" id="breakdownList"></div>
+        </div>
+        <div class="section-card">
+          <div class="section-title">Timeline</div>
+          <div class="report-list" id="reportList"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -270,21 +362,103 @@
     };
 
     const STORAGE_KEY = 'spanishFlashcards';
+    const PREFERENCES_KEY = 'spanishFlashcardsPreferences';
+    const STORAGE_VERSION = 2;
     let currentMode = null;
     let currentComplexity = null;
+    let currentDirection = 'esToEn';
+    let currentCardCount = 10;
     let currentCards = [];
     let currentIndex = 0;
     let sessionResults = [];
+    let sessionSaved = false;
     let currentPeriod = 'daily';
     let currentDate = new Date();
 
+    function titleCase(value) {
+      return String(value || '').charAt(0).toUpperCase() + String(value || '').slice(1);
+    }
+
+    function formatMode(mode) {
+      return mode === 'sentence' ? 'Sentences' : 'Words';
+    }
+
+    function formatDirection(direction) {
+      return direction === 'enToEs' ? 'English → Spanish' : 'Spanish → English';
+    }
+
     function getStorage() {
       const data = localStorage.getItem(STORAGE_KEY);
-      return data ? JSON.parse(data) : {};
+      return normalizeStorage(data ? JSON.parse(data) : null);
     }
 
     function saveStorage(data) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function normalizeStorage(raw) {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+        return { version: STORAGE_VERSION, dailyTotals: {}, sessions: [] };
+      }
+
+      if (raw.version === STORAGE_VERSION && raw.dailyTotals && Array.isArray(raw.sessions)) {
+        return raw;
+      }
+
+      const dailyTotals = {};
+      Object.keys(raw).forEach(function(key) {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(key) && raw[key] && typeof raw[key] === 'object') {
+          dailyTotals[key] = {
+            correct: Number(raw[key].correct) || 0,
+            wrong: Number(raw[key].wrong) || 0
+          };
+        }
+      });
+
+      return {
+        version: STORAGE_VERSION,
+        dailyTotals: dailyTotals,
+        sessions: []
+      };
+    }
+
+    function getPreferences() {
+      const data = localStorage.getItem(PREFERENCES_KEY);
+      if (!data) {
+        return {
+          mode: 'word',
+          complexity: 'beginner',
+          direction: 'esToEn',
+          cardCount: 10
+        };
+      }
+
+      try {
+        const parsed = JSON.parse(data);
+        return {
+          mode: parsed.mode === 'sentence' ? 'sentence' : 'word',
+          complexity: ['beginner', 'intermediate', 'advanced'].includes(parsed.complexity) ? parsed.complexity : 'beginner',
+          direction: parsed.direction === 'enToEs' ? 'enToEs' : 'esToEn',
+          cardCount: parsed.cardCount === 5 || parsed.cardCount === 'all' ? parsed.cardCount : 10
+        };
+      } catch (error) {
+        return {
+          mode: 'word',
+          complexity: 'beginner',
+          direction: 'esToEn',
+          cardCount: 10
+        };
+      }
+    }
+
+    function savePreferences() {
+      localStorage.setItem(PREFERENCES_KEY, JSON.stringify({
+        mode: currentMode,
+        complexity: currentComplexity,
+        direction: currentDirection,
+        cardCount: currentCardCount
+      }));
+      updateSetupSummary();
     }
 
     function getDayKey(date) {
@@ -296,6 +470,7 @@
       document.getElementById('selectWord').classList.remove('selected');
       document.getElementById('selectSentence').classList.remove('selected');
       document.getElementById('select' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('selected');
+      savePreferences();
     }
 
     function selectComplexity(complexity) {
@@ -304,23 +479,64 @@
       document.getElementById('selectIntermediate').classList.remove('selected');
       document.getElementById('selectAdvanced').classList.remove('selected');
       document.getElementById('select' + complexity.charAt(0).toUpperCase() + complexity.slice(1)).classList.add('selected');
+      savePreferences();
     }
 
-    function saveResult(correct) {
+    function selectDirection(direction) {
+      currentDirection = direction;
+      document.getElementById('selectEsToEn').classList.remove('selected');
+      document.getElementById('selectEnToEs').classList.remove('selected');
+      document.getElementById(direction === 'enToEs' ? 'selectEnToEs' : 'selectEsToEn').classList.add('selected');
+      savePreferences();
+    }
+
+    function selectCardCount(count) {
+      currentCardCount = count;
+      document.getElementById('selectCount5').classList.remove('selected');
+      document.getElementById('selectCount10').classList.remove('selected');
+      document.getElementById('selectCountAll').classList.remove('selected');
+      document.getElementById(count === 5 ? 'selectCount5' : count === 10 ? 'selectCount10' : 'selectCountAll').classList.add('selected');
+      savePreferences();
+    }
+
+    function updateSetupSummary() {
+      document.getElementById('setupSummary').textContent =
+        formatMode(currentMode) + ' • ' +
+        titleCase(currentComplexity) + ' • ' +
+        formatDirection(currentDirection) + ' • ' +
+        (currentCardCount === 'all' ? 'All cards' : currentCardCount + ' cards');
+    }
+
+    function recordSession() {
+      if (sessionSaved || sessionResults.length === 0) return;
+
+      const correct = sessionResults.filter(Boolean).length;
+      const wrong = sessionResults.length - correct;
       const dayKey = getDayKey(new Date());
       const storage = getStorage();
-      
-      if (!storage[dayKey]) {
-        storage[dayKey] = { correct: 0, wrong: 0 };
+
+      if (!storage.dailyTotals[dayKey]) {
+        storage.dailyTotals[dayKey] = { correct: 0, wrong: 0 };
       }
-      
-      if (correct) {
-        storage[dayKey].correct++;
-      } else {
-        storage[dayKey].wrong++;
+
+      storage.dailyTotals[dayKey].correct += correct;
+      storage.dailyTotals[dayKey].wrong += wrong;
+      storage.sessions.push({
+        completedAt: new Date().toISOString(),
+        mode: currentMode,
+        complexity: currentComplexity,
+        direction: currentDirection,
+        cardCount: currentCards.length,
+        correct: correct,
+        wrong: wrong
+      });
+
+      if (storage.sessions.length > 400) {
+        storage.sessions = storage.sessions.slice(-400);
       }
-      
+
       saveStorage(storage);
+      sessionSaved = true;
     }
 
     function shuffle(array) {
@@ -333,8 +549,6 @@
     }
 
     function startPractice() {
-      console.log('Starting practice, mode:', currentMode, 'complexity:', currentComplexity);
-      
       if (!currentMode) {
         alert('Please select a mode (Words or Sentences)');
         return;
@@ -344,9 +558,11 @@
         return;
       }
       
-      currentCards = shuffle(FLASHCARDS[currentMode][currentComplexity]).slice(0, 10);
+      const sourceCards = shuffle(FLASHCARDS[currentMode][currentComplexity]);
+      currentCards = currentCardCount === 'all' ? sourceCards : sourceCards.slice(0, currentCardCount);
       currentIndex = 0;
       sessionResults = [];
+      sessionSaved = false;
       
       document.getElementById('setupCard').style.display = 'none';
       document.getElementById('flashCard').style.display = 'block';
@@ -362,8 +578,11 @@
       }
       
       const card = currentCards[currentIndex];
-      document.getElementById('flashText').textContent = card.es;
-      document.getElementById('flashTranslation').textContent = card.en;
+      const promptText = currentDirection === 'enToEs' ? card.en : card.es;
+      const answerText = currentDirection === 'enToEs' ? card.es : card.en;
+      document.getElementById('flashPrompt').textContent = currentDirection === 'enToEs' ? 'Translate to Spanish' : 'Translate to English';
+      document.getElementById('flashText').textContent = promptText;
+      document.getElementById('flashTranslation').textContent = answerText;
       document.querySelector('.flash-card').classList.remove('revealed');
       document.getElementById('answerButtons').style.display = 'none';
       document.getElementById('progressText').textContent = 'Card ' + (currentIndex + 1) + ' of ' + currentCards.length;
@@ -376,19 +595,18 @@
 
     function markCorrect() {
       sessionResults.push(true);
-      saveResult(true);
       currentIndex++;
       showCard();
     }
 
     function markWrong() {
       sessionResults.push(false);
-      saveResult(false);
       currentIndex++;
       showCard();
     }
 
     function showComplete() {
+      recordSession();
       document.getElementById('flashCard').style.display = 'none';
       document.getElementById('completeCard').style.display = 'block';
       
@@ -399,19 +617,17 @@
       document.getElementById('sessionCorrect').textContent = correct;
       document.getElementById('sessionWrong').textContent = wrong;
       document.getElementById('sessionAccuracy').textContent = accuracy + '%';
+      document.getElementById('sessionModeLabel').textContent = formatMode(currentMode);
+      document.getElementById('sessionComplexityLabel').textContent = titleCase(currentComplexity);
+      document.getElementById('sessionDirectionLabel').textContent = formatDirection(currentDirection);
+      document.getElementById('sessionCountLabel').textContent = String(currentCards.length);
     }
 
     function doneSession() {
       document.getElementById('setupCard').style.display = 'block';
       document.getElementById('flashCard').style.display = 'none';
       document.getElementById('completeCard').style.display = 'none';
-      currentMode = null;
-      currentComplexity = null;
-      document.getElementById('selectWord').classList.remove('selected');
-      document.getElementById('selectSentence').classList.remove('selected');
-      document.getElementById('selectBeginner').classList.remove('selected');
-      document.getElementById('selectIntermediate').classList.remove('selected');
-      document.getElementById('selectAdvanced').classList.remove('selected');
+      renderReport();
     }
 
     function setPeriod(period) {
@@ -447,6 +663,7 @@
     function getReportData() {
       const storage = getStorage();
       const data = [];
+      const sessions = storage.sessions || [];
       
       if (currentPeriod === 'daily') {
         const startDate = new Date(currentDate);
@@ -456,11 +673,15 @@
           const d = new Date(startDate);
           d.setDate(d.getDate() + i);
           const key = getDayKey(d);
-          const dayData = storage[key] || { correct: 0, wrong: 0 };
+          const dayData = storage.dailyTotals[key] || { correct: 0, wrong: 0 };
+          const sessionCount = sessions.filter(function(session) {
+            return getDayKey(new Date(session.completedAt)) === key;
+          }).length;
           data.push({
             label: d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
             correct: dayData.correct,
-            wrong: dayData.wrong
+            wrong: dayData.wrong,
+            sessions: sessionCount
           });
         }
       } else if (currentPeriod === 'monthly') {
@@ -469,18 +690,24 @@
         for (let m = 0; m < 12; m++) {
           const monthKey = year + '-' + String(m + 1).padStart(2, '0');
           let correct = 0, wrong = 0;
+          let sessionCount = 0;
           
-          Object.keys(storage).forEach(function(key) {
+          Object.keys(storage.dailyTotals).forEach(function(key) {
             if (key.startsWith(monthKey)) {
-              correct += storage[key].correct;
-              wrong += storage[key].wrong;
+              correct += storage.dailyTotals[key].correct;
+              wrong += storage.dailyTotals[key].wrong;
             }
           });
+
+          sessionCount = sessions.filter(function(session) {
+            return session.completedAt.slice(0, 7) === monthKey;
+          }).length;
           
           data.push({
             label: new Date(year, m, 1).toLocaleDateString('en-US', { month: 'short' }),
             correct: correct,
-            wrong: wrong
+            wrong: wrong,
+            sessions: sessionCount
           });
         }
       } else {
@@ -489,23 +716,79 @@
         for (let y = 0; y < 3; y++) {
           const year = startYear + y;
           let correct = 0, wrong = 0;
+          let sessionCount = 0;
           
-          Object.keys(storage).forEach(function(key) {
+          Object.keys(storage.dailyTotals).forEach(function(key) {
             if (key.startsWith(String(year))) {
-              correct += storage[key].correct;
-              wrong += storage[key].wrong;
+              correct += storage.dailyTotals[key].correct;
+              wrong += storage.dailyTotals[key].wrong;
             }
           });
+
+          sessionCount = sessions.filter(function(session) {
+            return session.completedAt.slice(0, 4) === String(year);
+          }).length;
           
           data.push({
             label: String(year),
             correct: correct,
-            wrong: wrong
+            wrong: wrong,
+            sessions: sessionCount
           });
         }
       }
       
       return data;
+    }
+
+    function getPeriodRange() {
+      if (currentPeriod === 'daily') {
+        const startDate = new Date(currentDate);
+        startDate.setDate(startDate.getDate() - 6);
+        return { start: startDate, end: new Date(currentDate) };
+      }
+
+      if (currentPeriod === 'monthly') {
+        return {
+          start: new Date(currentDate.getFullYear(), 0, 1),
+          end: new Date(currentDate.getFullYear(), 11, 31, 23, 59, 59, 999)
+        };
+      }
+
+      return {
+        start: new Date(currentDate.getFullYear() - 2, 0, 1),
+        end: new Date(currentDate.getFullYear(), 11, 31, 23, 59, 59, 999)
+      };
+    }
+
+    function getBreakdownData() {
+      const sessions = getStorage().sessions || [];
+      const range = getPeriodRange();
+      const filteredSessions = sessions.filter(function(session) {
+        const completedAt = new Date(session.completedAt);
+        return completedAt >= range.start && completedAt <= range.end;
+      });
+
+      const buckets = {};
+      filteredSessions.forEach(function(session) {
+        const key = [session.mode, session.complexity, session.direction].join('|');
+        if (!buckets[key]) {
+          buckets[key] = {
+            label: formatMode(session.mode) + ' • ' + titleCase(session.complexity),
+            detail: formatDirection(session.direction),
+            correct: 0,
+            wrong: 0,
+            sessions: 0
+          };
+        }
+        buckets[key].correct += Number(session.correct) || 0;
+        buckets[key].wrong += Number(session.wrong) || 0;
+        buckets[key].sessions += 1;
+      });
+
+      return Object.values(buckets).sort(function(a, b) {
+        return (b.correct + b.wrong) - (a.correct + a.wrong);
+      });
     }
 
     function renderReport() {
@@ -520,6 +803,8 @@
       document.getElementById('totalCards').textContent = totalCorrect + totalWrong;
       document.getElementById('totalCorrect').textContent = totalCorrect;
       document.getElementById('totalWrong').textContent = totalWrong;
+      document.getElementById('totalAccuracy').textContent =
+        (totalCorrect + totalWrong) > 0 ? Math.round((totalCorrect / (totalCorrect + totalWrong)) * 100) + '%' : '0%';
       
       if (currentPeriod === 'daily') {
         const startDate = new Date(currentDate);
@@ -537,9 +822,21 @@
         document.getElementById('reportList').innerHTML = '<div class="empty-state">No activity recorded yet</div>';
       } else {
         document.getElementById('reportList').innerHTML = data.map(function(d) {
-          return '<div class="report-item"><span class="report-date">' + d.label + '</span><div class="report-stats"><span class="report-correct">✓ ' + d.correct + '</span><span class="report-wrong">✗ ' + d.wrong + '</span></div></div>';
+          const total = d.correct + d.wrong;
+          const accuracy = total > 0 ? Math.round((d.correct / total) * 100) : 0;
+          const sessionText = d.sessions ? d.sessions + ' session' + (d.sessions === 1 ? '' : 's') : 'No sessions';
+          return '<div class="report-item"><div><div class="report-date">' + d.label + '</div><div class="breakdown-meta">' + sessionText + ' • ' + accuracy + '% accuracy</div></div><div class="report-stats"><span class="report-correct">✓ ' + d.correct + '</span><span class="report-wrong">✗ ' + d.wrong + '</span></div></div>';
         }).join('');
       }
+
+      const breakdownData = getBreakdownData();
+      document.getElementById('breakdownList').innerHTML = breakdownData.length === 0
+        ? '<div class="empty-state">No completed sessions in this period</div>'
+        : breakdownData.map(function(item) {
+            const total = item.correct + item.wrong;
+            const accuracy = total > 0 ? Math.round((item.correct / total) * 100) : 0;
+            return '<div class="breakdown-row"><div><div class="breakdown-label">' + item.label + '</div><div class="breakdown-meta">' + item.detail + ' • ' + item.sessions + ' session' + (item.sessions === 1 ? '' : 's') + '</div></div><div class="report-stats"><span>' + accuracy + '%</span><span class="report-correct">✓ ' + item.correct + '</span><span class="report-wrong">✗ ' + item.wrong + '</span></div></div>';
+          }).join('');
     }
 
     // Tab switching
@@ -552,6 +849,34 @@
         if (tab.dataset.tab === 'report') renderReport();
       });
     });
+
+    document.addEventListener('keydown', function(event) {
+      if (document.getElementById('flashCard').style.display !== 'block') {
+        if (event.key === 'Enter' && document.getElementById('setupCard').style.display !== 'none') {
+          startPractice();
+        }
+        return;
+      }
+
+      if (event.key === ' ' || event.key === 'Spacebar') {
+        event.preventDefault();
+        revealCard();
+      } else if (event.key === '1') {
+        if (document.getElementById('answerButtons').style.display !== 'none') markWrong();
+      } else if (event.key === '2') {
+        if (document.getElementById('answerButtons').style.display !== 'none') markCorrect();
+      }
+    });
+
+    (function initialize() {
+      const preferences = getPreferences();
+      selectMode(preferences.mode);
+      selectComplexity(preferences.complexity);
+      selectDirection(preferences.direction);
+      selectCardCount(preferences.cardCount);
+      saveStorage(getStorage());
+      renderReport();
+    })();
   </script>
   <script src="shared-store-config.js?v=20260311-worker1"></script>
   <script src="shared-store.js?v=20260311-worker1"></script>
