@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Days Countdown</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg-top: #10203f;
+      --bg-bottom: #261037;
+      --panel: rgba(8, 17, 33, 0.72);
+      --panel-border: rgba(255, 255, 255, 0.12);
+      --ink: #f9fbff;
+      --muted: #9eb0c8;
+      --accent: #ffd166;
+      --accent-strong: #ff8f5a;
+      --success: #7ef0bf;
+      --danger: #ff8ca1;
+      --calendar-paper: #fff7ee;
+      --calendar-ink: #18253b;
+      --calendar-shadow: rgba(4, 11, 23, 0.4);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255, 209, 102, 0.18), transparent 28%),
+        radial-gradient(circle at top right, rgba(126, 240, 191, 0.16), transparent 24%),
+        linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+      color: var(--ink);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: grid;
+      gap: 24px;
+    }
+
+    .hero {
+      text-align: center;
+      padding-top: 34px;
+    }
+
+    h1 {
+      font-size: clamp(36px, 6vw, 60px);
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+    }
+
+    .subtitle {
+      max-width: 700px;
+      margin: 0 auto;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.5;
+    }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 28px;
+      padding: 22px;
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(16px);
+    }
+
+    .controls-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .field label {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .field input,
+    .field textarea {
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(7, 14, 28, 0.72);
+      color: var(--ink);
+      border-radius: 18px;
+      padding: 14px 16px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .field input:focus,
+    .field textarea:focus {
+      border-color: rgba(255, 209, 102, 0.82);
+      box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.12);
+    }
+
+    .field textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      color: #221321;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--ink);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .helper-text {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .status {
+      min-height: 22px;
+      margin-top: 14px;
+      color: var(--success);
+      font-size: 14px;
+    }
+
+    .status.error {
+      color: var(--danger);
+    }
+
+    .display {
+      display: grid;
+      place-items: center;
+      min-height: 620px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .display::before,
+    .display::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      filter: blur(8px);
+      opacity: 0.75;
+    }
+
+    .display::before {
+      width: 180px;
+      height: 180px;
+      background: rgba(255, 209, 102, 0.18);
+      top: 46px;
+      left: 44px;
+    }
+
+    .display::after {
+      width: 220px;
+      height: 220px;
+      background: rgba(126, 240, 191, 0.12);
+      right: 32px;
+      bottom: 28px;
+    }
+
+    .calendar-wrap {
+      position: relative;
+      width: min(100%, 520px);
+      z-index: 1;
+      text-align: center;
+    }
+
+    .calendar-shadow {
+      position: absolute;
+      inset: auto 32px -24px 32px;
+      height: 38px;
+      background: rgba(0, 0, 0, 0.22);
+      filter: blur(18px);
+      border-radius: 999px;
+      z-index: 0;
+    }
+
+    .calendar {
+      position: relative;
+      background: var(--calendar-paper);
+      color: var(--calendar-ink);
+      border-radius: 34px;
+      overflow: hidden;
+      box-shadow: 0 30px 80px var(--calendar-shadow);
+    }
+
+    .calendar-top {
+      background: linear-gradient(135deg, #ff8f5a, #ff586d);
+      color: white;
+      padding: 30px 24px 22px;
+      position: relative;
+    }
+
+    .calendar-top::before,
+    .calendar-top::after {
+      content: "";
+      position: absolute;
+      top: 18px;
+      width: 48px;
+      height: 18px;
+      border-radius: 999px;
+      background: rgba(123, 19, 30, 0.28);
+      box-shadow: inset 0 2px 6px rgba(255, 255, 255, 0.22);
+    }
+
+    .calendar-top::before { left: 72px; }
+    .calendar-top::after { right: 72px; }
+
+    .calendar-month {
+      font-size: clamp(24px, 3vw, 32px);
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .calendar-year {
+      margin-top: 6px;
+      font-size: 15px;
+      opacity: 0.9;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .calendar-body {
+      padding: 34px 24px 28px;
+      display: grid;
+      gap: 12px;
+      justify-items: center;
+    }
+
+    .count-number {
+      font-size: clamp(100px, 18vw, 168px);
+      line-height: 0.86;
+      font-weight: 900;
+      letter-spacing: -0.06em;
+    }
+
+    .count-label {
+      font-size: 18px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: #5f6f88;
+    }
+
+    .target-date {
+      margin-top: 8px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .message-line {
+      margin-top: 22px;
+      font-size: clamp(22px, 3vw, 34px);
+      line-height: 1.2;
+      font-weight: 800;
+      color: white;
+      text-wrap: balance;
+    }
+
+    .message-subline {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .app-home-link {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 9999;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 209, 102, 0.5);
+      background: rgba(10, 20, 38, 0.86);
+      color: #fff7dc;
+      text-decoration: none;
+      font: 600 14px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      backdrop-filter: blur(4px);
+    }
+
+    .app-home-link:hover {
+      background: rgba(21, 36, 64, 0.95);
+    }
+
+    .app-home-link:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 860px) {
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .display {
+        min-height: auto;
+      }
+    }
+
+    @media (max-width: 560px) {
+      body {
+        padding: 16px;
+      }
+
+      .panel {
+        border-radius: 22px;
+        padding: 18px;
+      }
+
+      .calendar-top::before { left: 36px; }
+      .calendar-top::after { right: 36px; }
+
+      .message-line {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="app-home-link" href="app-catalog.html" title="Back to App Catalog">Home</a>
+
+  <div class="container">
+    <section class="hero">
+      <h1>Days Countdown</h1>
+      <p class="subtitle">Pick a target date, add a meaningful message, and keep a bold calendar view of how many days remain until the moment arrives.</p>
+    </section>
+
+    <section class="app-shell">
+      <div class="panel">
+        <div class="controls-title">Countdown Setup</div>
+
+        <div class="field">
+          <label for="targetDate">Target date</label>
+          <input type="date" id="targetDate">
+        </div>
+
+        <div class="field">
+          <label for="eventMessage">Message for the event</label>
+          <textarea id="eventMessage" placeholder="Wedding day, move-in day, trip to Japan, graduation, or anything else you want to count toward"></textarea>
+        </div>
+
+        <div class="button-row">
+          <button class="btn btn-primary" id="saveBtn" type="button">Save Countdown</button>
+          <button class="btn btn-secondary" id="resetBtn" type="button">Reset</button>
+        </div>
+
+        <div id="status" class="status" aria-live="polite"></div>
+        <p class="helper-text">The countdown updates automatically and stays saved in this browser, so you can keep one special date pinned and visible.</p>
+      </div>
+
+      <div class="panel display">
+        <div class="calendar-wrap">
+          <div class="calendar-shadow"></div>
+          <div class="calendar">
+            <div class="calendar-top">
+              <div class="calendar-month" id="calendarMonth">Pick a Date</div>
+              <div class="calendar-year" id="calendarYear">Countdown ready when you are</div>
+            </div>
+            <div class="calendar-body">
+              <div class="count-number" id="countNumber">--</div>
+              <div class="count-label" id="countLabel">Days Left</div>
+              <div class="target-date" id="targetDateText">Choose your target date to begin</div>
+            </div>
+          </div>
+          <div class="message-line" id="messageLine">Set a date and message to see your countdown story here.</div>
+          <div class="message-subline" id="messageSubline">The big number shows calendar days between today and your selected date.</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'daysCountdownState';
+    const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+    const targetDateInput = document.getElementById('targetDate');
+    const eventMessageInput = document.getElementById('eventMessage');
+    const saveBtn = document.getElementById('saveBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const statusEl = document.getElementById('status');
+    const calendarMonthEl = document.getElementById('calendarMonth');
+    const calendarYearEl = document.getElementById('calendarYear');
+    const countNumberEl = document.getElementById('countNumber');
+    const countLabelEl = document.getElementById('countLabel');
+    const targetDateTextEl = document.getElementById('targetDateText');
+    const messageLineEl = document.getElementById('messageLine');
+    const messageSublineEl = document.getElementById('messageSubline');
+
+    function setStatus(message, isError) {
+      statusEl.textContent = message || '';
+      statusEl.classList.toggle('error', !!isError);
+    }
+
+    function toDateInputValue(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function normalizeMessage(value) {
+      return String(value || '').trim().replaceAll(/\s+/g, ' ');
+    }
+
+    function parseInputDate(value) {
+      if (!value) return null;
+      const [year, month, day] = value.split('-').map(Number);
+      if (!year || !month || !day) return null;
+      return new Date(year, month - 1, day);
+    }
+
+    function startOfToday() {
+      const now = new Date();
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    }
+
+    function diffInCalendarDays(targetDate) {
+      const today = startOfToday();
+      return Math.round((targetDate.getTime() - today.getTime()) / MS_PER_DAY);
+    }
+
+    function formatLongDate(date) {
+      return date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    }
+
+    function getDefaultState() {
+      const tomorrow = startOfToday();
+      tomorrow.setDate(tomorrow.getDate() + 30);
+      return {
+        targetDate: toDateInputValue(tomorrow),
+        message: 'the big event'
+      };
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return getDefaultState();
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') return getDefaultState();
+        return {
+          targetDate: typeof parsed.targetDate === 'string' ? parsed.targetDate : getDefaultState().targetDate,
+          message: normalizeMessage(parsed.message || '') || getDefaultState().message
+        };
+      } catch (error) {
+        return getDefaultState();
+      }
+    }
+
+    function saveState() {
+      const targetDate = targetDateInput.value;
+      const message = normalizeMessage(eventMessageInput.value);
+      if (!targetDate) {
+        setStatus('Please choose a target date first.', true);
+        return false;
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ targetDate, message }));
+      setStatus('Countdown saved locally.', false);
+      return true;
+    }
+
+    function resetState() {
+      const state = getDefaultState();
+      targetDateInput.value = state.targetDate;
+      eventMessageInput.value = '';
+      localStorage.removeItem(STORAGE_KEY);
+      renderCountdown();
+      setStatus('Countdown reset.', false);
+    }
+
+    function renderCountdown() {
+      const targetDate = parseInputDate(targetDateInput.value);
+      const message = normalizeMessage(eventMessageInput.value) || 'the event';
+
+      if (!targetDate) {
+        calendarMonthEl.textContent = 'Pick a Date';
+        calendarYearEl.textContent = 'Countdown ready when you are';
+        countNumberEl.textContent = '--';
+        countLabelEl.textContent = 'Days Left';
+        targetDateTextEl.textContent = 'Choose your target date to begin';
+        messageLineEl.textContent = 'Set a date and message to see your countdown story here.';
+        messageSublineEl.textContent = 'The big number shows calendar days between today and your selected date.';
+        return;
+      }
+
+      const dayDiff = diffInCalendarDays(targetDate);
+      calendarMonthEl.textContent = targetDate.toLocaleDateString('en-US', { month: 'long' });
+      calendarYearEl.textContent = String(targetDate.getFullYear());
+      countNumberEl.textContent = Math.abs(dayDiff);
+      targetDateTextEl.textContent = formatLongDate(targetDate);
+
+      if (dayDiff > 0) {
+        countLabelEl.textContent = dayDiff === 1 ? 'Day Left' : 'Days Left';
+        messageLineEl.textContent = `${dayDiff} ${dayDiff === 1 ? 'day' : 'days'} until ${message}`;
+        messageSublineEl.textContent = 'A live calendar countdown to your upcoming date.';
+        return;
+      }
+
+      if (dayDiff === 0) {
+        countLabelEl.textContent = 'Today';
+        messageLineEl.textContent = `${message} is today`;
+        messageSublineEl.textContent = 'This is the day you have been counting toward.';
+        return;
+      }
+
+      const elapsed = Math.abs(dayDiff);
+      countLabelEl.textContent = elapsed === 1 ? 'Day Since' : 'Days Since';
+      messageLineEl.textContent = `${elapsed} ${elapsed === 1 ? 'day' : 'days'} since ${message}`;
+      messageSublineEl.textContent = 'Your selected date has already passed, so the calendar now shows time since the event.';
+    }
+
+    function hydrate() {
+      const state = loadState();
+      targetDateInput.value = state.targetDate;
+      eventMessageInput.value = state.message === 'the big event' ? '' : state.message;
+      renderCountdown();
+    }
+
+    saveBtn.addEventListener('click', () => {
+      if (saveState()) renderCountdown();
+    });
+    resetBtn.addEventListener('click', resetState);
+    targetDateInput.addEventListener('input', renderCountdown);
+    eventMessageInput.addEventListener('input', renderCountdown);
+    eventMessageInput.addEventListener('keydown', (event) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+        event.preventDefault();
+        if (saveState()) renderCountdown();
+      }
+    });
+
+    hydrate();
+  </script>
+  <script>window.APP_TELEMETRY_ID = "days-countdown";</script>
+  <script src="app-telemetry.js?v=20260311-worker2" defer></script>
+</body>
+</html>
