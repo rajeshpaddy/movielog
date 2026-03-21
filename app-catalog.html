@@ -145,6 +145,34 @@
     .search-input { width: 100%; background: #0f3460; border: 1px solid #00d9ff; color: #fff; padding: 12px 20px; border-radius: 30px; font-size: 16px; }
     .search-input::placeholder { color: #666; }
     .search-input:focus { outline: none; box-shadow: 0 0 15px rgba(0, 217, 255, 0.3); }
+    .catalog-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    .catalog-tab {
+      border: 1px solid rgba(0, 217, 255, 0.18);
+      background: rgba(12, 28, 52, 0.92);
+      color: #9dc6e4;
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .catalog-tab.active {
+      background: linear-gradient(135deg, #00d9ff, #43f0c7);
+      color: #061019;
+      border-color: transparent;
+    }
+    .catalog-panel {
+      display: none;
+    }
+    .catalog-panel.active {
+      display: block;
+    }
     .webapp-composer {
       margin-bottom: 24px;
       padding: 16px 18px;
@@ -532,64 +560,73 @@
     <p class="subtitle">Your personal app collection. No personal data leaves your machine without your consent. Only coarse-grained, non-identifiable usage telemetry is saved in cloud for app improvement. These apps provide the best experience on desktop or laptop screens.</p>
     <div class="catalog-stats" id="catalogStats"></div>
 
-    <a class="video-tile" href="https://rajeshpaddy.github.io/movielog/catalog-guide-chat.html">
-      <span class="app-usage-badge is-loading" data-telemetry-id="catalog-guide-chat">Loading...</span>
-      <div class="video-tile-title">🧭 Catalog Guide Chat</div>
-      <div class="video-tile-desc">Start here. Ask what the catalog includes, get feature summaries, and jump directly to the right app.</div>
-    </a>
-
     <div class="search-container">
       <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search apps...">
     </div>
 
-    <section class="webapp-composer">
-      <div class="webapp-composer-head">
-        <div class="webapp-composer-title">Add a Custom Tile</div>
-        <div class="webapp-composer-note">Save website shortcuts or local image tiles from one place.</div>
-      </div>
-      <div class="tile-type-options" id="tileTypeOptions">
-        <label><input type="radio" name="tileType" value="webapp" checked> Website tile</label>
-        <label><input type="radio" name="tileType" value="image"> Image tile</label>
-      </div>
-      <form class="webapp-form" id="webappForm">
-        <div class="webapp-fields">
-          <input type="text" class="webapp-input" id="webappTitleInput" placeholder="Title for this tile (optional)" autocomplete="off">
-          <input type="url" class="webapp-input" id="webappUrlInput" placeholder="https://example.com" inputmode="url" autocomplete="url" required>
-          <div class="image-input-wrap" id="imageInputWrap">
-            <input type="file" class="image-file-input" id="imageFileInput" accept="image/*">
-            <div class="image-paste-target" id="imagePasteTarget" tabindex="0">
-              <div>
-                <div class="image-paste-title">Paste image from clipboard</div>
-                <div class="image-paste-desc">Click here and press `Ctrl+V` or `Cmd+V` after copying an image or screenshot.</div>
+    <div class="catalog-tabs" id="catalogTabs">
+      <button type="button" class="catalog-tab" data-tab="tiles">Images & URLs</button>
+      <button type="button" class="catalog-tab active" data-tab="apps">Apps</button>
+    </div>
+
+    <div class="catalog-panel active" id="appsPanel">
+      <a class="video-tile" href="https://rajeshpaddy.github.io/movielog/catalog-guide-chat.html">
+        <span class="app-usage-badge is-loading" data-telemetry-id="catalog-guide-chat">Loading...</span>
+        <div class="video-tile-title">🧭 Catalog Guide Chat</div>
+        <div class="video-tile-desc">Start here. Ask what the catalog includes, get feature summaries, and jump directly to the right app.</div>
+      </a>
+      <div class="app-grid" id="appGrid"></div>
+    </div>
+
+    <div class="catalog-panel" id="tilesPanel">
+      <section class="webapp-composer">
+        <div class="webapp-composer-head">
+          <div class="webapp-composer-title">Add a Custom Tile</div>
+          <div class="webapp-composer-note">Save website shortcuts or local image tiles from one place.</div>
+        </div>
+        <div class="tile-type-options" id="tileTypeOptions">
+          <label><input type="radio" name="tileType" value="webapp" checked> Website tile</label>
+          <label><input type="radio" name="tileType" value="image"> Image tile</label>
+        </div>
+        <form class="webapp-form" id="webappForm">
+          <div class="webapp-fields">
+            <input type="text" class="webapp-input" id="webappTitleInput" placeholder="Title for this tile (optional)" autocomplete="off">
+            <input type="url" class="webapp-input" id="webappUrlInput" placeholder="https://example.com" inputmode="url" autocomplete="url" required>
+            <div class="image-input-wrap" id="imageInputWrap">
+              <input type="file" class="image-file-input" id="imageFileInput" accept="image/*">
+              <div class="image-paste-target" id="imagePasteTarget" tabindex="0">
+                <div>
+                  <div class="image-paste-title">Paste image from clipboard</div>
+                  <div class="image-paste-desc">Click here and press `Ctrl+V` or `Cmd+V` after copying an image or screenshot.</div>
+                </div>
               </div>
-            </div>
-            <div class="image-preview-card" id="imagePreviewCard">
-              <img class="image-preview-thumb" id="imagePreviewThumb" alt="">
-              <div class="image-preview-meta">
-                <div class="image-preview-name" id="imagePreviewName"></div>
-                <div class="image-preview-size" id="imagePreviewSize"></div>
+              <div class="image-preview-card" id="imagePreviewCard">
+                <img class="image-preview-thumb" id="imagePreviewThumb" alt="">
+                <div class="image-preview-meta">
+                  <div class="image-preview-name" id="imagePreviewName"></div>
+                  <div class="image-preview-size" id="imagePreviewSize"></div>
+                </div>
               </div>
+              <div class="image-file-note">Images are stored on this device. Use export/import below when you want to move image tiles through cloud share.</div>
             </div>
-            <div class="image-file-note">Images are stored on this device. Use export/import below when you want to move image tiles through cloud share.</div>
+          </div>
+          <div class="webapp-actions">
+            <button type="submit" class="webapp-submit" id="webappSubmitBtn">Add Tile</button>
+            <button type="button" class="webapp-secondary-btn" id="exportImagesBtn">Export Images</button>
+            <button type="button" class="webapp-secondary-btn" id="importImagesBtn">Import Images</button>
+          </div>
+        </form>
+        <div class="webapp-save-mode">
+          <div class="webapp-save-label">Save To</div>
+          <div class="webapp-save-options">
+            <label><input type="radio" name="webappSaveMode" value="local" checked> Local only</label>
+            <label><input type="radio" name="webappSaveMode" value="cloud"> Cloud sync</label>
           </div>
         </div>
-        <div class="webapp-actions">
-          <button type="submit" class="webapp-submit" id="webappSubmitBtn">Add Tile</button>
-          <button type="button" class="webapp-secondary-btn" id="exportImagesBtn">Export Images</button>
-          <button type="button" class="webapp-secondary-btn" id="importImagesBtn">Import Images</button>
-        </div>
-      </form>
-      <div class="webapp-save-mode">
-        <div class="webapp-save-label">Save To</div>
-        <div class="webapp-save-options">
-          <label><input type="radio" name="webappSaveMode" value="local" checked> Local only</label>
-          <label><input type="radio" name="webappSaveMode" value="cloud"> Cloud sync</label>
-        </div>
-      </div>
-      <div class="webapp-status" id="webappStatus" aria-live="polite"></div>
-    </section>
-    
-    <div class="app-grid" id="appGrid"></div>
+        <div class="webapp-status" id="webappStatus" aria-live="polite"></div>
+      </section>
+      <div class="app-grid" id="tilesGrid"></div>
+    </div>
   </div>
   <div class="image-viewer" id="imageViewer" aria-hidden="true">
     <div class="image-viewer-dialog" role="dialog" aria-modal="true" aria-labelledby="imageViewerTitle">
@@ -823,9 +860,13 @@
       }
     ];
 
-    const grid = document.getElementById('appGrid');
+    const appGrid = document.getElementById('appGrid');
+    const tilesGrid = document.getElementById('tilesGrid');
     const searchInput = document.getElementById('searchInput');
     const catalogStats = document.getElementById('catalogStats');
+    const catalogTabButtons = Array.from(document.querySelectorAll('.catalog-tab'));
+    const appsPanel = document.getElementById('appsPanel');
+    const tilesPanel = document.getElementById('tilesPanel');
     const webappForm = document.getElementById('webappForm');
     const webappTitleInput = document.getElementById('webappTitleInput');
     const webappUrlInput = document.getElementById('webappUrlInput');
@@ -852,10 +893,12 @@
     let imageTiles = [];
     let webapps = [];
     let apps = [...BASE_APPS];
+    let customTiles = [];
     let filteredApps = [...apps];
     let renderedApps = [...apps];
     let selectedIndex = -1;
     let pendingImageAsset = null;
+    let activeCatalogTab = 'apps';
 
     function setWebappStatus(message, type = '') {
       webappStatus.textContent = message || '';
@@ -1065,7 +1108,8 @@
         .sort((a, b) => new Date(b.date) - new Date(a.date) || a.name.localeCompare(b.name));
       const sortedImageTiles = [...imageTiles]
         .sort((a, b) => new Date(b.date) - new Date(a.date) || a.name.localeCompare(b.name));
-      apps = [...BASE_APPS, ...webapps, ...sortedImageTiles];
+      customTiles = [...webapps, ...sortedImageTiles];
+      apps = [...BASE_APPS];
     }
 
     function replaceLocalWebapps(nextWebapps) {
@@ -1176,11 +1220,12 @@
 
     function filterAppsByQuery(query) {
       const normalizedQuery = normalizeSearchText(query);
+      const sourceList = activeCatalogTab === 'tiles' ? customTiles : apps;
       if (!normalizedQuery) {
-        return [...apps];
+        return [...sourceList];
       }
 
-      return apps.filter(app => getSearchableText(app).includes(normalizedQuery));
+      return sourceList.filter(app => getSearchableText(app).includes(normalizedQuery));
     }
 
     function scoreAppMatch(app, query) {
@@ -1211,7 +1256,7 @@
     }
 
     function findBestAppMatch(query) {
-      const ranked = apps
+      const ranked = [...apps, ...customTiles]
         .map(app => ({ app, score: scoreAppMatch(app, query) }))
         .filter(item => item.score > 0)
         .sort((a, b) => b.score - a.score || a.app.name.localeCompare(b.app.name));
@@ -1237,7 +1282,18 @@
     function applySearchQuery(query) {
       filteredApps = filterAppsByQuery(query);
       selectedIndex = -1;
+      renderCatalogStats();
       renderApps(filteredApps);
+    }
+
+    function setActiveCatalogTab(tab) {
+      activeCatalogTab = tab === 'tiles' ? 'tiles' : 'apps';
+      catalogTabButtons.forEach(button => {
+        button.classList.toggle('active', button.dataset.tab === activeCatalogTab);
+      });
+      appsPanel.classList.toggle('active', activeCatalogTab === 'apps');
+      tilesPanel.classList.toggle('active', activeCatalogTab === 'tiles');
+      applySearchQuery(searchInput.value);
     }
 
     function handleCatalogQueryParams() {
@@ -1254,6 +1310,7 @@
 
       const matchedApp = findBestAppMatch(query);
       if (matchedApp) {
+        setActiveCatalogTab(matchedApp.kind === 'webapp' || matchedApp.kind === 'image-tile' ? 'tiles' : 'apps');
         const matchedIndex = renderedApps.findIndex(app => app.name === matchedApp.name && app.file === matchedApp.file);
         if (matchedIndex >= 0) {
           setSelectedCard(matchedIndex);
@@ -1429,8 +1486,9 @@
     function renderCatalogStats() {
       const now = Date.now();
       const dayMs = 24 * 60 * 60 * 1000;
+      const sourceList = activeCatalogTab === 'tiles' ? customTiles : apps;
       const windows = [
-        { label: 'Total Apps', limit: Infinity },
+        { label: activeCatalogTab === 'tiles' ? 'Total Tiles' : 'Total Apps', limit: Infinity },
         { label: 'Last 24h', limit: dayMs },
         { label: 'Last 7d', limit: 7 * dayMs },
         { label: 'Last 30d', limit: 30 * dayMs },
@@ -1439,9 +1497,9 @@
 
       const stats = windows.map(win => {
         if (win.limit === Infinity) {
-          return { label: win.label, value: apps.length };
+          return { label: win.label, value: sourceList.length };
         }
-        const value = apps.filter(app => {
+        const value = sourceList.filter(app => {
           const publishedAt = new Date(`${app.date}T00:00:00`).getTime();
           if (Number.isNaN(publishedAt)) return false;
           const age = now - publishedAt;
@@ -1504,6 +1562,7 @@
     }
 
     function setSelectedCard(index) {
+      const grid = activeCatalogTab === 'tiles' ? tilesGrid : appGrid;
       const cards = Array.from(grid.querySelectorAll('.app-card'));
       cards.forEach(card => card.classList.remove('selected'));
 
@@ -1645,7 +1704,10 @@
     }
     
     function renderApps(filteredApps) {
+      const grid = activeCatalogTab === 'tiles' ? tilesGrid : appGrid;
+      const otherGrid = activeCatalogTab === 'tiles' ? appGrid : tilesGrid;
       grid.innerHTML = '';
+      otherGrid.innerHTML = '';
       
       if (filteredApps.length === 0) {
         grid.innerHTML = '<div class="no-results">No apps found matching your search</div>';
@@ -1654,7 +1716,7 @@
         return;
       }
 
-      const recentApps = getRecentApps(filteredApps);
+      const recentApps = activeCatalogTab === 'apps' ? getRecentApps(filteredApps) : [];
       const renderedAppList = [];
       const categoryMap = new Map();
       filteredApps.forEach(app => {
@@ -1686,6 +1748,12 @@
     
     searchInput.addEventListener('input', (e) => {
       applySearchQuery(e.target.value);
+    });
+
+    catalogTabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        setActiveCatalogTab(button.dataset.tab);
+      });
     });
 
     tileTypeInputs.forEach(input => {
@@ -1922,6 +1990,7 @@
 
     searchInput.addEventListener('keydown', (e) => {
       if (e.key === 'Tab' && !e.shiftKey) {
+        const grid = activeCatalogTab === 'tiles' ? tilesGrid : appGrid;
         const cards = grid.querySelectorAll('.app-card');
         if (cards.length === 0) return;
         e.preventDefault();
@@ -1929,7 +1998,8 @@
       }
     });
 
-    grid.addEventListener('keydown', (e) => {
+    function handleGridKeydown(e) {
+      const grid = activeCatalogTab === 'tiles' ? tilesGrid : appGrid;
       const cards = grid.querySelectorAll('.app-card');
       if (cards.length === 0) return;
 
@@ -1943,14 +2013,15 @@
         e.preventDefault();
         openApp(renderedApps[selectedIndex], true);
       }
-    });
+    }
+
+    appGrid.addEventListener('keydown', handleGridKeydown);
+    tilesGrid.addEventListener('keydown', handleGridKeydown);
 
     async function bootstrapCatalog() {
       replaceLocalWebapps(loadLocalWebapps());
       replaceImageTiles(loadLocalImageTiles());
-      filteredApps = [...apps];
-      renderCatalogStats();
-      renderApps(filteredApps);
+      setActiveCatalogTab('apps');
       handleCatalogQueryParams();
       refreshTelemetryCounts();
       updateTileComposerUi();
@@ -1959,7 +2030,6 @@
         const syncedWebapps = await loadSharedWebapps();
         if (syncedWebapps.length > 0) {
           replaceSharedWebapps(syncedWebapps);
-          renderCatalogStats();
           applySearchQuery(searchInput.value);
           handleCatalogQueryParams();
         }
