@@ -381,6 +381,33 @@
       font-size: 12px;
       line-height: 1.4;
     }
+    .image-paste-target {
+      display: grid;
+      place-items: center;
+      min-height: 84px;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px dashed rgba(0, 217, 255, 0.28);
+      background: rgba(6, 16, 30, 0.72);
+      color: #bfefff;
+      text-align: center;
+    }
+    .image-paste-target.is-active {
+      border-color: rgba(67, 240, 199, 0.6);
+      background: rgba(9, 32, 39, 0.84);
+      color: #e8fff8;
+    }
+    .image-paste-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+    .image-paste-desc {
+      margin-top: 5px;
+      color: #8cb2d2;
+      font-size: 12px;
+      line-height: 1.4;
+    }
     .image-preview-card {
       display: none;
       align-items: center;
@@ -530,6 +557,12 @@
           <input type="url" class="webapp-input" id="webappUrlInput" placeholder="https://example.com" inputmode="url" autocomplete="url" required>
           <div class="image-input-wrap" id="imageInputWrap">
             <input type="file" class="image-file-input" id="imageFileInput" accept="image/*">
+            <div class="image-paste-target" id="imagePasteTarget" tabindex="0">
+              <div>
+                <div class="image-paste-title">Paste image from clipboard</div>
+                <div class="image-paste-desc">Click here and press `Ctrl+V` or `Cmd+V` after copying an image or screenshot.</div>
+              </div>
+            </div>
             <div class="image-preview-card" id="imagePreviewCard">
               <img class="image-preview-thumb" id="imagePreviewThumb" alt="">
               <div class="image-preview-meta">
@@ -803,6 +836,7 @@
     const tileTypeInputs = Array.from(document.querySelectorAll('input[name="tileType"]'));
     const imageInputWrap = document.getElementById('imageInputWrap');
     const imageFileInput = document.getElementById('imageFileInput');
+    const imagePasteTarget = document.getElementById('imagePasteTarget');
     const imagePreviewCard = document.getElementById('imagePreviewCard');
     const imagePreviewThumb = document.getElementById('imagePreviewThumb');
     const imagePreviewName = document.getElementById('imagePreviewName');
@@ -1539,6 +1573,7 @@
     function clearPendingImage() {
       pendingImageAsset = null;
       imageFileInput.value = '';
+      imagePasteTarget.classList.remove('is-active');
       imagePreviewCard.classList.remove('active');
       imagePreviewThumb.removeAttribute('src');
       imagePreviewName.textContent = '';
@@ -1552,6 +1587,31 @@
         reader.onerror = () => reject(new Error('Unable to read that image file.'));
         reader.readAsDataURL(file);
       });
+    }
+
+    async function loadPendingImageAsset(file, fallbackName = 'Pasted image') {
+      if (!file || !String(file.type || '').startsWith('image/')) {
+        throw new Error('Choose or paste a valid image.');
+      }
+
+      const dataUrl = await readFileAsDataUrl(file);
+      pendingImageAsset = {
+        name: file.name || fallbackName,
+        dataUrl,
+        size: file.size || 0
+      };
+      imagePreviewThumb.src = dataUrl;
+      imagePreviewName.textContent = pendingImageAsset.name;
+      imagePreviewSize.textContent = formatBytes(pendingImageAsset.size);
+      imagePreviewCard.classList.add('active');
+      imagePasteTarget.classList.add('is-active');
+      setWebappStatus(`Loaded ${pendingImageAsset.name}.`, 'success');
+    }
+
+    function extractImageFileFromClipboardEvent(event) {
+      const items = Array.from(event.clipboardData?.items || []);
+      const imageItem = items.find(item => String(item.type || '').startsWith('image/'));
+      return imageItem ? imageItem.getAsFile() : null;
     }
 
     function createAppSection(title, meta, sectionApps) {
@@ -1635,20 +1695,51 @@
       }
 
       try {
-        const dataUrl = await readFileAsDataUrl(file);
-        pendingImageAsset = {
-          name: file.name,
-          dataUrl,
-          size: file.size
-        };
-        imagePreviewThumb.src = dataUrl;
-        imagePreviewName.textContent = file.name;
-        imagePreviewSize.textContent = formatBytes(file.size);
-        imagePreviewCard.classList.add('active');
-        setWebappStatus(`Loaded ${file.name}.`, 'success');
+        await loadPendingImageAsset(file, file.name);
       } catch (error) {
         clearPendingImage();
         setWebappStatus(error.message || 'Unable to load that image.', 'error');
+      }
+    });
+
+    imagePasteTarget.addEventListener('click', () => {
+      imagePasteTarget.focus();
+    });
+
+    imagePasteTarget.addEventListener('paste', async event => {
+      const file = extractImageFileFromClipboardEvent(event);
+      if (!file) {
+        setWebappStatus('Clipboard does not contain an image yet.', 'error');
+        return;
+      }
+
+      event.preventDefault();
+      try {
+        await loadPendingImageAsset(file, 'Pasted image');
+      } catch (error) {
+        clearPendingImage();
+        setWebappStatus(error.message || 'Unable to paste that image.', 'error');
+      }
+    });
+
+    document.addEventListener('paste', async event => {
+      if (getSelectedTileType() !== 'image') return;
+      if (!imageInputWrap.classList.contains('active')) return;
+
+      const activeTag = document.activeElement?.tagName || '';
+      if (['INPUT', 'TEXTAREA'].includes(activeTag) && document.activeElement !== imagePasteTarget) {
+        return;
+      }
+
+      const file = extractImageFileFromClipboardEvent(event);
+      if (!file) return;
+
+      event.preventDefault();
+      try {
+        await loadPendingImageAsset(file, 'Pasted image');
+      } catch (error) {
+        clearPendingImage();
+        setWebappStatus(error.message || 'Unable to paste that image.', 'error');
       }
     });
 
