@@ -127,6 +127,10 @@
       margin-top: 6px;
     }
 
+    .button-row + .button-row {
+      margin-top: 14px;
+    }
+
     .btn {
       border: none;
       border-radius: 999px;
@@ -151,6 +155,12 @@
       background: rgba(255, 255, 255, 0.06);
       color: var(--ink);
       border: 1px solid rgba(255, 209, 102, 0.18);
+    }
+
+    .button-row.transfer-row {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .helper-text {
@@ -483,7 +493,7 @@
             <button class="btn btn-secondary" id="newBtn" type="button">New Countdown</button>
           </div>
 
-          <div class="button-row">
+          <div class="button-row transfer-row">
             <button class="btn btn-transfer" id="exportSharedBtn" type="button">Cloud Export</button>
             <button class="btn btn-transfer" id="importSharedBtn" type="button">Cloud Import</button>
           </div>
