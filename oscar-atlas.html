@@ -1221,6 +1221,16 @@
       return `<button type="button" class="learn-btn" data-action="learn-more" data-movie-id="${movieId}">Learn More</button>`;
     }
 
+    function buildWhereToWatchUrl(movie) {
+      const releaseYear = getMovieReleaseYear(movie);
+      const query = `${movie.title}${releaseYear ? ` ${releaseYear}` : ''}`;
+      return `https://www.justwatch.com/us/search?q=${encodeURIComponent(query)}`;
+    }
+
+    function renderWhereToWatchLink(movie, label = 'Where to Watch') {
+      return `<a class="runtime-link is-pill" data-external-link="true" href="${escapeHtml(buildWhereToWatchUrl(movie))}" target="_blank" rel="noreferrer">${label}</a>`;
+    }
+
     function getResearchTab(movieId) {
       return state.movieResearchTabs[movieId] || 'overview';
     }
@@ -1312,6 +1322,7 @@
             <div class="runtime-body">${escapeHtml(details.extract || 'Live story details were returned without a summary.')}</div>
             <div class="list-actions">
               ${renderLearnMoreButton(movie.id)}
+              ${renderWhereToWatchLink(movie)}
               ${links.pageUrl ? `<a class="runtime-link is-pill" href="${escapeHtml(links.pageUrl)}" target="_blank" rel="noreferrer">Wikipedia</a>` : ''}
               <a class="runtime-link is-pill" href="${escapeHtml(links.trailerUrl)}" target="_blank" rel="noreferrer">Trailer</a>
               <a class="runtime-link is-pill" href="${escapeHtml(links.castUrl)}" target="_blank" rel="noreferrer">Cast</a>
@@ -1692,6 +1703,7 @@
           </div>
           <div class="tile-actions">
             ${renderLearnMoreButton(movie.id)}
+            ${renderWhereToWatchLink(movie)}
             <button type="button" class="status-btn ${status === 'watched' ? 'is-active' : ''}" data-action="status" data-status="watched" data-movie-id="${movie.id}">Watched</button>
             <button type="button" class="status-btn ${status === 'towatch' ? 'is-active' : ''}" data-action="status" data-status="towatch" data-movie-id="${movie.id}">To Watch</button>
             ${status ? `<button type="button" class="status-btn is-clear" data-action="status" data-status="" data-movie-id="${movie.id}">Clear</button>` : ''}
@@ -1740,6 +1752,7 @@
           </div>
           <div class="list-actions">
             ${renderLearnMoreButton(movie.id)}
+            ${renderWhereToWatchLink(movie)}
             <button type="button" class="status-btn ${status === 'watched' ? 'is-active' : ''}" data-action="status" data-status="watched" data-movie-id="${movie.id}">Watched</button>
             <button type="button" class="status-btn ${status === 'towatch' ? 'is-active' : ''}" data-action="status" data-status="towatch" data-movie-id="${movie.id}">To Watch</button>
             <button type="button" class="status-btn is-clear" data-action="status" data-status="" data-movie-id="${movie.id}">Clear</button>
@@ -1750,9 +1763,11 @@
 
     function renderMovieStatusActions(movieId) {
       const status = getMovieStatus(movieId);
+      const movie = state.moviesById.get(movieId);
       return `
         <div class="list-actions">
           ${renderLearnMoreButton(movieId)}
+          ${movie ? renderWhereToWatchLink(movie) : ''}
           <button type="button" class="status-btn ${status === 'watched' ? 'is-active' : ''}" data-action="status" data-status="watched" data-movie-id="${movieId}">Watched</button>
           <button type="button" class="status-btn ${status === 'towatch' ? 'is-active' : ''}" data-action="status" data-status="towatch" data-movie-id="${movieId}">To Watch</button>
           ${status ? `<button type="button" class="status-btn is-clear" data-action="status" data-status="" data-movie-id="${movieId}">Clear</button>` : ''}
@@ -2265,6 +2280,12 @@
     });
 
     tileGrid.addEventListener('click', event => {
+      const externalLink = event.target.closest('[data-external-link="true"]');
+      if (externalLink) {
+        event.stopPropagation();
+        return;
+      }
+
       const learnButton = event.target.closest('[data-action="learn-more"][data-movie-id]');
       if (learnButton) {
         event.stopPropagation();
@@ -2285,6 +2306,12 @@
     });
 
     watchedList.addEventListener('click', event => {
+      const externalLink = event.target.closest('[data-external-link="true"]');
+      if (externalLink) {
+        event.stopPropagation();
+        return;
+      }
+
       const learnButton = event.target.closest('[data-action="learn-more"][data-movie-id]');
       if (learnButton) {
         event.stopPropagation();
@@ -2305,6 +2332,12 @@
     });
 
     toWatchList.addEventListener('click', event => {
+      const externalLink = event.target.closest('[data-external-link="true"]');
+      if (externalLink) {
+        event.stopPropagation();
+        return;
+      }
+
       const learnButton = event.target.closest('[data-action="learn-more"][data-movie-id]');
       if (learnButton) {
         event.stopPropagation();
@@ -2327,6 +2360,12 @@
     detailModal.addEventListener('click', event => {
       if (event.target === detailModal) {
         closeModal();
+        return;
+      }
+
+      const externalLink = event.target.closest('[data-external-link="true"]');
+      if (externalLink) {
+        event.stopPropagation();
         return;
       }
 
