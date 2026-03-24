@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>* Research</title>
+  <style>
+    :root {
+      --bg: #10151d;
+      --panel: rgba(19, 28, 39, 0.92);
+      --line: rgba(148, 163, 184, 0.18);
+      --text: #edf2f7;
+      --muted: #97a6ba;
+      --accent: #ff8b3d;
+      --accent-soft: rgba(255, 139, 61, 0.15);
+      --cyan: #5ed1c6;
+      --danger: #ff7c7c;
+      --shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+      --radius: 20px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top left, rgba(255, 139, 61, 0.15), transparent 28%),
+        radial-gradient(circle at top right, rgba(94, 209, 198, 0.12), transparent 24%),
+        linear-gradient(180deg, #0f141b 0%, #131b25 55%, #0f141b 100%);
+      color: var(--text);
+      font-family: "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      padding: 18px;
+    }
+
+    button, input, textarea {
+      font: inherit;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .home-link {
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      z-index: 20;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 13px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(16, 21, 29, 0.86);
+      color: #f8fafc;
+      text-decoration: none;
+      backdrop-filter: blur(10px);
+    }
+
+    .app-shell {
+      max-width: 1540px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 24px 28px 26px;
+      border-radius: 28px;
+      background:
+        linear-gradient(135deg, rgba(255, 139, 61, 0.18), rgba(94, 209, 198, 0.12)),
+        rgba(13, 19, 27, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -8% -38% auto;
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 139, 61, 0.32), transparent 66%);
+      pointer-events: none;
+    }
+
+    .hero-top {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 18px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.07);
+      color: #ffe0ce;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 14px 0 8px;
+      font-size: clamp(34px, 4.6vw, 58px);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+    }
+
+    .hero-copy {
+      max-width: 860px;
+      color: #d9e2ee;
+      font-size: 16px;
+      line-height: 1.55;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(120px, 1fr));
+      gap: 12px;
+      min-width: min(100%, 520px);
+    }
+
+    .hero-copy-wrap {
+      display: grid;
+      justify-items: center;
+      gap: 10px;
+      text-align: center;
+    }
+
+    .top-fetch-bar {
+      width: min(100%, 980px);
+      margin: 0 auto;
+      padding: 16px;
+      border-radius: 22px;
+      background: rgba(8, 13, 19, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      display: grid;
+      gap: 12px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+
+    .top-fetch-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .top-fetch-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .stat-card {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .stat-label {
+      color: #c4cfdb;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .stat-value {
+      margin-top: 6px;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.65fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      min-height: 260px;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
+    }
+
+    .panel-title {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .panel-note {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .panel-body {
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #d6deea;
+    }
+
+    .input,
+    .textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(10, 15, 22, 0.78);
+      color: var(--text);
+      outline: none;
+    }
+
+    .textarea {
+      min-height: 210px;
+      resize: vertical;
+      line-height: 1.55;
+    }
+
+    .input:focus,
+    .textarea:focus {
+      border-color: rgba(255, 139, 61, 0.65);
+      box-shadow: 0 0 0 3px rgba(255, 139, 61, 0.16);
+    }
+
+    .toolbar,
+    .transfer-row,
+    .page-meta,
+    .summary-grid,
+    .watch-footer {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .btn,
+    .btn-ghost {
+      border: 0;
+      border-radius: 999px;
+      padding: 11px 16px;
+      cursor: pointer;
+      transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+      font-weight: 800;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, var(--accent), #ffac62);
+      color: #2a1300;
+    }
+
+    .btn-ghost {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.11);
+    }
+
+    .btn:hover,
+    .btn-ghost:hover {
+      transform: translateY(-1px);
+    }
+
+    .danger {
+      background: rgba(255, 124, 124, 0.16);
+      color: #ffd1d1;
+      border: 1px solid rgba(255, 124, 124, 0.26);
+    }
+
+    .status {
+      min-height: 20px;
+      color: #bcece6;
+      font-size: 13px;
+    }
+
+    .status.error {
+      color: #ffb0b0;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      color: #dce5ef;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    .summary-card,
+    .page-card,
+    .watch-card {
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)),
+        rgba(10, 15, 22, 0.78);
+    }
+
+    .summary-card,
+    .page-card {
+      padding: 14px;
+    }
+
+    .summary-kicker {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .summary-value {
+      margin-top: 4px;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      word-break: break-word;
+    }
+
+    .page-title,
+    .watch-title {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .page-snippet,
+    .watch-meta,
+    .muted,
+    .tiny {
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .tiny {
+      font-size: 12px;
+    }
+
+    .page-content {
+      max-height: 380px;
+      overflow: auto;
+      white-space: pre-wrap;
+      font-size: 14px;
+      line-height: 1.6;
+      padding-right: 4px;
+    }
+
+    .page-frame-wrap {
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(6, 10, 16, 0.9);
+    }
+
+    .page-frame {
+      display: block;
+      width: 100%;
+      height: 560px;
+      border: 0;
+      background: #fff;
+    }
+
+    .watchlist {
+      display: grid;
+      gap: 12px;
+    }
+
+    .detail-stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .status-card {
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .watch-card {
+      padding: 16px;
+      cursor: pointer;
+    }
+
+    .watch-card.active {
+      border-color: rgba(255, 139, 61, 0.46);
+      box-shadow: inset 0 0 0 1px rgba(255, 139, 61, 0.18), 0 14px 32px rgba(255, 139, 61, 0.08);
+    }
+
+    .link-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 9px 14px;
+      border-radius: 999px;
+      background: rgba(94, 209, 198, 0.16);
+      border: 1px solid rgba(94, 209, 198, 0.28);
+      color: #dbfffb;
+      text-decoration: none;
+      font-weight: 800;
+    }
+
+    .empty-state {
+      padding: 26px 18px;
+      border-radius: 18px;
+      border: 1px dashed rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 1220px) {
+      .board {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-stats {
+        grid-template-columns: repeat(2, minmax(120px, 1fr));
+        min-width: 0;
+      }
+    }
+
+    @media (max-width: 760px) {
+      body {
+        padding: 12px;
+      }
+
+      .hero {
+        padding: 20px;
+      }
+
+      .hero-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .panel-body {
+        padding: 14px;
+      }
+
+      .home-link {
+        position: static;
+        margin-bottom: 12px;
+      }
+
+      .top-fetch-row,
+      .field-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="home-link" href="app-catalog.html" title="Back to App Catalog">Home</a>
+
+  <div class="app-shell">
+    <section class="hero">
+      <div class="hero-top">
+        <div class="hero-copy-wrap">
+          <div class="eyebrow">* Research</div>
+          <h1>Load a page. Save notes. Reopen later.</h1>
+        </div>
+        <div class="top-fetch-bar">
+          <div class="top-fetch-row">
+            <input id="urlInput" class="input" type="url" placeholder="https://example.com/article">
+            <button id="fetchBtn" class="btn" type="button">Load Page</button>
+            <div class="badge" id="fetchBadge">No page loaded</div>
+          </div>
+          <div class="top-fetch-meta">
+            <div id="fetchStatus" class="status" aria-live="polite"></div>
+            <div class="hero-stats" id="heroStats"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="board">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Page</div>
+          </div>
+          <div class="badge" id="selectedBadge">Nothing selected</div>
+        </div>
+        <div class="panel-body">
+          <div class="detail-stack">
+            <div class="toolbar">
+              <button id="saveBtn" class="btn" type="button">Save To List</button>
+              <button id="removeBtn" class="btn-ghost danger hidden" type="button">Remove</button>
+            </div>
+
+            <div id="sourcePreview"></div>
+
+            <div class="field-row">
+              <label class="field">
+                <span class="label">Title</span>
+                <input id="manualTitleInput" class="input" type="text" placeholder="Optional">
+              </label>
+              <label class="field">
+                <span class="label">Summary</span>
+                <input id="manualSummaryInput" class="input" type="text" placeholder="Optional">
+              </label>
+            </div>
+
+            <div id="selectedSummary"></div>
+
+            <div class="toolbar">
+              <a id="openUrlLink" class="link-btn hidden" href="#" target="_blank" rel="noreferrer">Open Original URL</a>
+            </div>
+            <div id="transferStatus" class="status" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Saved</div>
+          </div>
+          <div class="badge" id="savedBadge">0 saved</div>
+        </div>
+        <div class="panel-body">
+          <label class="field">
+            <span class="label">Notes</span>
+            <textarea id="notesInput" class="textarea" placeholder="Your notes..."></textarea>
+          </label>
+
+          <div id="transferSummary" class="summary-grid"></div>
+
+          <div class="transfer-row">
+            <button id="exportFileBtn" class="btn-ghost" type="button">Export File</button>
+            <button id="importFileBtn" class="btn-ghost" type="button">Import File</button>
+            <button id="exportCloudBtn" class="btn-ghost" type="button">Cloud Export</button>
+            <button id="importCloudBtn" class="btn-ghost" type="button">Cloud Import</button>
+            <button id="clearSavedBtn" class="btn-ghost danger" type="button">Clear All</button>
+            <input id="importFileInput" class="hidden" type="file" accept="application/json">
+          </div>
+
+          <label class="field">
+            <span class="label">Search</span>
+            <input id="savedSearch" class="input" type="text" placeholder="Search saved items">
+          </label>
+          <div id="savedList" class="watchlist"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="shared-store-config.js?v=20260323-urlresearch"></script>
+  <script src="shared-store.js?v=20260323-urlresearch"></script>
+  <script>
+    const STORAGE_KEY = 'urlResearchBoard-v1';
+    const APP_ID = 'vehicle-research';
+
+    const heroStats = document.getElementById('heroStats');
+    const urlInput = document.getElementById('urlInput');
+    const fetchBtn = document.getElementById('fetchBtn');
+    const fetchStatus = document.getElementById('fetchStatus');
+    const fetchBadge = document.getElementById('fetchBadge');
+    const sourcePreview = document.getElementById('sourcePreview');
+    const manualTitleInput = document.getElementById('manualTitleInput');
+    const manualSummaryInput = document.getElementById('manualSummaryInput');
+    const selectedSummary = document.getElementById('selectedSummary');
+    const notesInput = document.getElementById('notesInput');
+    const saveBtn = document.getElementById('saveBtn');
+    const removeBtn = document.getElementById('removeBtn');
+    const clearSavedBtn = document.getElementById('clearSavedBtn');
+    const openUrlLink = document.getElementById('openUrlLink');
+    const selectedBadge = document.getElementById('selectedBadge');
+    const transferSummary = document.getElementById('transferSummary');
+    const transferStatus = document.getElementById('transferStatus');
+    const exportFileBtn = document.getElementById('exportFileBtn');
+    const importFileBtn = document.getElementById('importFileBtn');
+    const exportCloudBtn = document.getElementById('exportCloudBtn');
+    const importCloudBtn = document.getElementById('importCloudBtn');
+    const importFileInput = document.getElementById('importFileInput');
+    const savedSearch = document.getElementById('savedSearch');
+    const savedList = document.getElementById('savedList');
+    const savedBadge = document.getElementById('savedBadge');
+
+    let state = loadState();
+    let pageState = {
+      loading: false,
+      loadedUrl: '',
+      page: null,
+      fetchMode: '',
+      requestToken: 0
+    };
+
+    function createDefaultState() {
+      return {
+        version: 1,
+        draftUrl: '',
+        draftNotes: {},
+        selectedSavedId: '',
+        savedSearch: '',
+        saved: []
+      };
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return createDefaultState();
+        return sanitizeState(JSON.parse(raw));
+      } catch (error) {
+        return createDefaultState();
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function sanitizeState(input) {
+      const base = createDefaultState();
+      if (!input || typeof input !== 'object' || Array.isArray(input)) return base;
+      const next = { ...base };
+      next.draftUrl = String(input.draftUrl || '').slice(0, 2000);
+      next.selectedSavedId = String(input.selectedSavedId || '');
+      next.savedSearch = String(input.savedSearch || '').slice(0, 120);
+
+      if (input.draftNotes && typeof input.draftNotes === 'object' && !Array.isArray(input.draftNotes)) {
+        Object.entries(input.draftNotes).forEach(([key, value]) => {
+          next.draftNotes[key] = String(value || '').slice(0, 12000);
+        });
+      }
+
+      if (Array.isArray(input.saved)) {
+        next.saved = input.saved.map(sanitizeSavedItem).filter(Boolean);
+      }
+
+      if (next.selectedSavedId && !next.saved.some(item => item.id === next.selectedSavedId)) {
+        next.selectedSavedId = '';
+      }
+
+      return next;
+    }
+
+    function sanitizeSavedItem(item) {
+      if (!item || typeof item !== 'object') return null;
+      const url = normalizeUrl(item.url || '');
+      if (!url) return null;
+      const normalizedUrl = normalizeStoredKey(url);
+      const title = String(item.title || '').trim() || url;
+      const domain = String(item.domain || getDomain(url)).trim();
+      const summary = String(item.summary || '').slice(0, 2000);
+      const content = String(item.content || '').slice(0, 60000);
+      const notes = String(item.notes || '').slice(0, 12000);
+      const fetchedAt = toIso(item.fetchedAt);
+      const savedAt = toIso(item.savedAt || fetchedAt);
+      const updatedAt = toIso(item.updatedAt || savedAt);
+      return {
+        id: String(item.id || `${normalizedUrl}-${Date.now()}`),
+        url,
+        normalizedUrl,
+        title,
+        domain,
+        summary,
+        content,
+        notes,
+        fetchedAt,
+        savedAt,
+        updatedAt,
+        manualTitle: String(item.manualTitle || '').slice(0, 500),
+        manualSummary: String(item.manualSummary || '').slice(0, 2000),
+        fetchMode: String(item.fetchMode || '').slice(0, 40)
+      };
+    }
+
+    function toIso(value) {
+      const date = new Date(value || Date.now());
+      return Number.isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
+    }
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function normalizeText(value) {
+      return String(value || '').toLowerCase().trim();
+    }
+
+    function normalizeStoredKey(value) {
+      return String(value || '').trim().toLowerCase();
+    }
+
+    function normalizeUrl(value) {
+      const raw = String(value || '').trim();
+      if (!raw) return '';
+      if (/^blob:/i.test(raw)) {
+        try {
+          const candidate = new URL(raw);
+          return candidate.toString();
+        } catch (error) {
+          return '';
+        }
+      }
+      try {
+        const candidate = new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`);
+        if (!/^https?:$/.test(candidate.protocol)) return '';
+        candidate.hash = '';
+        return candidate.toString();
+      } catch (error) {
+        return '';
+      }
+    }
+
+    function getDomain(url) {
+      if (/^blob:/i.test(String(url || ''))) {
+        const match = String(url).match(/^blob:(https?:\/\/[^/]+)/i);
+        if (match) {
+          try {
+            return new URL(match[1]).hostname.replace(/^www\./, '');
+          } catch (error) {
+            return 'blob-url';
+          }
+        }
+        return 'blob-url';
+      }
+      try {
+        return new URL(url).hostname.replace(/^www\./, '');
+      } catch (error) {
+        return '';
+      }
+    }
+
+    function formatDate(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return 'Unknown';
+      return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function normalizeKeyword(rawValue) {
+      return String(rawValue || '')
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-_]/g, '');
+    }
+
+    function promptKeyword(actionLabel) {
+      const value = prompt(`${actionLabel}: enter a keyword`, '');
+      if (value == null) return '';
+      const keyword = normalizeKeyword(value);
+      setTransferStatus(keyword ? '' : 'Keyword is required for shared transfer.', !keyword);
+      return keyword;
+    }
+
+    function setFetchStatus(message, isError) {
+      fetchStatus.textContent = message || '';
+      fetchStatus.classList.toggle('error', Boolean(isError));
+    }
+
+    function setTransferStatus(message, isError) {
+      transferStatus.textContent = message || '';
+      transferStatus.classList.toggle('error', Boolean(isError));
+    }
+
+    function buildProxyUrl(url) {
+      return `https://r.jina.ai/http://${String(url || '').replace(/^https?:\/\//, '')}`;
+    }
+
+    function getCurrentSavedItem() {
+      return state.saved.find(item => item.id === state.selectedSavedId) || null;
+    }
+
+    function getCurrentPage() {
+      const savedItem = getCurrentSavedItem();
+      return savedItem || pageState.page;
+    }
+
+    function getCurrentNotes() {
+      const currentSaved = getCurrentSavedItem();
+      if (currentSaved) return currentSaved.notes || '';
+      const currentPage = pageState.page;
+      if (!currentPage) return '';
+      return String(state.draftNotes[currentPage.normalizedUrl] || '');
+    }
+
+    function renderHeroStats() {
+      const savedCount = state.saved.length;
+      const noteCount = state.saved.filter(item => item.notes.trim()).length;
+      const domainCount = new Set(state.saved.map(item => item.domain)).size;
+      const contentCount = state.saved.filter(item => item.url.trim()).length;
+      const cards = [
+        { label: 'Saved URLs', value: savedCount },
+        { label: 'With Notes', value: noteCount },
+        { label: 'Domains', value: domainCount },
+        { label: 'Loaded Views', value: contentCount }
+      ];
+
+      heroStats.innerHTML = cards.map(card => `
+        <div class="stat-card">
+          <div class="stat-label">${escapeHtml(card.label)}</div>
+          <div class="stat-value">${escapeHtml(card.value)}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderSourcePreview() {
+      if (pageState.loading) {
+        fetchBadge.textContent = 'Loading';
+        sourcePreview.innerHTML = '<div class="empty-state">Loading...</div>';
+        return;
+      }
+
+      if (!pageState.page) {
+        fetchBadge.textContent = 'No page loaded';
+        sourcePreview.innerHTML = '<div class="empty-state">Load a page to preview it here.</div>';
+        return;
+      }
+
+      fetchBadge.textContent = pageState.page.domain || 'Page loaded';
+      sourcePreview.innerHTML = `
+        <div class="page-card">
+          <div class="page-title">${escapeHtml(pageState.page.title)}</div>
+          <div class="page-meta" style="margin-top:10px;">
+            <span class="badge">${escapeHtml(pageState.page.domain || 'URL')}</span>
+            <span class="tiny">Loaded ${escapeHtml(formatDate(pageState.page.fetchedAt))}</span>
+          </div>
+          <div class="page-snippet" style="margin-top:12px;">${escapeHtml(pageState.page.summary || 'Live page view')}</div>
+          <div class="tiny" style="margin-top:12px; word-break: break-all;">${escapeHtml(pageState.page.url)}</div>
+        </div>
+        <div class="page-frame-wrap">
+          <iframe
+            class="page-frame"
+            src="${escapeHtml(pageState.page.url)}"
+            loading="lazy"
+            referrerpolicy="no-referrer"
+            sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-downloads"
+            title="${escapeHtml(pageState.page.title || pageState.page.url)}"
+          ></iframe>
+        </div>
+        <div class="tiny">If blank, open the original URL.</div>
+      `;
+    }
+
+    function renderSelectedSummary() {
+      const current = getCurrentPage();
+      const currentSaved = getCurrentSavedItem();
+
+      if (!current) {
+        selectedBadge.textContent = 'Nothing selected';
+        selectedSummary.innerHTML = '<div class="empty-state">Load a page or open a saved item.</div>';
+        notesInput.value = '';
+        saveBtn.textContent = 'Save To List';
+        removeBtn.classList.add('hidden');
+        openUrlLink.classList.add('hidden');
+        transferSummary.innerHTML = '';
+        return;
+      }
+
+      selectedBadge.textContent = current.domain || 'Loaded page';
+      notesInput.value = getCurrentNotes();
+      saveBtn.textContent = currentSaved ? 'Update Saved Notes' : 'Save To List';
+      removeBtn.classList.toggle('hidden', !currentSaved);
+      openUrlLink.classList.toggle('hidden', !current.url);
+      openUrlLink.href = current.url || '#';
+
+      transferSummary.innerHTML = [
+        { kicker: 'Domain', value: current.domain || 'Unknown' },
+        { kicker: 'Saved', value: currentSaved ? formatDate(currentSaved.savedAt) : 'Not saved yet' },
+        { kicker: 'Updated', value: currentSaved ? formatDate(currentSaved.updatedAt) : 'Draft only' }
+      ].map(card => `
+        <div class="summary-card">
+          <div class="summary-kicker">${escapeHtml(card.kicker)}</div>
+          <div class="summary-value">${escapeHtml(card.value)}</div>
+        </div>
+      `).join('');
+
+      selectedSummary.innerHTML = `
+        <div class="page-card">
+          <div class="page-title">${escapeHtml(current.title)}</div>
+          <div class="page-meta" style="margin-top:10px;">
+            <span class="badge">${escapeHtml(current.domain || 'URL')}</span>
+            <span class="tiny">${escapeHtml(currentSaved ? `Updated ${formatDate(currentSaved.updatedAt)}` : `Loaded ${formatDate(current.fetchedAt)}`)}</span>
+          </div>
+          <div class="page-snippet" style="margin-top:12px;">${escapeHtml(current.summary)}</div>
+          <div class="tiny" style="margin-top:12px; word-break: break-all;">${escapeHtml(current.url)}</div>
+        </div>
+      `;
+    }
+
+    function renderSavedList() {
+      const query = normalizeText(state.savedSearch);
+      const filtered = [...state.saved]
+        .filter(item => normalizeText([item.title, item.domain, item.url, item.notes, item.summary].join(' ')).includes(query))
+        .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+      savedBadge.textContent = `${filtered.length} saved`;
+
+      if (!filtered.length) {
+        savedList.innerHTML = '<div class="empty-state">No saved items yet.</div>';
+        return;
+      }
+
+      savedList.innerHTML = filtered.map(item => `
+        <div class="watch-card${item.id === state.selectedSavedId ? ' active' : ''}" data-select-saved="${escapeHtml(item.id)}" role="button" tabindex="0" aria-label="${escapeHtml(item.title)}">
+          <div class="watch-title">${escapeHtml(item.title)}</div>
+          <div class="watch-meta" style="margin-top:8px;">${escapeHtml(item.domain || item.url)}</div>
+          <div class="watch-meta" style="margin-top:12px;">${escapeHtml((item.notes || item.summary || '').slice(0, 170) || 'No notes yet')}</div>
+          <div class="watch-footer" style="margin-top:12px;">
+            <span class="tiny">Updated ${escapeHtml(formatDate(item.updatedAt))}</span>
+            <a class="link-btn" href="${escapeHtml(item.url)}" target="_blank" rel="noreferrer">Open</a>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function render() {
+      urlInput.value = state.draftUrl;
+      savedSearch.value = state.savedSearch;
+      const current = getCurrentPage();
+      manualTitleInput.value = current ? (current.manualTitle || '') : '';
+      manualSummaryInput.value = current ? (current.manualSummary || '') : '';
+      renderHeroStats();
+      renderSourcePreview();
+      renderSelectedSummary();
+      renderSavedList();
+    }
+
+    function buildPageFromManualInput(url) {
+      const normalized = normalizeUrl(url);
+      if (!normalized) return null;
+      const manualTitle = String(manualTitleInput.value || '').trim();
+      const manualSummary = String(manualSummaryInput.value || '').trim();
+      if (!manualTitle && !manualSummary) return null;
+      return {
+        url: normalized,
+        normalizedUrl: normalizeStoredKey(normalized),
+        domain: getDomain(normalized),
+        title: manualTitle || normalized,
+        summary: manualSummary || 'Manual entry.',
+        content: '',
+        fetchedAt: new Date().toISOString(),
+        manualTitle,
+        manualSummary,
+        fetchMode: 'manual'
+      };
+    }
+
+    async function fetchPage() {
+      const normalized = normalizeUrl(urlInput.value);
+      if (!normalized) {
+        setFetchStatus('Enter a valid http or https URL.', true);
+        return;
+      }
+
+      const normalizedUrl = normalizeStoredKey(normalized);
+      const existing = state.saved.find(item => item.normalizedUrl === normalizedUrl) || null;
+      state.draftUrl = normalized;
+      state.selectedSavedId = existing ? existing.id : '';
+      saveState();
+
+      const requestToken = pageState.requestToken + 1;
+      pageState.requestToken = requestToken;
+      pageState.loading = true;
+      pageState.loadedUrl = normalized;
+      pageState.page = null;
+      pageState.fetchMode = 'embed';
+      setFetchStatus('Loading page...', false);
+      render();
+
+      pageState.loading = false;
+      pageState.page = buildPageFromManualInput(normalized) || {
+        ...(existing ? { ...existing } : {}),
+        url: normalized,
+        normalizedUrl,
+        domain: existing?.domain || getDomain(normalized),
+        title: String(manualTitleInput.value || '').trim() || existing?.title || getDomain(normalized) || normalized,
+        summary: String(manualSummaryInput.value || '').trim() || existing?.summary || (/^blob:/i.test(normalized)
+          ? 'Blob URL view.'
+          : 'Live page view.'),
+        content: existing?.content || '',
+        fetchedAt: new Date().toISOString(),
+        manualTitle: String(manualTitleInput.value || '').trim() || existing?.manualTitle || '',
+        manualSummary: String(manualSummaryInput.value || '').trim() || existing?.manualSummary || '',
+        fetchMode: 'embed'
+      };
+      setFetchStatus(
+        /^blob:/i.test(normalized)
+          ? 'Blob URL loaded. If blank, it may be session-bound.'
+          : existing ? 'Page loaded. Existing notes kept.' : 'Page loaded.',
+        false
+      );
+      render();
+    }
+
+    function persistCurrentNotes(value) {
+      const currentSaved = getCurrentSavedItem();
+      if (currentSaved) {
+        currentSaved.notes = value;
+        currentSaved.updatedAt = new Date().toISOString();
+      } else if (pageState.page) {
+        state.draftNotes[pageState.page.normalizedUrl] = value;
+      }
+      saveState();
+      renderHeroStats();
+      renderSavedList();
+    }
+
+    function saveCurrentPage(options = {}) {
+      const page = buildPageFromManualInput(urlInput.value) || pageState.page || getCurrentSavedItem();
+      if (!page) {
+        if (!options.silent) {
+          setTransferStatus('Fetch a URL or select a saved item first.', true);
+        }
+        return;
+      }
+
+      const notes = String(notesInput.value || '').trim();
+      const normalizedUrl = normalizeStoredKey(page.url);
+      const existing = state.saved.find(item => item.normalizedUrl === normalizedUrl);
+      const now = new Date().toISOString();
+
+      if (existing) {
+        existing.title = page.title;
+        existing.domain = page.domain;
+        existing.summary = page.summary;
+        existing.content = page.content;
+        existing.notes = notes;
+        existing.updatedAt = now;
+        existing.fetchedAt = page.fetchedAt || existing.fetchedAt;
+        existing.manualTitle = page.manualTitle || '';
+        existing.manualSummary = page.manualSummary || '';
+        existing.fetchMode = page.fetchMode || existing.fetchMode || '';
+        state.selectedSavedId = existing.id;
+      } else {
+        const next = sanitizeSavedItem({
+          id: `${normalizedUrl}-${Date.now()}`,
+          url: page.url,
+          title: page.title,
+          domain: page.domain,
+          summary: page.summary,
+          content: page.content,
+          notes,
+          fetchedAt: page.fetchedAt || now,
+          savedAt: now,
+          updatedAt: now,
+          manualTitle: page.manualTitle || '',
+          manualSummary: page.manualSummary || '',
+          fetchMode: page.fetchMode || ''
+        });
+        state.saved.unshift(next);
+        state.selectedSavedId = next.id;
+      }
+
+      delete state.draftNotes[normalizedUrl];
+      saveState();
+      if (!options.silent) {
+        setTransferStatus(`Saved ${page.title}.`, false);
+      }
+      render();
+    }
+
+    function autosaveCurrentPageDetails() {
+      const normalized = normalizeUrl(urlInput.value);
+      if (!normalized) return;
+      if (!pageState.page && !getCurrentSavedItem() && !buildPageFromManualInput(normalized)) return;
+      saveCurrentPage({ silent: true });
+    }
+
+    function removeSelectedPage() {
+      const savedItem = getCurrentSavedItem();
+      if (!savedItem) return;
+      state.saved = state.saved.filter(item => item.id !== savedItem.id);
+      state.selectedSavedId = '';
+      saveState();
+      setTransferStatus(`Removed ${savedItem.title}.`, false);
+      render();
+    }
+
+    function clearAllSavedPages() {
+      if (!state.saved.length) {
+        setTransferStatus('Nothing to clear.', true);
+        return;
+      }
+
+      const confirmed = window.confirm('Delete all saved items from the watch list? This will clear the current project list.');
+      if (!confirmed) return;
+
+      state.saved = [];
+      state.selectedSavedId = '';
+      state.savedSearch = '';
+      saveState();
+      setTransferStatus('Cleared all saved items.', false);
+      render();
+    }
+
+    function selectSavedItem(savedId) {
+      const savedItem = state.saved.find(item => item.id === savedId);
+      if (!savedItem) return;
+      state.selectedSavedId = savedItem.id;
+      state.draftUrl = savedItem.url;
+      pageState.page = { ...savedItem };
+      pageState.loadedUrl = savedItem.url;
+      saveState();
+      setFetchStatus('', false);
+      render();
+    }
+
+    function exportToFile() {
+      const payload = {
+        app: APP_ID,
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        data: state
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `url-research-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+      setTransferStatus('Exported your saved URL research to a JSON file.', false);
+    }
+
+    function importFromPayload(payload) {
+      const data = payload?.data ?? payload;
+      state = sanitizeState(data);
+      pageState.page = null;
+      pageState.loadedUrl = '';
+      state.selectedSavedId = state.saved[0]?.id || '';
+      if (state.selectedSavedId) {
+        const first = state.saved.find(item => item.id === state.selectedSavedId);
+        if (first) {
+          pageState.page = { ...first };
+          pageState.loadedUrl = first.url;
+        }
+      }
+      saveState();
+      setTransferStatus(`Imported ${state.saved.length} saved URL${state.saved.length === 1 ? '' : 's'}.`, false);
+      render();
+    }
+
+    async function exportToCloud() {
+      const keyword = promptKeyword('Cloud export');
+      if (!keyword) return;
+      try {
+        await window.AppSharedStore.putSharedContent(window.AppSharedStore.buildSharedKey(APP_ID, keyword), {
+          app: APP_ID,
+          version: 1,
+          exportedAt: new Date().toISOString(),
+          data: state
+        });
+        setTransferStatus(`Cloud export complete (${keyword}).`, false);
+      } catch (error) {
+        setTransferStatus(error.message || 'Cloud export failed.', true);
+      }
+    }
+
+    async function importFromCloud() {
+      const keyword = promptKeyword('Cloud import');
+      if (!keyword) return;
+      try {
+        const payload = await window.AppSharedStore.getSharedContent(window.AppSharedStore.buildSharedKey(APP_ID, keyword));
+        if (!payload || payload.app !== APP_ID) {
+          throw new Error('Shared data format is invalid for this app.');
+        }
+        importFromPayload(payload);
+        setTransferStatus(`Cloud import complete (${keyword}).`, false);
+      } catch (error) {
+        setTransferStatus(error.message || 'Cloud import failed.', true);
+      }
+    }
+
+    urlInput.addEventListener('input', event => {
+      state.draftUrl = event.target.value;
+      saveState();
+    });
+
+    urlInput.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        fetchPage();
+      }
+    });
+
+    fetchBtn.addEventListener('click', fetchPage);
+
+    notesInput.addEventListener('input', event => {
+      persistCurrentNotes(String(event.target.value || ''));
+    });
+
+    manualTitleInput.addEventListener('input', autosaveCurrentPageDetails);
+    manualSummaryInput.addEventListener('input', autosaveCurrentPageDetails);
+
+    saveBtn.addEventListener('click', saveCurrentPage);
+    removeBtn.addEventListener('click', removeSelectedPage);
+    clearSavedBtn.addEventListener('click', clearAllSavedPages);
+    exportFileBtn.addEventListener('click', exportToFile);
+    importFileBtn.addEventListener('click', () => importFileInput.click());
+    exportCloudBtn.addEventListener('click', exportToCloud);
+    importCloudBtn.addEventListener('click', importFromCloud);
+
+    importFileInput.addEventListener('change', event => {
+      const [file] = event.target.files || [];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          importFromPayload(JSON.parse(String(reader.result || '{}')));
+        } catch (error) {
+          setTransferStatus('Import file is not valid JSON for this app.', true);
+        }
+        importFileInput.value = '';
+      };
+      reader.onerror = () => {
+        setTransferStatus('Unable to read that file.', true);
+        importFileInput.value = '';
+      };
+      reader.readAsText(file);
+    });
+
+    savedSearch.addEventListener('input', event => {
+      state.savedSearch = event.target.value;
+      saveState();
+      renderSavedList();
+    });
+
+    document.addEventListener('click', event => {
+      const savedCard = event.target.closest('[data-select-saved]');
+      if (!savedCard) return;
+      if (event.target.closest('a')) return;
+      selectSavedItem(savedCard.dataset.selectSaved);
+    });
+
+    document.addEventListener('keydown', event => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      const savedCard = event.target.closest('[data-select-saved]');
+      if (!savedCard) return;
+      event.preventDefault();
+      selectSavedItem(savedCard.dataset.selectSaved);
+    });
+
+    if (state.selectedSavedId) {
+      const current = state.saved.find(item => item.id === state.selectedSavedId);
+      if (current) {
+        pageState.page = { ...current };
+        pageState.loadedUrl = current.url;
+      }
+    }
+
+    render();
+  </script>
+  <script>window.APP_TELEMETRY_ID = 'vehicle-research';</script>
+  <script src="app-telemetry.js?v=20260323-urlresearch" defer></script>
+</body>
+</html>
