@@ -286,15 +286,22 @@
     }
     .webapp-form {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-columns: minmax(0, 1fr);
       gap: 10px;
     }
     .webapp-save-mode {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .webapp-save-group {
       display: inline-flex;
       align-items: center;
       gap: 8px;
       flex-wrap: wrap;
-      margin-top: 10px;
     }
     .webapp-save-label {
       font-size: 12px;
@@ -360,6 +367,7 @@
       gap: 10px;
       flex-wrap: wrap;
       align-items: center;
+      justify-content: flex-end;
     }
     .webapp-secondary-btn {
       border: 1px solid rgba(0, 217, 255, 0.24);
@@ -637,7 +645,8 @@
     }
     @media (max-width: 640px) {
       .webapp-form { grid-template-columns: 1fr; }
-      .webapp-actions { flex-direction: column; align-items: stretch; }
+      .webapp-save-mode { align-items: stretch; }
+      .webapp-actions { flex-direction: column; align-items: stretch; width: 100%; }
       .catalog-tab {
         flex-basis: 100%;
       }
@@ -727,17 +736,19 @@
               <div class="image-file-note">Images are stored on this device. Use export/import below when you want to move image tiles through cloud share.</div>
             </div>
           </div>
-          <div class="webapp-actions">
-            <button type="submit" class="webapp-submit" id="webappSubmitBtn">Add Tile</button>
-            <button type="button" class="webapp-secondary-btn" id="exportImagesBtn">Export Images</button>
-            <button type="button" class="webapp-secondary-btn" id="importImagesBtn">Import Images</button>
-          </div>
         </form>
         <div class="webapp-save-mode">
-          <div class="webapp-save-label">Save To</div>
-          <div class="webapp-save-options">
-            <label><input type="radio" name="webappSaveMode" value="local" checked> Local only</label>
-            <label><input type="radio" name="webappSaveMode" value="cloud"> Cloud sync<span class="button-superscript is-hidden" id="cloudSyncPremiumNote">Premium coming soon</span></label>
+          <div class="webapp-save-group">
+            <div class="webapp-save-label">Save To</div>
+            <div class="webapp-save-options">
+              <label><input type="radio" name="webappSaveMode" value="local" checked> Local only</label>
+              <label><input type="radio" name="webappSaveMode" value="cloud"> Cloud sync<span class="button-superscript is-hidden" id="cloudSyncPremiumNote">Premium coming soon</span></label>
+            </div>
+          </div>
+          <div class="webapp-actions">
+            <button type="submit" form="webappForm" class="webapp-submit" id="webappSubmitBtn">Add Tile</button>
+            <button type="button" class="webapp-secondary-btn" id="exportImagesBtn">Export Images</button>
+            <button type="button" class="webapp-secondary-btn" id="importImagesBtn">Import Images</button>
           </div>
         </div>
         <div class="webapp-status" id="webappStatus" aria-live="polite"></div>
